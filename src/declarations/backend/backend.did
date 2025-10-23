@@ -1,0 +1,315 @@
+type AccountData = record {
+  entity : text;
+  opening_debit : float64;
+  period_credit : float64;
+  account_number : text;
+  currency : text;
+  notes : text;
+  period_debit : float64;
+  opening_credit : float64;
+  ytd_debit : float64;
+  ytd_credit : float64;
+  department : text;
+  account_name : text;
+  project : text;
+};
+type ActivityLogEntry = record {
+  id : nat64;
+  "principal" : principal;
+  action : text;
+  resource_type : text;
+  timestamp : nat64;
+  resource_id : text;
+  details : text;
+};
+type Client = record {
+  id : nat64;
+  name : text;
+  contact_email : text;
+  created_at : nat64;
+  created_by : principal;
+  address : text;
+  contact_phone : text;
+};
+type ColumnMapping = record {
+  entity : opt text;
+  opening_debit : opt text;
+  period_credit : opt text;
+  account_number : opt text;
+  currency : opt text;
+  notes : opt text;
+  period_debit : opt text;
+  opening_credit : opt text;
+  ytd_debit : opt text;
+  ytd_credit : opt text;
+  department : opt text;
+  account_name : opt text;
+  project : opt text;
+};
+type ColumnMetadata = record {
+  max_value : text;
+  pii_detection : PIIDetection;
+  unique_count : nat64;
+  name : text;
+  min_value : text;
+  detected_type : ColumnType;
+  sample_values : vec text;
+  original_name : text;
+  null_percent : float64;
+};
+type ColumnType = variant { Date; Text; Boolean; Currency; Numeric };
+type CreateClientRequest = record {
+  name : text;
+  contact_email : text;
+  address : text;
+  contact_phone : text;
+};
+type CreateEngagementRequest = record {
+  status : text;
+  link : EngagementLink;
+  name : text;
+  description : text;
+  end_date : nat64;
+  start_date : nat64;
+};
+type CreateEntityRequest = record {
+  name : text;
+  taxonomy_config : text;
+  description : text;
+  organization_id : nat64;
+  taxonomy : opt XBRLTaxonomy;
+};
+type CreateOrganizationRequest = record { name : text; description : text };
+type CreateWorkingPaperRequest = record {
+  dataset_id : nat64;
+  column_mapping : ColumnMapping;
+  name : text;
+  selected_accounts : vec text;
+  engagement_id : nat64;
+};
+type Document = record {
+  id : nat64;
+  name : text;
+  created_at : nat64;
+  created_by : principal;
+  file_size : nat64;
+  file_type : text;
+  access_principals : vec principal;
+  data_chunks : vec blob;
+  category : text;
+  entity_id : opt nat64;
+  organization_id : opt nat64;
+};
+type Engagement = record {
+  id : nat64;
+  status : text;
+  link : EngagementLink;
+  name : text;
+  description : text;
+  end_date : nat64;
+  created_at : nat64;
+  created_by : principal;
+  start_date : nat64;
+};
+type EngagementLink = variant {
+  Entity : nat64;
+  Client : nat64;
+  Organization : nat64;
+};
+type Entity = record {
+  id : nat64;
+  name : text;
+  taxonomy_config : text;
+  description : text;
+  created_at : nat64;
+  created_by : principal;
+  organization_id : nat64;
+  taxonomy : opt XBRLTaxonomy;
+};
+type FinancialRatio = record { value : float64; name : text; formula : text };
+type ImportExcelRequest = record {
+  name : text;
+  file_data : blob;
+  file_name : text;
+  engagement_id : opt nat64;
+};
+type ImportedDataset = record {
+  id : nat64;
+  sheets : vec SheetData;
+  name : text;
+  created_at : nat64;
+  created_by : principal;
+  file_name : text;
+  file_size : nat64;
+  version : nat32;
+  engagement_id : opt nat64;
+};
+type Leadsheet = record {
+  closing_balance : float64;
+  opening_balance : float64;
+  created_at : nat64;
+  adjustments : float64;
+  accounts : vec AccountData;
+};
+type Organization = record {
+  id : nat64;
+  name : text;
+  description : text;
+  created_at : nat64;
+  created_by : principal;
+  entity_ids : vec nat64;
+};
+type PIIDetection = record {
+  has_national_ids : bool;
+  has_emails : bool;
+  has_names : bool;
+  has_phone_numbers : bool;
+};
+type Result = variant { Ok : Client; Err : text };
+type Result_1 = variant { Ok : Engagement; Err : text };
+type Result_10 = variant { Ok : Document; Err : text };
+type Result_11 = variant { Ok : vec Client; Err : text };
+type Result_12 = variant { Ok : vec ImportedDataset; Err : text };
+type Result_13 = variant { Ok : vec Document; Err : text };
+type Result_14 = variant { Ok : vec Engagement; Err : text };
+type Result_15 = variant { Ok : vec Entity; Err : text };
+type Result_16 = variant { Ok : vec Organization; Err : text };
+type Result_17 = variant { Ok : vec User; Err : text };
+type Result_18 = variant { Ok : vec WorkingPaper; Err : text };
+type Result_2 = variant { Ok : Entity; Err : text };
+type Result_3 = variant { Ok : Organization; Err : text };
+type Result_4 = variant { Ok : WorkingPaper; Err : text };
+type Result_5 = variant { Ok; Err : text };
+type Result_6 = variant { Ok : blob; Err : text };
+type Result_7 = variant { Ok : vec ActivityLogEntry; Err : text };
+type Result_8 = variant { Ok : User; Err : text };
+type Result_9 = variant { Ok : ImportedDataset; Err : text };
+type SheetData = record {
+  data : vec vec text;
+  name : text;
+  row_count : nat64;
+  columns : vec ColumnMetadata;
+};
+type TrendAnalysis = record {
+  prior_value : float64;
+  change_percent : float64;
+  period_name : text;
+  change : float64;
+  current_value : float64;
+};
+type UpdateClientRequest = record {
+  id : nat64;
+  name : text;
+  contact_email : text;
+  address : text;
+  contact_phone : text;
+};
+type UpdateEngagementRequest = record {
+  id : nat64;
+  status : text;
+  name : text;
+  description : text;
+  end_date : nat64;
+  start_date : nat64;
+};
+type UpdateEntityRequest = record {
+  id : nat64;
+  name : text;
+  taxonomy_config : text;
+  description : text;
+  taxonomy : opt XBRLTaxonomy;
+};
+type UpdateOrganizationRequest = record {
+  id : nat64;
+  name : text;
+  description : text;
+};
+type UploadDocumentRequest = record {
+  name : text;
+  file_data : blob;
+  file_type : text;
+  category : text;
+  entity_id : opt nat64;
+  organization_id : opt nat64;
+};
+type User = record {
+  "principal" : principal;
+  name : text;
+  role : UserRole;
+  created_at : nat64;
+  email : text;
+  language_preference : text;
+};
+type UserRole = variant { Staff; ClientUser; Senior; Admin; Partner; Manager };
+type VarianceAnalysis = record {
+  actual : float64;
+  variance_percent : float64;
+  expected : float64;
+  item_name : text;
+  variance : float64;
+};
+type WorkingPaper = record {
+  id : nat64;
+  linked_document_ids : vec nat64;
+  dataset_id : nat64;
+  column_mapping : ColumnMapping;
+  name : text;
+  created_at : nat64;
+  created_by : principal;
+  variance_analysis : vec VarianceAnalysis;
+  engagement_id : nat64;
+  ratios : vec FinancialRatio;
+  leadsheet : opt Leadsheet;
+  trend_analysis : vec TrendAnalysis;
+};
+type XBRLTaxonomy = variant { IFRS; Custom : text; USGAAP };
+service : () -> {
+  create_client : (CreateClientRequest) -> (Result);
+  create_engagement : (CreateEngagementRequest) -> (Result_1);
+  create_entity : (CreateEntityRequest) -> (Result_2);
+  create_organization : (CreateOrganizationRequest) -> (Result_3);
+  create_working_paper : (CreateWorkingPaperRequest) -> (Result_4);
+  delete_client : (nat64) -> (Result_5);
+  delete_document : (nat64) -> (Result_5);
+  delete_engagement : (nat64) -> (Result_5);
+  delete_entity : (nat64) -> (Result_5);
+  delete_organization : (nat64) -> (Result_5);
+  download_document : (nat64) -> (Result_6) query;
+  get_activity_logs : (opt nat64) -> (Result_7) query;
+  get_client : (nat64) -> (Result) query;
+  get_current_user : () -> (Result_8);
+  get_dataset : (nat64) -> (Result_9) query;
+  get_document : (nat64) -> (Result_10) query;
+  get_engagement : (nat64) -> (Result_1) query;
+  get_entity : (nat64) -> (Result_2) query;
+  get_organization : (nat64) -> (Result_3) query;
+  get_resource_activity_logs : (text, text, opt nat64) -> (Result_7) query;
+  get_user_activity_logs : (principal, opt nat64) -> (Result_7) query;
+  get_working_paper : (nat64) -> (Result_4) query;
+  grant_document_access : (nat64, principal) -> (Result_5);
+  import_excel : (ImportExcelRequest) -> (Result_9);
+  link_document_to_working_paper : (nat64, nat64) -> (Result_5);
+  list_clients : () -> (Result_11) query;
+  list_datasets : () -> (Result_12) query;
+  list_datasets_by_engagement : (nat64) -> (Result_12) query;
+  list_documents : () -> (Result_13) query;
+  list_documents_by_entity : (nat64) -> (Result_13) query;
+  list_documents_by_organization : (nat64) -> (Result_13) query;
+  list_engagements : () -> (Result_14) query;
+  list_engagements_by_client : (nat64) -> (Result_14) query;
+  list_engagements_by_entity : (nat64) -> (Result_14) query;
+  list_engagements_by_organization : (nat64) -> (Result_14) query;
+  list_entities : () -> (Result_15) query;
+  list_entities_by_organization : (nat64) -> (Result_15) query;
+  list_organizations : () -> (Result_16) query;
+  list_users : () -> (Result_17) query;
+  list_working_papers_by_engagement : (nat64) -> (Result_18) query;
+  revoke_document_access : (nat64, principal) -> (Result_5);
+  update_client : (UpdateClientRequest) -> (Result);
+  update_engagement : (UpdateEngagementRequest) -> (Result_1);
+  update_entity : (UpdateEntityRequest) -> (Result_2);
+  update_organization : (UpdateOrganizationRequest) -> (Result_3);
+  update_user_language : (text) -> (Result_5);
+  update_user_role : (principal, UserRole) -> (Result_5);
+  upload_document : (UploadDocumentRequest) -> (Result_10);
+}

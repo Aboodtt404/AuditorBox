@@ -1,0 +1,221 @@
+{
+  "app": {
+    "title": "AuditorBox",
+    "subtitle": "Audit Engagement Management"
+  },
+  "nav": {
+    "home": "Home",
+    "organizations": "Organizations",
+    "entities": "Entities",
+    "clients": "Clients",
+    "engagements": "Engagements",
+    "dataImport": "Data Import",
+    "workingPapers": "Working Papers",
+    "documents": "Documents",
+    "users": "User Management",
+    "activityLog": "Activity Log",
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "landing": {
+    "hero": {
+      "title": "Professional Audit Management on the Blockchain",
+      "subtitle": "Streamline your audit workflow with intelligent automation, secure document management, and real-time collaboration",
+      "getStarted": "Get Started",
+      "goToDashboard": "Go to Dashboard",
+      "learnMore": "Learn More"
+    },
+    "features": {
+      "title": "Comprehensive Audit Features",
+      "subtitle": "Everything you need to manage modern audit engagements efficiently and securely",
+      "organizations": {
+        "title": "Organization Management",
+        "description": "Create and manage organizations with hierarchical structures and XBRL taxonomy support for financial reporting"
+      },
+      "entities": {
+        "title": "Entity Management",
+        "description": "Track entities with customizable taxonomies including US GAAP, IFRS, and custom configurations"
+      },
+      "engagements": {
+        "title": "Engagement Tracking",
+        "description": "Manage audit engagements with flexible linking to clients, entities, or organizations"
+      },
+      "dataImport": {
+        "title": "Intelligent Data Import",
+        "description": "Import Excel files with automatic type detection, PII identification, and data profiling"
+      },
+      "workingPapers": {
+        "title": "Automated Working Papers",
+        "description": "Generate leadsheets, financial ratios, trend analysis, and variance reports automatically"
+      },
+      "security": {
+        "title": "Enterprise Security",
+        "description": "Built on Internet Computer blockchain with role-based access control and audit trails"
+      }
+    },
+    "benefits": {
+      "title": "Why Choose AuditorBox",
+      "subtitle": "Modern technology meets professional audit practices",
+      "automation": {
+        "title": "Intelligent Automation",
+        "description": "Reduce manual work with automated working paper generation, data validation, and analytical procedures"
+      },
+      "blockchain": {
+        "title": "Blockchain Security",
+        "description": "Immutable audit trail and tamper-proof document storage powered by Internet Computer"
+      },
+      "bilingual": {
+        "title": "Bilingual Support",
+        "description": "Full English and Arabic interface to serve diverse audit teams across the region"
+      }
+    },
+    "cta": {
+      "title": "Ready to Transform Your Audit Practice?",
+      "subtitle": "Join leading audit firms using AuditorBox to deliver faster, more accurate engagements"
+    },
+    "footer": {
+      "rights": "All rights reserved. Built on Internet Computer."
+    }
+  },
+  "organizations": {
+    "title": "Organizations",
+    "create": "Create Organization",
+    "edit": "Edit Organization",
+    "delete": "Delete Organization",
+    "name": "Name",
+    "description": "Description",
+    "createdAt": "Created At",
+    "actions": "Actions"
+  },
+  "entities": {
+    "title": "Entities",
+    "create": "Create Entity",
+    "edit": "Edit Entity",
+    "delete": "Delete Entity",
+    "name": "Name",
+    "description": "Description",
+    "organization": "Organization",
+    "taxonomy": "XBRL Taxonomy",
+    "taxonomyConfig": "Taxonomy Configuration",
+    "createdAt": "Created At"
+  },
+  "clients": {
+    "title": "Clients",
+    "create": "Create Client",
+    "edit": "Edit Client",
+    "delete": "Delete Client",
+    "name": "Name",
+    "contactEmail": "Contact Email",
+    "contactPhone": "Contact Phone",
+    "address": "Address"
+  },
+  "engagements": {
+    "title": "Engagements",
+    "create": "Create Engagement",
+    "edit": "Edit Engagement",
+    "delete": "Delete Engagement",
+    "name": "Name",
+    "description": "Description",
+    "linkType": "Link Type",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status"
+  },
+  "dataImport": {
+    "title": "Data Import",
+    "uploadFile": "Upload Excel File",
+    "dragDrop": "Drag and drop your Excel file here, or click to browse",
+    "sheets": "Sheets",
+    "columns": "Columns",
+    "rows": "Rows",
+    "dataPreview": "Data Preview",
+    "schemaAnalysis": "Schema Analysis",
+    "fieldName": "Field Name",
+    "type": "Type",
+    "nullPercent": "Null %",
+    "uniqueCount": "Unique Count",
+    "minValue": "Min Value",
+    "maxValue": "Max Value",
+    "samples": "Sample Values",
+    "piiDetected": "PII Detected",
+    "save": "Save Dataset"
+  },
+  "workingPapers": {
+    "title": "Working Papers",
+    "create": "Create Working Paper",
+    "selectDataset": "Select Dataset",
+    "selectAccounts": "Select Accounts",
+    "columnMapping": "Column Mapping",
+    "accountNumber": "Account Number",
+    "accountName": "Account Name",
+    "currency": "Currency",
+    "openingDebit": "Opening Debit",
+    "openingCredit": "Opening Credit",
+    "periodDebit": "Period Debit",
+    "periodCredit": "Period Credit",
+    "ytdDebit": "YTD Debit",
+    "ytdCredit": "YTD Credit",
+    "leadsheet": "Leadsheet",
+    "ratios": "Financial Ratios",
+    "trendAnalysis": "Trend Analysis",
+    "varianceAnalysis": "Variance Analysis",
+    "linkedDocuments": "Linked Documents"
+  },
+  "documents": {
+    "title": "Documents",
+    "upload": "Upload Document",
+    "name": "Name",
+    "type": "Type",
+    "size": "Size",
+    "category": "Category",
+    "organization": "Organization",
+    "entity": "Entity",
+    "uploadedBy": "Uploaded By",
+    "uploadedAt": "Uploaded At",
+    "download": "Download",
+    "delete": "Delete"
+  },
+  "users": {
+    "title": "User Management",
+    "role": "Role",
+    "roles": {
+      "Admin": "Administrator",
+      "Partner": "Partner",
+      "Manager": "Manager",
+      "Senior": "Senior",
+      "Staff": "Staff",
+      "ClientUser": "Client User"
+    },
+    "email": "Email",
+    "language": "Language",
+    "createdAt": "Created At",
+    "changeRole": "Change Role"
+  },
+  "activityLog": {
+    "title": "Activity Log",
+    "action": "Action",
+    "resource": "Resource",
+    "user": "User",
+    "timestamp": "Timestamp",
+    "details": "Details"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import"
+  }
+}
+

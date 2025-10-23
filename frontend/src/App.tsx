@@ -1,40 +1,107 @@
-import React from 'react';
-import { useInternetIdentity } from './hooks/useInternetIdentity';
-import { useGetCallerUserProfile } from './hooks/useQueries';
-import { ThemeProvider } from 'next-themes';
-import { Toaster } from '@/components/ui/sonner';
-import { LanguageProvider } from './components/LanguageProvider';
-import LandingPage from './components/LandingPage';
-import ProfileSetupModal from './components/ProfileSetupModal';
-import MainLayout from './components/MainLayout';
-import LoadingScreen from './components/LoadingScreen';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import { AuthProvider } from './hooks/useAuth';
+import Navigation from './components/Navigation';
+import PageLayout from './components/PageLayout';
+import LandingPage from './pages/LandingPage';
+import Organizations from './pages/Organizations';
+import Entities from './pages/Entities';
+import Clients from './pages/Clients';
+import Engagements from './pages/Engagements';
+import DataImport from './pages/DataImport';
+import WorkingPapers from './pages/WorkingPapers';
+import DocumentSubmission from './pages/DocumentSubmission';
+import UserManagement from './pages/UserManagement';
+import ActivityLog from './pages/ActivityLog';
+import theme from './theme';
 
-export default function App() {
-  const { identity, isInitializing } = useInternetIdentity();
-  const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
-
-  const isAuthenticated = !!identity;
-  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
-
-  if (isInitializing) {
-    return <LoadingScreen />;
-  }
-
+function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <LanguageProvider>
-        <div className="min-h-screen bg-background">
-          {!isAuthenticated ? (
-            <LandingPage />
-          ) : (
-            <>
-              <MainLayout />
-              {showProfileSetup && <ProfileSetupModal />}
-            </>
-          )}
-          <Toaster />
-        </div>
-      </LanguageProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <Router>
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route
+              path="/organizations"
+              element={
+                <PageLayout>
+                  <Organizations />
+                </PageLayout>
+              }
+            />
+            <Route
+              path="/entities"
+              element={
+                <PageLayout>
+                  <Entities />
+                </PageLayout>
+              }
+            />
+            <Route
+              path="/clients"
+              element={
+                <PageLayout>
+                  <Clients />
+                </PageLayout>
+              }
+            />
+            <Route
+              path="/engagements"
+              element={
+                <PageLayout>
+                  <Engagements />
+                </PageLayout>
+              }
+            />
+            <Route
+              path="/data-import"
+              element={
+                <PageLayout>
+                  <DataImport />
+                </PageLayout>
+              }
+            />
+            <Route
+              path="/working-papers"
+              element={
+                <PageLayout>
+                  <WorkingPapers />
+                </PageLayout>
+              }
+            />
+            <Route
+              path="/documents"
+              element={
+                <PageLayout>
+                  <DocumentSubmission />
+                </PageLayout>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <PageLayout>
+                  <UserManagement />
+                </PageLayout>
+              }
+            />
+            <Route
+              path="/activity-log"
+              element={
+                <PageLayout>
+                  <ActivityLog />
+                </PageLayout>
+              }
+            />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
+
+export default App;
+
