@@ -44,6 +44,18 @@ fn update_user_language(language: String) -> Result<()> {
     auth::update_user_language(caller, language)
 }
 
+#[update]
+fn update_user_name(name: String) -> Result<()> {
+    let caller = ic_cdk::caller();
+    auth::update_user_name(caller, name)
+}
+
+#[update]
+fn update_user_email(email: String) -> Result<()> {
+    let caller = ic_cdk::caller();
+    auth::update_user_email(caller, email)
+}
+
 #[query]
 fn list_users() -> Result<Vec<User>> {
     let caller = ic_cdk::caller();

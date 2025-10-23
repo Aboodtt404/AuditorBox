@@ -309,7 +309,9 @@ service : () -> {
   update_engagement : (UpdateEngagementRequest) -> (Result_1);
   update_entity : (UpdateEntityRequest) -> (Result_2);
   update_organization : (UpdateOrganizationRequest) -> (Result_3);
+  update_user_email : (text) -> (Result_5);
   update_user_language : (text) -> (Result_5);
+  update_user_name : (text) -> (Result_5);
   update_user_role : (principal, UserRole) -> (Result_5);
   upload_document : (UploadDocumentRequest) -> (Result_10);
 }

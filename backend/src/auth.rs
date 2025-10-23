@@ -87,6 +87,30 @@ pub fn update_user_language(principal: Principal, language: String) -> Result<()
     Ok(())
 }
 
+// Update user name
+pub fn update_user_name(principal: Principal, name: String) -> Result<()> {
+    let mut user = get_user(principal).ok_or("User not found")?;
+    user.name = name;
+
+    STORAGE.with(|storage| {
+        storage.borrow_mut().users.insert(StorablePrincipal(principal), user);
+    });
+
+    Ok(())
+}
+
+// Update user email
+pub fn update_user_email(principal: Principal, email: String) -> Result<()> {
+    let mut user = get_user(principal).ok_or("User not found")?;
+    user.email = email;
+
+    STORAGE.with(|storage| {
+        storage.borrow_mut().users.insert(StorablePrincipal(principal), user);
+    });
+
+    Ok(())
+}
+
 // List all users (Admin only)
 pub fn list_users(caller: Principal) -> Result<Vec<User>> {
     let caller_user = get_user(caller).ok_or("Caller not found")?;
@@ -184,7 +208,8 @@ pub fn can_manage_users(user: &User) -> bool {
     is_admin(user)
 }
 
-pub fn can_view_activity_log(user: &User) -> bool {
-    is_manager_or_above(user)
+pub fn can_view_activity_log(_user: &User) -> bool {
+    // All authenticated users can view activity logs
+    true
 }
 

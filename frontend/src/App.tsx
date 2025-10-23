@@ -4,6 +4,7 @@ import { AuthProvider } from './hooks/useAuth';
 import Navigation from './components/Navigation';
 import PageLayout from './components/PageLayout';
 import LandingPage from './pages/LandingPage';
+import Profile from './pages/Profile';
 import Organizations from './pages/Organizations';
 import Entities from './pages/Entities';
 import Clients from './pages/Clients';
@@ -24,6 +25,14 @@ function App() {
           <Navigation />
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route
+              path="/profile"
+              element={
+                <PageLayout>
+                  <Profile />
+                </PageLayout>
+              }
+            />
             <Route
               path="/organizations"
               element={

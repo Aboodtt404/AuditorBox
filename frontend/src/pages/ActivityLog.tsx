@@ -25,6 +25,7 @@ const ActivityLog = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
   const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
+  const [users, setUsers] = useState<Map<string, string>>(new Map());
   const [filterAction, setFilterAction] = useState('');
   const [filterResource, setFilterResource] = useState('');
   const [limit, setLimit] = useState(100);
@@ -37,9 +38,31 @@ const ActivityLog = () => {
     try {
       const data = await call<ActivityLogEntry[]>('get_activity_logs', [[BigInt(limit)]]);
       setLogs(data);
+      
+      // Fetch all users to map principals to names
+      try {
+        const allUsers = await call<any[]>('list_users', []);
+        const userMap = new Map<string, string>();
+        allUsers.forEach((user: any) => {
+          const principalStr = typeof user.principal === 'string' 
+            ? user.principal 
+            : user.principal.toString();
+          userMap.set(principalStr, user.name);
+        });
+        setUsers(userMap);
+      } catch (err) {
+        console.log('Could not load users for name mapping');
+      }
     } catch (error) {
       console.error('Failed to load activity logs:', error);
     }
+  };
+
+  const getUserName = (principal: any): string => {
+    const principalStr = typeof principal === 'string' 
+      ? principal 
+      : principal.toString();
+    return users.get(principalStr) || principalStr.slice(0, 15) + '...';
   };
 
   const getActionColor = (action: string) => {
@@ -132,9 +155,6 @@ const ActivityLog = () => {
           </TableHead>
           <TableBody>
             {filteredLogs.map((log) => {
-              const principalStr = typeof log.principal === 'string' 
-                ? log.principal 
-                : log.principal.toString();
               return (
                 <TableRow key={log.id.toString()} hover>
                   <TableCell>
@@ -143,8 +163,8 @@ const ActivityLog = () => {
                       'yyyy-MM-dd HH:mm:ss'
                     )}
                   </TableCell>
-                  <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                    {principalStr.slice(0, 15)}...
+                  <TableCell sx={{ fontWeight: 500 }}>
+                    {getUserName(log.principal)}
                   </TableCell>
                   <TableCell>
                     <Chip

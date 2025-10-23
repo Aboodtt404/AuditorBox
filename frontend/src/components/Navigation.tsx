@@ -31,7 +31,6 @@ import {
   History as LogIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
-  Language as LanguageIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -297,17 +296,11 @@ export default function Navigation() {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={handleProfileMenuClose}>
+        <MenuItem onClick={() => { navigate('/profile'); handleProfileMenuClose(); }}>
           <ListItemIcon>
             <AccountIcon fontSize="small" />
           </ListItemIcon>
           {t('nav.profile')}
-        </MenuItem>
-        <MenuItem onClick={handleProfileMenuClose}>
-          <ListItemIcon>
-            <LanguageIcon fontSize="small" />
-          </ListItemIcon>
-          {t('nav.settings')}
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleLogout}>

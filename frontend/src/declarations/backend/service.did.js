@@ -409,7 +409,9 @@ export const idlFactory = ({ IDL }) => {
         [Result_3],
         [],
       ),
+    'update_user_email' : IDL.Func([IDL.Text], [Result_5], []),
     'update_user_language' : IDL.Func([IDL.Text], [Result_5], []),
+    'update_user_name' : IDL.Func([IDL.Text], [Result_5], []),
     'update_user_role' : IDL.Func([IDL.Principal, UserRole], [Result_5], []),
     'upload_document' : IDL.Func([UploadDocumentRequest], [Result_10], []),
   });
