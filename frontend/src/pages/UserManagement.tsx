@@ -26,6 +26,7 @@ import { Edit } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { User, UserRole } from '../types';
+import { Principal } from '@dfinity/principal';
 
 const UserManagement = () => {
   const { t } = useTranslation();
@@ -69,7 +70,11 @@ const UserManagement = () => {
       const principalStr = typeof selectedUser.principal === 'string' 
         ? selectedUser.principal 
         : selectedUser.principal.toString();
-      await call('update_user_role', [principalStr, createRoleVariant(newRole)]);
+      
+      // Convert string to Principal object
+      const principal = Principal.fromText(principalStr);
+      
+      await call('update_user_role', [principal, createRoleVariant(newRole)]);
       setDialogOpen(false);
       loadUsers();
       alert('User role updated successfully!');

@@ -55,15 +55,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // @ts-ignore
       const canisterIds = await import('../canister_ids.json');
       
+      const host = import.meta.env.DFX_NETWORK === 'ic'
+        ? 'https://ic0.app'
+        : 'http://localhost:4943';
+      
       const agent = new HttpAgent({ 
         identity: _identity,
-        host: 'http://localhost:4943',
-        verifyQuerySignatures: false,
+        host,
       });
       
-      await agent.fetchRootKey().catch(console.error);
+      // Fetch root key for local development - critical for certificate verification
+      if (import.meta.env.DFX_NETWORK !== 'ic') {
+        try {
+          await agent.fetchRootKey();
+          console.log('Root key fetched for authentication');
+        } catch (err) {
+          console.warn('Unable to fetch root key during auth:', err);
+        }
+      }
       
       const canisterId = canisterIds.default.backend.local;
+        
       const actor = Actor.createActor(idlFactory, { agent, canisterId });
       
       // @ts-ignore

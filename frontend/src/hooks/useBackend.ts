@@ -16,15 +16,25 @@ export const useBackend = () => {
       throw new Error('Not authenticated');
     }
 
+    const host = process.env.DFX_NETWORK === 'ic' 
+      ? 'https://ic0.app' 
+      : 'http://localhost:4943';
+
     const agent = new HttpAgent({ 
       identity,
-      host: 'http://localhost:4943',
-      // Disable certificate verification for local development
-      verifyQuerySignatures: false,
+      host,
     });
 
     // Fetch root key for local development - MUST be done for local replica
-    await agent.fetchRootKey().catch(console.error);
+    // This is critical for Internet Identity to work locally
+    if (process.env.DFX_NETWORK !== 'ic') {
+      try {
+        await agent.fetchRootKey();
+        console.log('Root key fetched successfully');
+      } catch (err) {
+        console.warn('Unable to fetch root key:', err);
+      }
+    }
 
     const canisterId = canisterIds.backend.local;
 

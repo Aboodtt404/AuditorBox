@@ -33,6 +33,7 @@ const Engagements = () => {
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -50,17 +51,34 @@ const Engagements = () => {
 
   const loadData = async () => {
     try {
-      const [engs, orgs, ents] = await Promise.all([
+      const [engs, orgs, ents, clnts] = await Promise.all([
         call<Engagement[]>('list_engagements'),
         call<Organization[]>('list_organizations'),
         call<Entity[]>('list_entities'),
+        call<any[]>('list_clients'),
       ]);
       setEngagements(engs);
       setOrganizations(orgs);
       setEntities(ents);
+      setClients(clnts);
     } catch (error) {
       console.error('Failed to load data:', error);
     }
+  };
+
+  const getLinkedEntityName = (engagement: Engagement): { type: string; name: string } => {
+    const link = engagement.link as any;
+    if (link.Organization !== undefined) {
+      const org = organizations.find(o => o.id === link.Organization);
+      return { type: 'Organization', name: org?.name || 'Unknown' };
+    } else if (link.Entity !== undefined) {
+      const ent = entities.find(e => e.id === link.Entity);
+      return { type: 'Entity', name: ent?.name || 'Unknown' };
+    } else if (link.Client !== undefined) {
+      const client = clients.find(c => c.id === link.Client);
+      return { type: 'Client', name: client?.name || 'Unknown' };
+    }
+    return { type: 'Unknown', name: 'Unknown' };
   };
 
   const handleSave = async () => {
@@ -95,6 +113,7 @@ const Engagements = () => {
           <TableHead>
             <TableRow>
               <TableCell>{t('engagements.name')}</TableCell>
+              <TableCell>Linked To</TableCell>
               <TableCell>{t('engagements.status')}</TableCell>
               <TableCell>{t('engagements.startDate')}</TableCell>
               <TableCell>{t('engagements.endDate')}</TableCell>
@@ -102,22 +121,35 @@ const Engagements = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {engagements.map((eng) => (
-              <TableRow key={eng.id.toString()}>
-                <TableCell>{eng.name}</TableCell>
-                <TableCell>{eng.status}</TableCell>
-                <TableCell>
-                  {new Date(Number(eng.start_date) / 1000000).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  {new Date(Number(eng.end_date) / 1000000).toLocaleDateString()}
-                </TableCell>
-                <TableCell align="right">
-                  <IconButton size="small" color="primary"><Edit /></IconButton>
-                  <IconButton size="small" color="error"><Delete /></IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+            {engagements.map((eng) => {
+              const linkedEntity = getLinkedEntityName(eng);
+              return (
+                <TableRow key={eng.id.toString()}>
+                  <TableCell>{eng.name}</TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold">
+                        {linkedEntity.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        ({linkedEntity.type})
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>{eng.status}</TableCell>
+                  <TableCell>
+                    {new Date(Number(eng.start_date) / 1000000).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(Number(eng.end_date) / 1000000).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton size="small" color="primary"><Edit /></IconButton>
+                    <IconButton size="small" color="error"><Delete /></IconButton>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
@@ -149,6 +181,7 @@ const Engagements = () => {
             >
               <MenuItem value="Organization">Organization</MenuItem>
               <MenuItem value="Entity">Entity</MenuItem>
+              <MenuItem value="Client">Client</MenuItem>
             </Select>
           </FormControl>
           {formData.link_type === 'Organization' && (
@@ -176,6 +209,21 @@ const Engagements = () => {
                 {entities.map((ent) => (
                   <MenuItem key={ent.id.toString()} value={ent.id.toString()}>
                     {ent.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+          {formData.link_type === 'Client' && (
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Client</InputLabel>
+              <Select
+                value={formData.link_id}
+                onChange={(e) => setFormData({ ...formData, link_id: e.target.value })}
+              >
+                {clients.map((client) => (
+                  <MenuItem key={client.id.toString()} value={client.id.toString()}>
+                    {client.name}
                   </MenuItem>
                 ))}
               </Select>

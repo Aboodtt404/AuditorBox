@@ -86,8 +86,8 @@ const DocumentSubmission = () => {
       await call('upload_document', [{
         name: formData.name,
         file_type: uploadFile.type || 'application/octet-stream',
-        organization_id: formData.organization_id ? BigInt(formData.organization_id) : null,
-        entity_id: formData.entity_id ? BigInt(formData.entity_id) : null,
+        organization_id: formData.organization_id ? [BigInt(formData.organization_id)] : [],
+        entity_id: formData.entity_id ? [BigInt(formData.entity_id)] : [],
         category: formData.category,
         file_data: Array.from(bytes),
       }]);

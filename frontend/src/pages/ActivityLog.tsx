@@ -15,11 +15,24 @@ import {
   Select,
   FormControl,
   InputLabel,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Alert,
 } from '@mui/material';
+import {
+  VerifiedUser as VerifiedIcon,
+  Info as InfoIcon,
+} from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { ActivityLogEntry } from '../types';
 import { format } from 'date-fns';
+import { BlockchainVerification, ChainVerification } from '../components/BlockchainVerification';
 
 const ActivityLog = () => {
   const { t } = useTranslation();
@@ -29,6 +42,8 @@ const ActivityLog = () => {
   const [filterAction, setFilterAction] = useState('');
   const [filterResource, setFilterResource] = useState('');
   const [limit, setLimit] = useState(100);
+  const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
+  const [showChainVerification, setShowChainVerification] = useState(false);
 
   useEffect(() => {
     loadLogs();
@@ -93,9 +108,25 @@ const ActivityLog = () => {
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        {t('activityLog.title')}
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4">
+          {t('activityLog.title')}
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<VerifiedIcon />}
+          onClick={() => setShowChainVerification(true)}
+        >
+          Verify Blockchain Chain
+        </Button>
+      </Box>
+
+      <Alert severity="info" sx={{ mb: 2 }} icon={<InfoIcon />}>
+        <Typography variant="body2">
+          All activity logs are cryptographically signed and stored on the Internet Computer blockchain,
+          ensuring tamper-proof audit trails. Click the verification icon next to any entry to verify its integrity.
+        </Typography>
+      </Alert>
 
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -145,18 +176,27 @@ const ActivityLog = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
+              <TableCell>Block #</TableCell>
               <TableCell>{t('activityLog.timestamp')}</TableCell>
               <TableCell>{t('activityLog.user')}</TableCell>
               <TableCell>{t('activityLog.action')}</TableCell>
               <TableCell>{t('activityLog.resource')}</TableCell>
               <TableCell>Resource ID</TableCell>
               <TableCell>{t('activityLog.details')}</TableCell>
+              <TableCell align="center">Blockchain</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredLogs.map((log) => {
               return (
                 <TableRow key={log.id.toString()} hover>
+                  <TableCell>
+                    <Chip 
+                      label={`#${log.block_height?.toString() || '0'}`}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </TableCell>
                   <TableCell>
                     {format(
                       new Date(Number(log.timestamp) / 1000000),
@@ -176,6 +216,17 @@ const ActivityLog = () => {
                   <TableCell>{log.resource_type}</TableCell>
                   <TableCell>{log.resource_id}</TableCell>
                   <TableCell>{log.details}</TableCell>
+                  <TableCell align="center">
+                    <Tooltip title="Verify blockchain proof">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => setSelectedEntryId(Number(log.id))}
+                      >
+                        <VerifiedIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -188,6 +239,40 @@ const ActivityLog = () => {
           <Typography color="text.secondary">No activity logs found</Typography>
         </Box>
       )}
+
+      {/* Blockchain Verification Dialog */}
+      <Dialog
+        open={selectedEntryId !== null}
+        onClose={() => setSelectedEntryId(null)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Blockchain Verification</DialogTitle>
+        <DialogContent>
+          {selectedEntryId !== null && (
+            <BlockchainVerification entryId={selectedEntryId} />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSelectedEntryId(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Chain Verification Dialog */}
+      <Dialog
+        open={showChainVerification}
+        onClose={() => setShowChainVerification(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Verify Entire Blockchain Chain</DialogTitle>
+        <DialogContent>
+          <ChainVerification />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowChainVerification(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

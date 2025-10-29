@@ -8,6 +8,8 @@ use std::cell::RefCell;
 use candid::{Principal, Encode, Decode};
 
 use crate::types::*;
+use crate::client_portal::{DocumentRequest, ClientAccess};
+use crate::templates::{AuditTemplate, EngagementChecklist};
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 
@@ -139,6 +141,120 @@ impl Storable for ActivityLogEntry {
     const BOUND: Bound = Bound::Unbounded;
 }
 
+impl Storable for DocumentRequest {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for ClientAccess {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for AuditTemplate {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for EngagementChecklist {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+// Trial Balance
+impl Storable for TrialBalance {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for TrialBalanceAccount {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+// Adjusting Journal Entries
+impl Storable for AdjustingJournalEntry {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for AjeLineItem {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+// Storable for String keys
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct StorableString(pub String);
+
+impl Storable for StorableString {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(self.0.as_bytes().to_vec())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        StorableString(String::from_utf8(bytes.to_vec()).unwrap())
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
 // Storage structure
 pub struct Storage {
     pub users: StableBTreeMap<StorablePrincipal, User, Memory>,
@@ -150,6 +266,14 @@ pub struct Storage {
     pub working_papers: StableBTreeMap<u64, WorkingPaper, Memory>,
     pub documents: StableBTreeMap<u64, Document, Memory>,
     pub activity_logs: StableBTreeMap<u64, ActivityLogEntry, Memory>,
+    pub client_portal_requests: StableBTreeMap<u64, DocumentRequest, Memory>,
+    pub client_access: StableBTreeMap<StorableString, ClientAccess, Memory>,
+    pub audit_templates: StableBTreeMap<u64, AuditTemplate, Memory>,
+    pub engagement_checklists: StableBTreeMap<u64, EngagementChecklist, Memory>,
+    pub trial_balances: StableBTreeMap<u64, TrialBalance, Memory>,
+    pub trial_balance_accounts: StableBTreeMap<u64, TrialBalanceAccount, Memory>,
+    pub adjusting_entries: StableBTreeMap<u64, AdjustingJournalEntry, Memory>,
+    pub aje_line_items: StableBTreeMap<u64, AjeLineItem, Memory>,
 }
 
 thread_local! {
@@ -169,6 +293,14 @@ thread_local! {
                 working_papers: StableBTreeMap::init(m.get(MemoryId::new(6))),
                 documents: StableBTreeMap::init(m.get(MemoryId::new(7))),
                 activity_logs: StableBTreeMap::init(m.get(MemoryId::new(8))),
+                client_portal_requests: StableBTreeMap::init(m.get(MemoryId::new(9))),
+                client_access: StableBTreeMap::init(m.get(MemoryId::new(10))),
+                audit_templates: StableBTreeMap::init(m.get(MemoryId::new(11))),
+                engagement_checklists: StableBTreeMap::init(m.get(MemoryId::new(12))),
+                trial_balances: StableBTreeMap::init(m.get(MemoryId::new(13))),
+                trial_balance_accounts: StableBTreeMap::init(m.get(MemoryId::new(14))),
+                adjusting_entries: StableBTreeMap::init(m.get(MemoryId::new(15))),
+                aje_line_items: StableBTreeMap::init(m.get(MemoryId::new(16))),
             }
         })
     );
@@ -182,6 +314,10 @@ thread_local! {
     pub static NEXT_WORKING_PAPER_ID: RefCell<u64> = RefCell::new(1);
     pub static NEXT_DOCUMENT_ID: RefCell<u64> = RefCell::new(1);
     pub static NEXT_ACTIVITY_LOG_ID: RefCell<u64> = RefCell::new(1);
+    pub static NEXT_TRIAL_BALANCE_ID: RefCell<u64> = RefCell::new(1);
+    pub static NEXT_ACCOUNT_ID: RefCell<u64> = RefCell::new(1);
+    pub static NEXT_AJE_ID: RefCell<u64> = RefCell::new(1);
+    pub static NEXT_AJE_LINE_ITEM_ID: RefCell<u64> = RefCell::new(1);
 }
 
 // Helper functions for ID generation
@@ -250,6 +386,42 @@ pub fn next_document_id() -> u64 {
 
 pub fn next_activity_log_id() -> u64 {
     NEXT_ACTIVITY_LOG_ID.with(|counter| {
+        let mut counter = counter.borrow_mut();
+        let id = *counter;
+        *counter += 1;
+        id
+    })
+}
+
+pub fn next_trial_balance_id() -> u64 {
+    NEXT_TRIAL_BALANCE_ID.with(|counter| {
+        let mut counter = counter.borrow_mut();
+        let id = *counter;
+        *counter += 1;
+        id
+    })
+}
+
+pub fn next_account_id() -> u64 {
+    NEXT_ACCOUNT_ID.with(|counter| {
+        let mut counter = counter.borrow_mut();
+        let id = *counter;
+        *counter += 1;
+        id
+    })
+}
+
+pub fn next_aje_id() -> u64 {
+    NEXT_AJE_ID.with(|counter| {
+        let mut counter = counter.borrow_mut();
+        let id = *counter;
+        *counter += 1;
+        id
+    })
+}
+
+pub fn next_aje_line_item_id() -> u64 {
+    NEXT_AJE_LINE_ITEM_ID.with(|counter| {
         let mut counter = counter.borrow_mut();
         let id = *counter;
         *counter += 1;

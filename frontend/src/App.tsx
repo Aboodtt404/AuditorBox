@@ -3,6 +3,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { AuthProvider } from './hooks/useAuth';
 import Navigation from './components/Navigation';
 import PageLayout from './components/PageLayout';
+import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import Profile from './pages/Profile';
 import Organizations from './pages/Organizations';
@@ -14,6 +15,8 @@ import WorkingPapers from './pages/WorkingPapers';
 import DocumentSubmission from './pages/DocumentSubmission';
 import UserManagement from './pages/UserManagement';
 import ActivityLog from './pages/ActivityLog';
+import ClientPortal from './pages/ClientPortal';
+import TrialBalance from './pages/TrialBalance';
 import theme from './theme';
 
 function App() {
@@ -36,73 +39,109 @@ function App() {
             <Route
               path="/organizations"
               element={
-                <PageLayout>
-                  <Organizations />
-                </PageLayout>
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <Organizations />
+                  </PageLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/entities"
               element={
-                <PageLayout>
-                  <Entities />
-                </PageLayout>
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <Entities />
+                  </PageLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/clients"
               element={
-                <PageLayout>
-                  <Clients />
-                </PageLayout>
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <Clients />
+                  </PageLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/engagements"
               element={
-                <PageLayout>
-                  <Engagements />
-                </PageLayout>
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <Engagements />
+                  </PageLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/data-import"
               element={
-                <PageLayout>
-                  <DataImport />
-                </PageLayout>
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <DataImport />
+                  </PageLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/working-papers"
               element={
-                <PageLayout>
-                  <WorkingPapers />
-                </PageLayout>
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <WorkingPapers />
+                  </PageLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/documents"
               element={
-                <PageLayout>
-                  <DocumentSubmission />
-                </PageLayout>
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <DocumentSubmission />
+                  </PageLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/users"
               element={
-                <PageLayout>
-                  <UserManagement />
-                </PageLayout>
+                <ProtectedRoute requireAdmin>
+                  <PageLayout>
+                    <UserManagement />
+                  </PageLayout>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/activity-log"
               element={
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <ActivityLog />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/client-portal"
+              element={
                 <PageLayout>
-                  <ActivityLog />
+                  <ClientPortal />
                 </PageLayout>
+              }
+            />
+            <Route
+              path="/trial-balance"
+              element={
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <TrialBalance />
+                  </PageLayout>
+                </ProtectedRoute>
               }
             />
           </Routes>

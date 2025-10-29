@@ -252,7 +252,7 @@ pub struct Document {
     pub access_principals: Vec<Principal>,
 }
 
-// Activity Log Entry
+// Activity Log Entry with Blockchain Proof
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct ActivityLogEntry {
     pub id: u64,
@@ -262,6 +262,10 @@ pub struct ActivityLogEntry {
     pub resource_id: String,
     pub details: String,
     pub timestamp: u64,
+    pub data_hash: String,           // SHA-256 hash of entry data
+    pub signature: String,            // Cryptographic signature
+    pub previous_hash: String,        // Hash of previous entry (blockchain link)
+    pub block_height: u64,           // Block height in the audit trail chain
 }
 
 // API Request/Response Types
@@ -358,6 +362,153 @@ pub struct UploadDocumentRequest {
     pub entity_id: Option<u64>,
     pub category: String,
     pub file_data: Vec<u8>,
+}
+
+// Blockchain Verification Types
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct BlockchainProof {
+    pub entry_id: u64,
+    pub data_hash: String,
+    pub timestamp: u64,
+    pub block_height: u64,
+    pub signature: String,
+    pub previous_hash: String,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct VerificationResult {
+    pub is_valid: bool,
+    pub entry_id: u64,
+    pub timestamp: u64,
+    pub data_hash: String,
+    pub block_height: u64,
+    pub verification_timestamp: u64,
+    pub chain_integrity: bool,
+    pub message: String,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct PublicVerificationRequest {
+    pub entry_id: u64,
+    pub verification_token: String,
+}
+
+// Trial Balance Types
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct TrialBalance {
+    pub id: u64,
+    pub engagement_id: u64,
+    pub period_end_date: String,
+    pub description: String,
+    pub currency: String,
+    pub is_adjusted: bool,
+    pub created_at: u64,
+    pub created_by: Principal,
+    pub last_modified_at: u64,
+    pub last_modified_by: Principal,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub enum AccountType {
+    Asset,
+    Liability,
+    Equity,
+    Revenue,
+    Expense,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct TrialBalanceAccount {
+    pub id: u64,
+    pub trial_balance_id: u64,
+    pub account_number: String,
+    pub account_name: String,
+    pub account_type: AccountType,
+    pub debit_balance: i64,
+    pub credit_balance: i64,
+    pub fs_line_item: Option<String>,
+    pub notes: String,
+    pub is_reconciled: bool,
+    pub created_at: u64,
+    pub created_by: Principal,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateTrialBalanceRequest {
+    pub engagement_id: u64,
+    pub period_end_date: String,
+    pub description: String,
+    pub currency: Option<String>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct UpdateAccountRequest {
+    pub account_number: String,
+    pub account_name: String,
+    pub account_type: AccountType,
+    pub debit_balance: i64,
+    pub credit_balance: i64,
+    pub fs_line_item: Option<String>,
+    pub notes: Option<String>,
+}
+
+// Adjusting Journal Entry Types
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub enum AjeStatus {
+    Draft,
+    Proposed,
+    Reviewed,
+    Approved,
+    Rejected,
+    Posted,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct AdjustingJournalEntry {
+    pub id: u64,
+    pub engagement_id: u64,
+    pub trial_balance_id: u64,
+    pub aje_number: String,
+    pub description: String,
+    pub status: AjeStatus,
+    pub amount: i64,
+    pub created_at: u64,
+    pub created_by: Principal,
+    pub reviewed_at: Option<u64>,
+    pub reviewed_by: Option<Principal>,
+    pub approved_at: Option<u64>,
+    pub approved_by: Option<Principal>,
+    pub blockchain_hash: String,
+    pub blockchain_signature: String,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct AjeLineItem {
+    pub id: u64,
+    pub aje_id: u64,
+    pub account_id: u64,
+    pub account_name: String,
+    pub account_number: String,
+    pub debit_amount: i64,
+    pub credit_amount: i64,
+    pub description: String,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateAjeRequest {
+    pub engagement_id: u64,
+    pub trial_balance_id: u64,
+    pub aje_number: String,
+    pub description: String,
+    pub line_items: Vec<CreateAjeLineItemRequest>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateAjeLineItemRequest {
+    pub account_id: u64,
+    pub debit_amount: i64,
+    pub credit_amount: i64,
+    pub description: String,
 }
 
 // Result types

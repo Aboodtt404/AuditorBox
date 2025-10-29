@@ -31,6 +31,8 @@ import {
   History as LogIcon,
   AccountCircle as AccountIcon,
   Logout as LogoutIcon,
+  FolderShared as PortalIcon,
+  AccountBalance as TrialBalanceIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -40,15 +42,17 @@ import LanguageSwitcher from './LanguageSwitcher';
 const drawerWidth = 260;
 
 const menuItems = [
-  { path: '/organizations', icon: BusinessIcon, label: 'nav.organizations' },
-  { path: '/entities', icon: EntityIcon, label: 'nav.entities' },
-  { path: '/clients', icon: ClientIcon, label: 'nav.clients' },
-  { path: '/engagements', icon: EngagementIcon, label: 'nav.engagements' },
-  { path: '/data-import', icon: UploadIcon, label: 'nav.dataImport' },
-  { path: '/working-papers', icon: PaperIcon, label: 'nav.workingPapers' },
-  { path: '/documents', icon: DocumentIcon, label: 'nav.documents' },
+  { path: '/organizations', icon: BusinessIcon, label: 'nav.organizations', firmOnly: true },
+  { path: '/entities', icon: EntityIcon, label: 'nav.entities', firmOnly: true },
+  { path: '/clients', icon: ClientIcon, label: 'nav.clients', firmOnly: true },
+  { path: '/engagements', icon: EngagementIcon, label: 'nav.engagements', firmOnly: true },
+  { path: '/data-import', icon: UploadIcon, label: 'nav.dataImport', firmOnly: true },
+  { path: '/trial-balance', icon: TrialBalanceIcon, label: 'nav.trialBalance', firmOnly: true },
+  { path: '/working-papers', icon: PaperIcon, label: 'nav.workingPapers', firmOnly: true },
+  { path: '/documents', icon: DocumentIcon, label: 'nav.documents', firmOnly: true },
+  { path: '/client-portal', icon: PortalIcon, label: 'nav.clientPortal', clientOnly: true },
   { path: '/users', icon: UserIcon, label: 'nav.users', adminOnly: true },
-  { path: '/activity-log', icon: LogIcon, label: 'nav.activityLog' },
+  { path: '/activity-log', icon: LogIcon, label: 'nav.activityLog', firmOnly: true },
 ];
 
 export default function Navigation() {
@@ -121,7 +125,24 @@ export default function Navigation() {
       <Box sx={{ overflow: 'auto', flex: 1, py: 2 }}>
         <List sx={{ px: 2 }}>
           {menuItems
-            .filter((item) => !item.adminOnly || (user?.role && 'Admin' in user.role))
+            .filter((item) => {
+              const isClient = user?.role && 'ClientUser' in user.role;
+              const isAdmin = user?.role && 'Admin' in user.role;
+              
+              // Hide admin-only items from non-admins
+              if (item.adminOnly && !isAdmin) {
+                return false;
+              }
+              // Hide firm-only items from clients
+              if (item.firmOnly && isClient) {
+                return false;
+              }
+              // Hide client-only items from firm users
+              if (item.clientOnly && !isClient) {
+                return false;
+              }
+              return true;
+            })
             .map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;

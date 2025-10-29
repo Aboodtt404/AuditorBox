@@ -211,5 +211,29 @@ export interface ActivityLogEntry {
   resource_id: string;
   details: string;
   timestamp: bigint;
+  data_hash: string;
+  signature: string;
+  previous_hash: string;
+  block_height: bigint;
+}
+
+export interface BlockchainProof {
+  entry_id: bigint;
+  data_hash: string;
+  timestamp: bigint;
+  block_height: bigint;
+  signature: string;
+  previous_hash: string;
+}
+
+export interface VerificationResult {
+  is_valid: boolean;
+  entry_id: bigint;
+  timestamp: bigint;
+  data_hash: string;
+  block_height: bigint;
+  verification_timestamp: bigint;
+  chain_integrity: boolean;
+  message: string;
 }
 

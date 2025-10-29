@@ -213,3 +213,16 @@ pub fn can_view_activity_log(_user: &User) -> bool {
     true
 }
 
+pub fn can_review_work(user: &User) -> bool {
+    // Senior and above can review work
+    matches!(
+        user.role,
+        UserRole::Senior | UserRole::Manager | UserRole::Partner | UserRole::Admin
+    )
+}
+
+pub fn can_approve(user: &User) -> bool {
+    // Partner and Admin can give final approval
+    matches!(user.role, UserRole::Partner | UserRole::Admin)
+}
+

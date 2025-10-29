@@ -21,6 +21,7 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Alert,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
@@ -144,28 +145,41 @@ const WorkingPapers = () => {
         return (
           <Grid container spacing={2}>
             <Grid item xs={12}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Map your Excel columns to accounting fields</strong>
+                </Typography>
+                <Typography variant="body2">
+                  Select which column in your dataset corresponds to each field below. 
+                  <strong> Account Number</strong> and <strong>Account Name</strong> are required. 
+                  Other fields are optional but recommended for complete analysis.
+                </Typography>
+              </Alert>
+            </Grid>
+            <Grid item xs={12}>
               <TextField
                 label="Working Paper Name"
                 fullWidth
                 value={workingPaperName}
                 onChange={(e) => setWorkingPaperName(e.target.value)}
+                required
               />
             </Grid>
             {[
-              'account_number',
-              'account_name',
-              'currency',
-              'opening_debit',
-              'opening_credit',
-              'period_debit',
-              'period_credit',
-              'ytd_debit',
-              'ytd_credit',
-            ].map((field) => (
+              { field: 'account_number', label: 'accountNumber', required: true },
+              { field: 'account_name', label: 'accountName', required: true },
+              { field: 'currency', label: 'currency', required: false },
+              { field: 'opening_debit', label: 'openingDebit', required: false },
+              { field: 'opening_credit', label: 'openingCredit', required: false },
+              { field: 'period_debit', label: 'periodDebit', required: false },
+              { field: 'period_credit', label: 'periodCredit', required: false },
+              { field: 'ytd_debit', label: 'ytdDebit', required: false },
+              { field: 'ytd_credit', label: 'ytdCredit', required: false },
+            ].map(({ field, label, required }) => (
               <Grid item xs={12} sm={6} key={field}>
-                <FormControl fullWidth>
+                <FormControl fullWidth required={required}>
                   <InputLabel>
-                    {t(`workingPapers.${field.replace(/_/g, '')}`)}
+                    {t(`workingPapers.${label}`)} {required && '*'}
                   </InputLabel>
                   <Select
                     value={(columnMapping as any)[field] || ''}

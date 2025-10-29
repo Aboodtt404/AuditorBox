@@ -13,14 +13,128 @@ type AccountData = record {
   account_name : text;
   project : text;
 };
+type AccountType = variant { Asset; Liability; Revenue; Expense; Equity };
 type ActivityLogEntry = record {
   id : nat64;
   "principal" : principal;
+  signature : text;
   action : text;
+  previous_hash : text;
   resource_type : text;
   timestamp : nat64;
   resource_id : text;
+  data_hash : text;
   details : text;
+  block_height : nat64;
+};
+type AdjustingJournalEntry = record {
+  id : nat64;
+  status : AjeStatus;
+  trial_balance_id : nat64;
+  blockchain_signature : text;
+  approved_at : opt nat64;
+  approved_by : opt principal;
+  reviewed_at : opt nat64;
+  reviewed_by : opt principal;
+  description : text;
+  created_at : nat64;
+  created_by : principal;
+  blockchain_hash : text;
+  engagement_id : nat64;
+  amount : int64;
+  aje_number : text;
+};
+type AjeBlockchainVerification = record {
+  status : text;
+  aje_id : nat64;
+  blockchain_signature : text;
+  computed_hash : text;
+  is_valid : bool;
+  approved_at : opt nat64;
+  approved_by : opt principal;
+  created_at : nat64;
+  created_by : principal;
+  blockchain_hash : text;
+  verified_at : nat64;
+  verified_by : principal;
+};
+type AjeLineItem = record {
+  id : nat64;
+  account_id : nat64;
+  aje_id : nat64;
+  description : text;
+  account_number : text;
+  debit_amount : int64;
+  credit_amount : int64;
+  account_name : text;
+};
+type AjeStatus = variant {
+  Posted;
+  Approved;
+  Draft;
+  Rejected;
+  Proposed;
+  Reviewed;
+};
+type ApplyTemplateRequest = record {
+  name : opt text;
+  template_id : nat64;
+  engagement_id : nat64;
+};
+type ApproveDocumentInput = record {
+  request_id : nat64;
+  approved : bool;
+  rejection_reason : opt text;
+};
+type AuditTemplate = record {
+  id : nat64;
+  is_public : bool;
+  updated_at : nat64;
+  name : text;
+  description : text;
+  created_at : nat64;
+  created_by : principal;
+  checklist_items : vec ChecklistItem;
+  template_type : TemplateType;
+  is_default : bool;
+  firm_id : opt nat64;
+};
+type BlockchainProof = record {
+  signature : text;
+  previous_hash : text;
+  timestamp : nat64;
+  data_hash : text;
+  entry_id : nat64;
+  block_height : nat64;
+};
+type ChecklistItem = record {
+  id : text;
+  title : text;
+  estimated_hours : opt float64;
+  order : nat32;
+  is_required : bool;
+  reference : opt text;
+  section : text;
+  description : text;
+};
+type ChecklistItemInstance = record {
+  status : ChecklistItemStatus;
+  title : text;
+  order : nat32;
+  section : text;
+  description : text;
+  assigned_to : opt principal;
+  notes : text;
+  actual_hours : opt float64;
+  completed_at : opt nat64;
+  completed_by : opt principal;
+  item_id : text;
+};
+type ChecklistItemStatus = variant {
+  NotApplicable;
+  InProgress;
+  Completed;
+  NotStarted;
 };
 type Client = record {
   id : nat64;
@@ -31,6 +145,14 @@ type Client = record {
   address : text;
   contact_phone : text;
 };
+type ClientAccess = record {
+  "principal" : principal;
+  access_level : ClientAccessLevel;
+  granted_at : nat64;
+  granted_by : principal;
+  engagement_id : nat64;
+};
+type ClientAccessLevel = variant { Full; UploadDocuments; ViewOnly };
 type ColumnMapping = record {
   entity : opt text;
   opening_debit : opt text;
@@ -58,11 +180,33 @@ type ColumnMetadata = record {
   null_percent : float64;
 };
 type ColumnType = variant { Date; Text; Boolean; Currency; Numeric };
+type CreateAjeLineItemRequest = record {
+  account_id : nat64;
+  description : text;
+  debit_amount : int64;
+  credit_amount : int64;
+};
+type CreateAjeRequest = record {
+  trial_balance_id : nat64;
+  line_items : vec CreateAjeLineItemRequest;
+  description : text;
+  engagement_id : nat64;
+  aje_number : text;
+};
 type CreateClientRequest = record {
   name : text;
   contact_email : text;
   address : text;
   contact_phone : text;
+};
+type CreateDocumentRequestInput = record {
+  title : text;
+  is_required : bool;
+  requested_from_principal : opt principal;
+  description : text;
+  engagement_id : nat64;
+  category : text;
+  due_date : opt nat64;
 };
 type CreateEngagementRequest = record {
   status : text;
@@ -80,12 +224,32 @@ type CreateEntityRequest = record {
   taxonomy : opt XBRLTaxonomy;
 };
 type CreateOrganizationRequest = record { name : text; description : text };
+type CreateTemplateRequest = record {
+  is_public : bool;
+  name : text;
+  description : text;
+  checklist_items : vec ChecklistItem;
+  template_type : TemplateType;
+  firm_id : opt nat64;
+};
+type CreateTrialBalanceRequest = record {
+  description : text;
+  currency : opt text;
+  engagement_id : nat64;
+  period_end_date : text;
+};
 type CreateWorkingPaperRequest = record {
   dataset_id : nat64;
   column_mapping : ColumnMapping;
   name : text;
   selected_accounts : vec text;
   engagement_id : nat64;
+};
+type CsvAccountRow = record {
+  debit_balance : int64;
+  credit_balance : int64;
+  account_number : text;
+  account_name : text;
 };
 type Document = record {
   id : nat64;
@@ -100,6 +264,28 @@ type Document = record {
   entity_id : opt nat64;
   organization_id : opt nat64;
 };
+type DocumentRequest = record {
+  id : nat64;
+  status : DocumentRequestStatus;
+  title : text;
+  is_required : bool;
+  fulfilled_document_id : opt nat64;
+  requested_from_principal : opt principal;
+  description : text;
+  created_at : nat64;
+  requested_by : principal;
+  engagement_id : nat64;
+  category : text;
+  due_date : opt nat64;
+  fulfilled_at : opt nat64;
+};
+type DocumentRequestStatus = variant {
+  Approved;
+  Rejected;
+  Uploaded;
+  Cancelled;
+  Pending;
+};
 type Engagement = record {
   id : nat64;
   status : text;
@@ -110,6 +296,15 @@ type Engagement = record {
   created_at : nat64;
   created_by : principal;
   start_date : nat64;
+};
+type EngagementChecklist = record {
+  id : nat64;
+  name : text;
+  created_at : nat64;
+  created_by : principal;
+  template_id : nat64;
+  engagement_id : nat64;
+  items : vec ChecklistItemInstance;
 };
 type EngagementLink = variant {
   Entity : nat64;
@@ -127,6 +322,18 @@ type Entity = record {
   taxonomy : opt XBRLTaxonomy;
 };
 type FinancialRatio = record { value : float64; name : text; formula : text };
+type FulfillDocumentRequestInput = record {
+  request_id : nat64;
+  document_name : text;
+  file_data : blob;
+  file_type : text;
+  category : text;
+};
+type GrantClientAccessRequest = record {
+  access_level : ClientAccessLevel;
+  client_principal : principal;
+  engagement_id : nat64;
+};
 type ImportExcelRequest = record {
   name : text;
   file_data : blob;
@@ -165,30 +372,57 @@ type PIIDetection = record {
   has_names : bool;
   has_phone_numbers : bool;
 };
-type Result = variant { Ok : Client; Err : text };
-type Result_1 = variant { Ok : Engagement; Err : text };
-type Result_10 = variant { Ok : Document; Err : text };
-type Result_11 = variant { Ok : vec Client; Err : text };
-type Result_12 = variant { Ok : vec ImportedDataset; Err : text };
-type Result_13 = variant { Ok : vec Document; Err : text };
-type Result_14 = variant { Ok : vec Engagement; Err : text };
-type Result_15 = variant { Ok : vec Entity; Err : text };
-type Result_16 = variant { Ok : vec Organization; Err : text };
-type Result_17 = variant { Ok : vec User; Err : text };
-type Result_18 = variant { Ok : vec WorkingPaper; Err : text };
-type Result_2 = variant { Ok : Entity; Err : text };
-type Result_3 = variant { Ok : Organization; Err : text };
-type Result_4 = variant { Ok : WorkingPaper; Err : text };
-type Result_5 = variant { Ok; Err : text };
-type Result_6 = variant { Ok : blob; Err : text };
-type Result_7 = variant { Ok : vec ActivityLogEntry; Err : text };
-type Result_8 = variant { Ok : User; Err : text };
-type Result_9 = variant { Ok : ImportedDataset; Err : text };
+type Result = variant { Ok : TrialBalanceAccount; Err : text };
+type Result_1 = variant { Ok : EngagementChecklist; Err : text };
+type Result_10 = variant { Ok : WorkingPaper; Err : text };
+type Result_11 = variant { Ok; Err : text };
+type Result_12 = variant { Ok : blob; Err : text };
+type Result_13 = variant { Ok : vec ActivityLogEntry; Err : text };
+type Result_14 = variant { Ok : vec AjeLineItem; Err : text };
+type Result_15 = variant { Ok : BlockchainProof; Err : text };
+type Result_16 = variant { Ok : vec ClientAccess; Err : text };
+type Result_17 = variant { Ok : User; Err : text };
+type Result_18 = variant { Ok : ImportedDataset; Err : text };
+type Result_19 = variant { Ok : Document; Err : text };
+type Result_2 = variant { Ok : AdjustingJournalEntry; Err : text };
+type Result_20 = variant { Ok : vec DocumentRequest; Err : text };
+type Result_21 = variant { Ok : vec EngagementChecklist; Err : text };
+type Result_22 = variant { Ok : vec TrialBalanceAccount; Err : text };
+type Result_23 = variant { Ok : ClientAccess; Err : text };
+type Result_24 = variant { Ok : vec AdjustingJournalEntry; Err : text };
+type Result_25 = variant { Ok : vec Client; Err : text };
+type Result_26 = variant { Ok : vec ImportedDataset; Err : text };
+type Result_27 = variant { Ok : vec Document; Err : text };
+type Result_28 = variant { Ok : vec Engagement; Err : text };
+type Result_29 = variant { Ok : vec Entity; Err : text };
+type Result_3 = variant { Ok : DocumentRequest; Err : text };
+type Result_30 = variant { Ok : vec Organization; Err : text };
+type Result_31 = variant { Ok : vec AuditTemplate; Err : text };
+type Result_32 = variant { Ok : vec TrialBalance; Err : text };
+type Result_33 = variant { Ok : vec User; Err : text };
+type Result_34 = variant { Ok : vec WorkingPaper; Err : text };
+type Result_35 = variant { Ok : TrialBalanceValidation; Err : text };
+type Result_36 = variant { Ok : VerificationResult; Err : text };
+type Result_37 = variant { Ok : AjeBlockchainVerification; Err : text };
+type Result_38 = variant { Ok : bool; Err : text };
+type Result_4 = variant { Ok : Client; Err : text };
+type Result_5 = variant { Ok : Engagement; Err : text };
+type Result_6 = variant { Ok : Entity; Err : text };
+type Result_7 = variant { Ok : Organization; Err : text };
+type Result_8 = variant { Ok : AuditTemplate; Err : text };
+type Result_9 = variant { Ok : TrialBalance; Err : text };
 type SheetData = record {
   data : vec vec text;
   name : text;
   row_count : nat64;
   columns : vec ColumnMetadata;
+};
+type TemplateType = variant {
+  Review;
+  Compilation;
+  Custom;
+  Audit;
+  TaxPreparation;
 };
 type TrendAnalysis = record {
   prior_value : float64;
@@ -196,6 +430,60 @@ type TrendAnalysis = record {
   period_name : text;
   change : float64;
   current_value : float64;
+};
+type TrialBalance = record {
+  id : nat64;
+  last_modified_at : nat64;
+  last_modified_by : principal;
+  description : text;
+  created_at : nat64;
+  created_by : principal;
+  is_adjusted : bool;
+  currency : text;
+  engagement_id : nat64;
+  period_end_date : text;
+};
+type TrialBalanceAccount = record {
+  id : nat64;
+  trial_balance_id : nat64;
+  fs_line_item : opt text;
+  is_reconciled : bool;
+  debit_balance : int64;
+  created_at : nat64;
+  created_by : principal;
+  credit_balance : int64;
+  account_number : text;
+  notes : text;
+  account_name : text;
+  account_type : AccountType;
+};
+type TrialBalanceValidation = record {
+  trial_balance_id : nat64;
+  account_count : nat64;
+  difference : int64;
+  is_balanced : bool;
+  issues : vec text;
+  total_credits : int64;
+  validated_at : nat64;
+  validated_by : principal;
+  total_debits : int64;
+};
+type UpdateAccountRequest = record {
+  fs_line_item : opt text;
+  debit_balance : int64;
+  credit_balance : int64;
+  account_number : text;
+  notes : opt text;
+  account_name : text;
+  account_type : AccountType;
+};
+type UpdateChecklistItemRequest = record {
+  status : opt ChecklistItemStatus;
+  checklist_id : nat64;
+  assigned_to : opt principal;
+  notes : opt text;
+  actual_hours : opt float64;
+  item_id : text;
 };
 type UpdateClientRequest = record {
   id : nat64;
@@ -248,6 +536,16 @@ type VarianceAnalysis = record {
   item_name : text;
   variance : float64;
 };
+type VerificationResult = record {
+  is_valid : bool;
+  message : text;
+  timestamp : nat64;
+  data_hash : text;
+  chain_integrity : bool;
+  entry_id : nat64;
+  block_height : nat64;
+  verification_timestamp : nat64;
+};
 type WorkingPaper = record {
   id : nat64;
   linked_document_ids : vec nat64;
@@ -264,52 +562,87 @@ type WorkingPaper = record {
 };
 type XBRLTaxonomy = variant { IFRS; Custom : text; USGAAP };
 service : () -> {
-  create_client : (CreateClientRequest) -> (Result);
-  create_engagement : (CreateEngagementRequest) -> (Result_1);
-  create_entity : (CreateEntityRequest) -> (Result_2);
-  create_organization : (CreateOrganizationRequest) -> (Result_3);
-  create_working_paper : (CreateWorkingPaperRequest) -> (Result_4);
-  delete_client : (nat64) -> (Result_5);
-  delete_document : (nat64) -> (Result_5);
-  delete_engagement : (nat64) -> (Result_5);
-  delete_entity : (nat64) -> (Result_5);
-  delete_organization : (nat64) -> (Result_5);
-  download_document : (nat64) -> (Result_6) query;
-  get_activity_logs : (opt nat64) -> (Result_7) query;
-  get_client : (nat64) -> (Result) query;
-  get_current_user : () -> (Result_8);
-  get_dataset : (nat64) -> (Result_9) query;
-  get_document : (nat64) -> (Result_10) query;
-  get_engagement : (nat64) -> (Result_1) query;
-  get_entity : (nat64) -> (Result_2) query;
-  get_organization : (nat64) -> (Result_3) query;
-  get_resource_activity_logs : (text, text, opt nat64) -> (Result_7) query;
-  get_user_activity_logs : (principal, opt nat64) -> (Result_7) query;
-  get_working_paper : (nat64) -> (Result_4) query;
-  grant_document_access : (nat64, principal) -> (Result_5);
-  import_excel : (ImportExcelRequest) -> (Result_9);
-  link_document_to_working_paper : (nat64, nat64) -> (Result_5);
-  list_clients : () -> (Result_11) query;
-  list_datasets : () -> (Result_12) query;
-  list_datasets_by_engagement : (nat64) -> (Result_12) query;
-  list_documents : () -> (Result_13) query;
-  list_documents_by_entity : (nat64) -> (Result_13) query;
-  list_documents_by_organization : (nat64) -> (Result_13) query;
-  list_engagements : () -> (Result_14) query;
-  list_engagements_by_client : (nat64) -> (Result_14) query;
-  list_engagements_by_entity : (nat64) -> (Result_14) query;
-  list_engagements_by_organization : (nat64) -> (Result_14) query;
-  list_entities : () -> (Result_15) query;
-  list_entities_by_organization : (nat64) -> (Result_15) query;
-  list_organizations : () -> (Result_16) query;
-  list_users : () -> (Result_17) query;
-  list_working_papers_by_engagement : (nat64) -> (Result_18) query;
-  revoke_document_access : (nat64, principal) -> (Result_5);
-  update_client : (UpdateClientRequest) -> (Result);
-  update_engagement : (UpdateEngagementRequest) -> (Result_1);
-  update_entity : (UpdateEntityRequest) -> (Result_2);
-  update_organization : (UpdateOrganizationRequest) -> (Result_3);
-  update_user_language : (text) -> (Result_5);
-  update_user_role : (principal, UserRole) -> (Result_5);
-  upload_document : (UploadDocumentRequest) -> (Result_10);
+  add_trial_balance_account : (nat64, UpdateAccountRequest) -> (Result);
+  apply_template_to_engagement : (ApplyTemplateRequest) -> (Result_1);
+  approve_aje : (nat64) -> (Result_2);
+  approve_document_request : (ApproveDocumentInput) -> (Result_3);
+  create_aje : (CreateAjeRequest) -> (Result_2);
+  create_client : (CreateClientRequest) -> (Result_4);
+  create_document_request : (CreateDocumentRequestInput) -> (Result_3);
+  create_engagement : (CreateEngagementRequest) -> (Result_5);
+  create_entity : (CreateEntityRequest) -> (Result_6);
+  create_organization : (CreateOrganizationRequest) -> (Result_7);
+  create_template : (CreateTemplateRequest) -> (Result_8);
+  create_trial_balance : (CreateTrialBalanceRequest) -> (Result_9);
+  create_working_paper : (CreateWorkingPaperRequest) -> (Result_10);
+  delete_client : (nat64) -> (Result_11);
+  delete_document : (nat64) -> (Result_11);
+  delete_engagement : (nat64) -> (Result_11);
+  delete_entity : (nat64) -> (Result_11);
+  delete_organization : (nat64) -> (Result_11);
+  download_document : (nat64) -> (Result_12) query;
+  fulfill_document_request : (FulfillDocumentRequestInput) -> (Result_3);
+  get_activity_logs : (opt nat64) -> (Result_13) query;
+  get_aje : (nat64) -> (Result_2) query;
+  get_aje_line_items : (nat64) -> (Result_14) query;
+  get_blockchain_proof : (nat64) -> (Result_15) query;
+  get_client : (nat64) -> (Result_4) query;
+  get_client_access_for_engagement : (nat64) -> (Result_16) query;
+  get_current_user : () -> (Result_17);
+  get_dataset : (nat64) -> (Result_18) query;
+  get_document : (nat64) -> (Result_19) query;
+  get_document_requests_for_engagement : (nat64) -> (Result_20) query;
+  get_engagement : (nat64) -> (Result_5) query;
+  get_engagement_checklists : (nat64) -> (Result_21) query;
+  get_entity : (nat64) -> (Result_6) query;
+  get_my_document_requests : () -> (Result_20) query;
+  get_organization : (nat64) -> (Result_7) query;
+  get_resource_activity_logs : (text, text, opt nat64) -> (Result_13) query;
+  get_template : (nat64) -> (Result_8) query;
+  get_trial_balance : (nat64) -> (Result_9) query;
+  get_trial_balance_accounts : (nat64) -> (Result_22) query;
+  get_user_activity_logs : (principal, opt nat64) -> (Result_13) query;
+  get_working_paper : (nat64) -> (Result_10) query;
+  grant_client_access : (GrantClientAccessRequest) -> (Result_23);
+  grant_document_access : (nat64, principal) -> (Result_11);
+  import_excel : (ImportExcelRequest) -> (Result_18);
+  import_trial_balance_csv : (nat64, text, vec CsvAccountRow) -> (Result_9);
+  link_document_to_working_paper : (nat64, nat64) -> (Result_11);
+  list_ajes_by_engagement : (nat64) -> (Result_24) query;
+  list_clients : () -> (Result_25) query;
+  list_datasets : () -> (Result_26) query;
+  list_datasets_by_engagement : (nat64) -> (Result_26) query;
+  list_documents : () -> (Result_27) query;
+  list_documents_by_entity : (nat64) -> (Result_27) query;
+  list_documents_by_organization : (nat64) -> (Result_27) query;
+  list_engagements : () -> (Result_28) query;
+  list_engagements_by_client : (nat64) -> (Result_28) query;
+  list_engagements_by_entity : (nat64) -> (Result_28) query;
+  list_engagements_by_organization : (nat64) -> (Result_28) query;
+  list_entities : () -> (Result_29) query;
+  list_entities_by_organization : (nat64) -> (Result_29) query;
+  list_organizations : () -> (Result_30) query;
+  list_templates : () -> (Result_31) query;
+  list_trial_balances_by_engagement : (nat64) -> (Result_32) query;
+  list_users : () -> (Result_33) query;
+  list_working_papers_by_engagement : (nat64) -> (Result_34) query;
+  map_account_to_fs_line : (nat64, text) -> (Result);
+  post_aje : (nat64) -> (Result_2);
+  review_aje : (nat64, bool) -> (Result_2);
+  revoke_document_access : (nat64, principal) -> (Result_11);
+  submit_aje : (nat64) -> (Result_2);
+  update_checklist_item : (UpdateChecklistItemRequest) -> (Result_1);
+  update_client : (UpdateClientRequest) -> (Result_4);
+  update_engagement : (UpdateEngagementRequest) -> (Result_5);
+  update_entity : (UpdateEntityRequest) -> (Result_6);
+  update_organization : (UpdateOrganizationRequest) -> (Result_7);
+  update_user_email : (text) -> (Result_11);
+  update_user_language : (text) -> (Result_11);
+  update_user_name : (text) -> (Result_11);
+  update_user_role : (principal, UserRole) -> (Result_11);
+  upload_document : (UploadDocumentRequest) -> (Result_19);
+  validate_trial_balance : (nat64) -> (Result_35) query;
+  verify_activity_log : (nat64) -> (Result_36) query;
+  verify_aje_blockchain : (nat64) -> (Result_37) query;
+  verify_blockchain_chain : () -> (Result_38) query;
 }

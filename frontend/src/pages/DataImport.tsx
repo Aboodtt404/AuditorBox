@@ -42,7 +42,7 @@ const DataImport = () => {
       // Send to backend for processing
       const result = await call<ImportedDataset>('import_excel', [{
         name: file.name.replace(/\.[^/.]+$/, ''),
-        engagement_id: null,
+        engagement_id: [],
         file_name: file.name,
         file_data: Array.from(bytes),
       }]);
