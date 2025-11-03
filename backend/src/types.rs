@@ -21,6 +21,15 @@ pub struct User {
     pub email: String,
     pub created_at: u64,
     pub language_preference: String, // "en" or "ar"
+    pub profile_completed: bool, // Whether user has completed initial profile setup
+}
+
+// Complete Profile Request
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CompleteProfileRequest {
+    pub name: String,
+    pub email: String,
+    pub requested_role: UserRole, // User's requested role (admin will approve)
 }
 
 // Organization

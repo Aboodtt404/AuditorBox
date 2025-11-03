@@ -13,6 +13,7 @@ export interface User {
   email: string;
   created_at: bigint;
   language_preference: string;
+  profile_completed: boolean;
 }
 
 export enum XBRLTaxonomy {

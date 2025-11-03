@@ -62,6 +62,12 @@ fn update_user_email(email: String) -> Result<()> {
     auth::update_user_email(caller, email)
 }
 
+#[update]
+fn complete_user_profile(request: CompleteProfileRequest) -> Result<User> {
+    let caller = ic_cdk::caller();
+    auth::complete_user_profile(caller, request.name, request.email, request.requested_role)
+}
+
 #[query]
 fn list_users() -> Result<Vec<User>> {
     let caller = ic_cdk::caller();

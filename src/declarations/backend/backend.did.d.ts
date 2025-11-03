@@ -190,6 +190,11 @@ export type ColumnType = { 'Date' : null } |
   { 'Boolean' : null } |
   { 'Currency' : null } |
   { 'Numeric' : null };
+export interface CompleteProfileRequest {
+  'requested_role' : UserRole,
+  'name' : string,
+  'email' : string,
+}
 export interface CreateAjeLineItemRequest {
   'account_id' : bigint,
   'description' : string,
@@ -389,21 +394,21 @@ export type Result = { 'Ok' : TrialBalanceAccount } |
   { 'Err' : string };
 export type Result_1 = { 'Ok' : EngagementChecklist } |
   { 'Err' : string };
-export type Result_10 = { 'Ok' : WorkingPaper } |
+export type Result_10 = { 'Ok' : TrialBalance } |
   { 'Err' : string };
-export type Result_11 = { 'Ok' : null } |
+export type Result_11 = { 'Ok' : WorkingPaper } |
   { 'Err' : string };
-export type Result_12 = { 'Ok' : Uint8Array | number[] } |
+export type Result_12 = { 'Ok' : null } |
   { 'Err' : string };
-export type Result_13 = { 'Ok' : Array<ActivityLogEntry> } |
+export type Result_13 = { 'Ok' : Uint8Array | number[] } |
   { 'Err' : string };
-export type Result_14 = { 'Ok' : Array<AjeLineItem> } |
+export type Result_14 = { 'Ok' : Array<ActivityLogEntry> } |
   { 'Err' : string };
-export type Result_15 = { 'Ok' : BlockchainProof } |
+export type Result_15 = { 'Ok' : Array<AjeLineItem> } |
   { 'Err' : string };
-export type Result_16 = { 'Ok' : Array<ClientAccess> } |
+export type Result_16 = { 'Ok' : BlockchainProof } |
   { 'Err' : string };
-export type Result_17 = { 'Ok' : User } |
+export type Result_17 = { 'Ok' : Array<ClientAccess> } |
   { 'Err' : string };
 export type Result_18 = { 'Ok' : ImportedDataset } |
   { 'Err' : string };
@@ -451,17 +456,17 @@ export type Result_37 = { 'Ok' : AjeBlockchainVerification } |
   { 'Err' : string };
 export type Result_38 = { 'Ok' : boolean } |
   { 'Err' : string };
-export type Result_4 = { 'Ok' : Client } |
+export type Result_4 = { 'Ok' : User } |
   { 'Err' : string };
-export type Result_5 = { 'Ok' : Engagement } |
+export type Result_5 = { 'Ok' : Client } |
   { 'Err' : string };
-export type Result_6 = { 'Ok' : Entity } |
+export type Result_6 = { 'Ok' : Engagement } |
   { 'Err' : string };
-export type Result_7 = { 'Ok' : Organization } |
+export type Result_7 = { 'Ok' : Entity } |
   { 'Err' : string };
-export type Result_8 = { 'Ok' : AuditTemplate } |
+export type Result_8 = { 'Ok' : Organization } |
   { 'Err' : string };
-export type Result_9 = { 'Ok' : TrialBalance } |
+export type Result_9 = { 'Ok' : AuditTemplate } |
   { 'Err' : string };
 export interface SheetData {
   'data' : Array<Array<string>>,
@@ -571,6 +576,7 @@ export interface UploadDocumentRequest {
   'organization_id' : [] | [bigint],
 }
 export interface User {
+  'profile_completed' : boolean,
   'principal' : Principal,
   'name' : string,
   'role' : UserRole,
@@ -629,60 +635,61 @@ export interface _SERVICE {
   >,
   'approve_aje' : ActorMethod<[bigint], Result_2>,
   'approve_document_request' : ActorMethod<[ApproveDocumentInput], Result_3>,
+  'complete_user_profile' : ActorMethod<[CompleteProfileRequest], Result_4>,
   'create_aje' : ActorMethod<[CreateAjeRequest], Result_2>,
-  'create_client' : ActorMethod<[CreateClientRequest], Result_4>,
+  'create_client' : ActorMethod<[CreateClientRequest], Result_5>,
   'create_document_request' : ActorMethod<
     [CreateDocumentRequestInput],
     Result_3
   >,
-  'create_engagement' : ActorMethod<[CreateEngagementRequest], Result_5>,
-  'create_entity' : ActorMethod<[CreateEntityRequest], Result_6>,
-  'create_organization' : ActorMethod<[CreateOrganizationRequest], Result_7>,
-  'create_template' : ActorMethod<[CreateTemplateRequest], Result_8>,
-  'create_trial_balance' : ActorMethod<[CreateTrialBalanceRequest], Result_9>,
-  'create_working_paper' : ActorMethod<[CreateWorkingPaperRequest], Result_10>,
-  'delete_client' : ActorMethod<[bigint], Result_11>,
-  'delete_document' : ActorMethod<[bigint], Result_11>,
-  'delete_engagement' : ActorMethod<[bigint], Result_11>,
-  'delete_entity' : ActorMethod<[bigint], Result_11>,
-  'delete_organization' : ActorMethod<[bigint], Result_11>,
-  'download_document' : ActorMethod<[bigint], Result_12>,
+  'create_engagement' : ActorMethod<[CreateEngagementRequest], Result_6>,
+  'create_entity' : ActorMethod<[CreateEntityRequest], Result_7>,
+  'create_organization' : ActorMethod<[CreateOrganizationRequest], Result_8>,
+  'create_template' : ActorMethod<[CreateTemplateRequest], Result_9>,
+  'create_trial_balance' : ActorMethod<[CreateTrialBalanceRequest], Result_10>,
+  'create_working_paper' : ActorMethod<[CreateWorkingPaperRequest], Result_11>,
+  'delete_client' : ActorMethod<[bigint], Result_12>,
+  'delete_document' : ActorMethod<[bigint], Result_12>,
+  'delete_engagement' : ActorMethod<[bigint], Result_12>,
+  'delete_entity' : ActorMethod<[bigint], Result_12>,
+  'delete_organization' : ActorMethod<[bigint], Result_12>,
+  'download_document' : ActorMethod<[bigint], Result_13>,
   'fulfill_document_request' : ActorMethod<
     [FulfillDocumentRequestInput],
     Result_3
   >,
-  'get_activity_logs' : ActorMethod<[[] | [bigint]], Result_13>,
+  'get_activity_logs' : ActorMethod<[[] | [bigint]], Result_14>,
   'get_aje' : ActorMethod<[bigint], Result_2>,
-  'get_aje_line_items' : ActorMethod<[bigint], Result_14>,
-  'get_blockchain_proof' : ActorMethod<[bigint], Result_15>,
-  'get_client' : ActorMethod<[bigint], Result_4>,
-  'get_client_access_for_engagement' : ActorMethod<[bigint], Result_16>,
-  'get_current_user' : ActorMethod<[], Result_17>,
+  'get_aje_line_items' : ActorMethod<[bigint], Result_15>,
+  'get_blockchain_proof' : ActorMethod<[bigint], Result_16>,
+  'get_client' : ActorMethod<[bigint], Result_5>,
+  'get_client_access_for_engagement' : ActorMethod<[bigint], Result_17>,
+  'get_current_user' : ActorMethod<[], Result_4>,
   'get_dataset' : ActorMethod<[bigint], Result_18>,
   'get_document' : ActorMethod<[bigint], Result_19>,
   'get_document_requests_for_engagement' : ActorMethod<[bigint], Result_20>,
-  'get_engagement' : ActorMethod<[bigint], Result_5>,
+  'get_engagement' : ActorMethod<[bigint], Result_6>,
   'get_engagement_checklists' : ActorMethod<[bigint], Result_21>,
-  'get_entity' : ActorMethod<[bigint], Result_6>,
+  'get_entity' : ActorMethod<[bigint], Result_7>,
   'get_my_document_requests' : ActorMethod<[], Result_20>,
-  'get_organization' : ActorMethod<[bigint], Result_7>,
+  'get_organization' : ActorMethod<[bigint], Result_8>,
   'get_resource_activity_logs' : ActorMethod<
     [string, string, [] | [bigint]],
-    Result_13
+    Result_14
   >,
-  'get_template' : ActorMethod<[bigint], Result_8>,
-  'get_trial_balance' : ActorMethod<[bigint], Result_9>,
+  'get_template' : ActorMethod<[bigint], Result_9>,
+  'get_trial_balance' : ActorMethod<[bigint], Result_10>,
   'get_trial_balance_accounts' : ActorMethod<[bigint], Result_22>,
-  'get_user_activity_logs' : ActorMethod<[Principal, [] | [bigint]], Result_13>,
-  'get_working_paper' : ActorMethod<[bigint], Result_10>,
+  'get_user_activity_logs' : ActorMethod<[Principal, [] | [bigint]], Result_14>,
+  'get_working_paper' : ActorMethod<[bigint], Result_11>,
   'grant_client_access' : ActorMethod<[GrantClientAccessRequest], Result_23>,
-  'grant_document_access' : ActorMethod<[bigint, Principal], Result_11>,
+  'grant_document_access' : ActorMethod<[bigint, Principal], Result_12>,
   'import_excel' : ActorMethod<[ImportExcelRequest], Result_18>,
   'import_trial_balance_csv' : ActorMethod<
     [bigint, string, Array<CsvAccountRow>],
-    Result_9
+    Result_10
   >,
-  'link_document_to_working_paper' : ActorMethod<[bigint, bigint], Result_11>,
+  'link_document_to_working_paper' : ActorMethod<[bigint, bigint], Result_12>,
   'list_ajes_by_engagement' : ActorMethod<[bigint], Result_24>,
   'list_clients' : ActorMethod<[], Result_25>,
   'list_datasets' : ActorMethod<[], Result_26>,
@@ -704,17 +711,17 @@ export interface _SERVICE {
   'map_account_to_fs_line' : ActorMethod<[bigint, string], Result>,
   'post_aje' : ActorMethod<[bigint], Result_2>,
   'review_aje' : ActorMethod<[bigint, boolean], Result_2>,
-  'revoke_document_access' : ActorMethod<[bigint, Principal], Result_11>,
+  'revoke_document_access' : ActorMethod<[bigint, Principal], Result_12>,
   'submit_aje' : ActorMethod<[bigint], Result_2>,
   'update_checklist_item' : ActorMethod<[UpdateChecklistItemRequest], Result_1>,
-  'update_client' : ActorMethod<[UpdateClientRequest], Result_4>,
-  'update_engagement' : ActorMethod<[UpdateEngagementRequest], Result_5>,
-  'update_entity' : ActorMethod<[UpdateEntityRequest], Result_6>,
-  'update_organization' : ActorMethod<[UpdateOrganizationRequest], Result_7>,
-  'update_user_email' : ActorMethod<[string], Result_11>,
-  'update_user_language' : ActorMethod<[string], Result_11>,
-  'update_user_name' : ActorMethod<[string], Result_11>,
-  'update_user_role' : ActorMethod<[Principal, UserRole], Result_11>,
+  'update_client' : ActorMethod<[UpdateClientRequest], Result_5>,
+  'update_engagement' : ActorMethod<[UpdateEngagementRequest], Result_6>,
+  'update_entity' : ActorMethod<[UpdateEntityRequest], Result_7>,
+  'update_organization' : ActorMethod<[UpdateOrganizationRequest], Result_8>,
+  'update_user_email' : ActorMethod<[string], Result_12>,
+  'update_user_language' : ActorMethod<[string], Result_12>,
+  'update_user_name' : ActorMethod<[string], Result_12>,
+  'update_user_role' : ActorMethod<[Principal, UserRole], Result_12>,
   'upload_document' : ActorMethod<[UploadDocumentRequest], Result_19>,
   'validate_trial_balance' : ActorMethod<[bigint], Result_35>,
   'verify_activity_log' : ActorMethod<[bigint], Result_36>,

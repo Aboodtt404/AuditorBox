@@ -18,6 +18,7 @@ pub fn upsert_user(principal: Principal, role: UserRole, name: String, email: St
         email,
         created_at: time(),
         language_preference: language,
+        profile_completed: true, // Manually created users are considered complete
     };
 
     STORAGE.with(|storage| {
@@ -41,6 +42,9 @@ pub fn get_or_create_user(principal: Principal) -> User {
         UserRole::Staff
     };
 
+    // First user (admin) has profile auto-completed, others need to complete it
+    let profile_completed = is_first_user;
+
     let user = User {
         principal: principal.clone(),
         role,
@@ -48,6 +52,7 @@ pub fn get_or_create_user(principal: Principal) -> User {
         email: String::new(),
         created_at: time(),
         language_preference: String::from("en"),
+        profile_completed,
     };
 
     STORAGE.with(|storage| {
@@ -224,5 +229,25 @@ pub fn can_review_work(user: &User) -> bool {
 pub fn can_approve(user: &User) -> bool {
     // Partner and Admin can give final approval
     matches!(user.role, UserRole::Partner | UserRole::Admin)
+}
+
+// Complete user profile (first-time setup)
+pub fn complete_user_profile(principal: Principal, name: String, email: String, requested_role: UserRole) -> Result<User> {
+    let mut user = get_user(principal).ok_or("User not found")?;
+    
+    if user.profile_completed {
+        return Err("Profile already completed".to_string());
+    }
+
+    user.name = name;
+    user.email = email;
+    user.role = requested_role; // They request a role, admin can change it later
+    user.profile_completed = true;
+
+    STORAGE.with(|storage| {
+        storage.borrow_mut().users.insert(StorablePrincipal(principal), user.clone());
+    });
+
+    Ok(user)
 }
 

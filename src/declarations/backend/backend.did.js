@@ -124,6 +124,29 @@ export const idlFactory = ({ IDL }) => {
     'fulfilled_at' : IDL.Opt(IDL.Nat64),
   });
   const Result_3 = IDL.Variant({ 'Ok' : DocumentRequest, 'Err' : IDL.Text });
+  const UserRole = IDL.Variant({
+    'Staff' : IDL.Null,
+    'ClientUser' : IDL.Null,
+    'Senior' : IDL.Null,
+    'Admin' : IDL.Null,
+    'Partner' : IDL.Null,
+    'Manager' : IDL.Null,
+  });
+  const CompleteProfileRequest = IDL.Record({
+    'requested_role' : UserRole,
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+  });
+  const User = IDL.Record({
+    'profile_completed' : IDL.Bool,
+    'principal' : IDL.Principal,
+    'name' : IDL.Text,
+    'role' : UserRole,
+    'created_at' : IDL.Nat64,
+    'email' : IDL.Text,
+    'language_preference' : IDL.Text,
+  });
+  const Result_4 = IDL.Variant({ 'Ok' : User, 'Err' : IDL.Text });
   const CreateAjeLineItemRequest = IDL.Record({
     'account_id' : IDL.Nat64,
     'description' : IDL.Text,
@@ -152,7 +175,7 @@ export const idlFactory = ({ IDL }) => {
     'address' : IDL.Text,
     'contact_phone' : IDL.Text,
   });
-  const Result_4 = IDL.Variant({ 'Ok' : Client, 'Err' : IDL.Text });
+  const Result_5 = IDL.Variant({ 'Ok' : Client, 'Err' : IDL.Text });
   const CreateDocumentRequestInput = IDL.Record({
     'title' : IDL.Text,
     'is_required' : IDL.Bool,
@@ -186,7 +209,7 @@ export const idlFactory = ({ IDL }) => {
     'created_by' : IDL.Principal,
     'start_date' : IDL.Nat64,
   });
-  const Result_5 = IDL.Variant({ 'Ok' : Engagement, 'Err' : IDL.Text });
+  const Result_6 = IDL.Variant({ 'Ok' : Engagement, 'Err' : IDL.Text });
   const XBRLTaxonomy = IDL.Variant({
     'IFRS' : IDL.Null,
     'Custom' : IDL.Text,
@@ -209,7 +232,7 @@ export const idlFactory = ({ IDL }) => {
     'organization_id' : IDL.Nat64,
     'taxonomy' : IDL.Opt(XBRLTaxonomy),
   });
-  const Result_6 = IDL.Variant({ 'Ok' : Entity, 'Err' : IDL.Text });
+  const Result_7 = IDL.Variant({ 'Ok' : Entity, 'Err' : IDL.Text });
   const CreateOrganizationRequest = IDL.Record({
     'name' : IDL.Text,
     'description' : IDL.Text,
@@ -222,7 +245,7 @@ export const idlFactory = ({ IDL }) => {
     'created_by' : IDL.Principal,
     'entity_ids' : IDL.Vec(IDL.Nat64),
   });
-  const Result_7 = IDL.Variant({ 'Ok' : Organization, 'Err' : IDL.Text });
+  const Result_8 = IDL.Variant({ 'Ok' : Organization, 'Err' : IDL.Text });
   const ChecklistItem = IDL.Record({
     'id' : IDL.Text,
     'title' : IDL.Text,
@@ -261,7 +284,7 @@ export const idlFactory = ({ IDL }) => {
     'is_default' : IDL.Bool,
     'firm_id' : IDL.Opt(IDL.Nat64),
   });
-  const Result_8 = IDL.Variant({ 'Ok' : AuditTemplate, 'Err' : IDL.Text });
+  const Result_9 = IDL.Variant({ 'Ok' : AuditTemplate, 'Err' : IDL.Text });
   const CreateTrialBalanceRequest = IDL.Record({
     'description' : IDL.Text,
     'currency' : IDL.Opt(IDL.Text),
@@ -280,7 +303,7 @@ export const idlFactory = ({ IDL }) => {
     'engagement_id' : IDL.Nat64,
     'period_end_date' : IDL.Text,
   });
-  const Result_9 = IDL.Variant({ 'Ok' : TrialBalance, 'Err' : IDL.Text });
+  const Result_10 = IDL.Variant({ 'Ok' : TrialBalance, 'Err' : IDL.Text });
   const ColumnMapping = IDL.Record({
     'entity' : IDL.Opt(IDL.Text),
     'opening_debit' : IDL.Opt(IDL.Text),
@@ -358,9 +381,9 @@ export const idlFactory = ({ IDL }) => {
     'leadsheet' : IDL.Opt(Leadsheet),
     'trend_analysis' : IDL.Vec(TrendAnalysis),
   });
-  const Result_10 = IDL.Variant({ 'Ok' : WorkingPaper, 'Err' : IDL.Text });
-  const Result_11 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
-  const Result_12 = IDL.Variant({ 'Ok' : IDL.Vec(IDL.Nat8), 'Err' : IDL.Text });
+  const Result_11 = IDL.Variant({ 'Ok' : WorkingPaper, 'Err' : IDL.Text });
+  const Result_12 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
+  const Result_13 = IDL.Variant({ 'Ok' : IDL.Vec(IDL.Nat8), 'Err' : IDL.Text });
   const FulfillDocumentRequestInput = IDL.Record({
     'request_id' : IDL.Nat64,
     'document_name' : IDL.Text,
@@ -381,7 +404,7 @@ export const idlFactory = ({ IDL }) => {
     'details' : IDL.Text,
     'block_height' : IDL.Nat64,
   });
-  const Result_13 = IDL.Variant({
+  const Result_14 = IDL.Variant({
     'Ok' : IDL.Vec(ActivityLogEntry),
     'Err' : IDL.Text,
   });
@@ -395,7 +418,7 @@ export const idlFactory = ({ IDL }) => {
     'credit_amount' : IDL.Int64,
     'account_name' : IDL.Text,
   });
-  const Result_14 = IDL.Variant({
+  const Result_15 = IDL.Variant({
     'Ok' : IDL.Vec(AjeLineItem),
     'Err' : IDL.Text,
   });
@@ -407,7 +430,7 @@ export const idlFactory = ({ IDL }) => {
     'entry_id' : IDL.Nat64,
     'block_height' : IDL.Nat64,
   });
-  const Result_15 = IDL.Variant({ 'Ok' : BlockchainProof, 'Err' : IDL.Text });
+  const Result_16 = IDL.Variant({ 'Ok' : BlockchainProof, 'Err' : IDL.Text });
   const ClientAccessLevel = IDL.Variant({
     'Full' : IDL.Null,
     'UploadDocuments' : IDL.Null,
@@ -420,27 +443,10 @@ export const idlFactory = ({ IDL }) => {
     'granted_by' : IDL.Principal,
     'engagement_id' : IDL.Nat64,
   });
-  const Result_16 = IDL.Variant({
+  const Result_17 = IDL.Variant({
     'Ok' : IDL.Vec(ClientAccess),
     'Err' : IDL.Text,
   });
-  const UserRole = IDL.Variant({
-    'Staff' : IDL.Null,
-    'ClientUser' : IDL.Null,
-    'Senior' : IDL.Null,
-    'Admin' : IDL.Null,
-    'Partner' : IDL.Null,
-    'Manager' : IDL.Null,
-  });
-  const User = IDL.Record({
-    'principal' : IDL.Principal,
-    'name' : IDL.Text,
-    'role' : UserRole,
-    'created_at' : IDL.Nat64,
-    'email' : IDL.Text,
-    'language_preference' : IDL.Text,
-  });
-  const Result_17 = IDL.Variant({ 'Ok' : User, 'Err' : IDL.Text });
   const PIIDetection = IDL.Record({
     'has_national_ids' : IDL.Bool,
     'has_emails' : IDL.Bool,
@@ -667,37 +673,42 @@ export const idlFactory = ({ IDL }) => {
         [Result_3],
         [],
       ),
+    'complete_user_profile' : IDL.Func(
+        [CompleteProfileRequest],
+        [Result_4],
+        [],
+      ),
     'create_aje' : IDL.Func([CreateAjeRequest], [Result_2], []),
-    'create_client' : IDL.Func([CreateClientRequest], [Result_4], []),
+    'create_client' : IDL.Func([CreateClientRequest], [Result_5], []),
     'create_document_request' : IDL.Func(
         [CreateDocumentRequestInput],
         [Result_3],
         [],
       ),
-    'create_engagement' : IDL.Func([CreateEngagementRequest], [Result_5], []),
-    'create_entity' : IDL.Func([CreateEntityRequest], [Result_6], []),
+    'create_engagement' : IDL.Func([CreateEngagementRequest], [Result_6], []),
+    'create_entity' : IDL.Func([CreateEntityRequest], [Result_7], []),
     'create_organization' : IDL.Func(
         [CreateOrganizationRequest],
-        [Result_7],
+        [Result_8],
         [],
       ),
-    'create_template' : IDL.Func([CreateTemplateRequest], [Result_8], []),
+    'create_template' : IDL.Func([CreateTemplateRequest], [Result_9], []),
     'create_trial_balance' : IDL.Func(
         [CreateTrialBalanceRequest],
-        [Result_9],
+        [Result_10],
         [],
       ),
     'create_working_paper' : IDL.Func(
         [CreateWorkingPaperRequest],
-        [Result_10],
+        [Result_11],
         [],
       ),
-    'delete_client' : IDL.Func([IDL.Nat64], [Result_11], []),
-    'delete_document' : IDL.Func([IDL.Nat64], [Result_11], []),
-    'delete_engagement' : IDL.Func([IDL.Nat64], [Result_11], []),
-    'delete_entity' : IDL.Func([IDL.Nat64], [Result_11], []),
-    'delete_organization' : IDL.Func([IDL.Nat64], [Result_11], []),
-    'download_document' : IDL.Func([IDL.Nat64], [Result_12], ['query']),
+    'delete_client' : IDL.Func([IDL.Nat64], [Result_12], []),
+    'delete_document' : IDL.Func([IDL.Nat64], [Result_12], []),
+    'delete_engagement' : IDL.Func([IDL.Nat64], [Result_12], []),
+    'delete_entity' : IDL.Func([IDL.Nat64], [Result_12], []),
+    'delete_organization' : IDL.Func([IDL.Nat64], [Result_12], []),
+    'download_document' : IDL.Func([IDL.Nat64], [Result_13], ['query']),
     'fulfill_document_request' : IDL.Func(
         [FulfillDocumentRequestInput],
         [Result_3],
@@ -705,19 +716,19 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_activity_logs' : IDL.Func(
         [IDL.Opt(IDL.Nat64)],
-        [Result_13],
+        [Result_14],
         ['query'],
       ),
     'get_aje' : IDL.Func([IDL.Nat64], [Result_2], ['query']),
-    'get_aje_line_items' : IDL.Func([IDL.Nat64], [Result_14], ['query']),
-    'get_blockchain_proof' : IDL.Func([IDL.Nat64], [Result_15], ['query']),
-    'get_client' : IDL.Func([IDL.Nat64], [Result_4], ['query']),
+    'get_aje_line_items' : IDL.Func([IDL.Nat64], [Result_15], ['query']),
+    'get_blockchain_proof' : IDL.Func([IDL.Nat64], [Result_16], ['query']),
+    'get_client' : IDL.Func([IDL.Nat64], [Result_5], ['query']),
     'get_client_access_for_engagement' : IDL.Func(
         [IDL.Nat64],
-        [Result_16],
+        [Result_17],
         ['query'],
       ),
-    'get_current_user' : IDL.Func([], [Result_17], []),
+    'get_current_user' : IDL.Func([], [Result_4], []),
     'get_dataset' : IDL.Func([IDL.Nat64], [Result_18], ['query']),
     'get_document' : IDL.Func([IDL.Nat64], [Result_19], ['query']),
     'get_document_requests_for_engagement' : IDL.Func(
@@ -725,18 +736,18 @@ export const idlFactory = ({ IDL }) => {
         [Result_20],
         ['query'],
       ),
-    'get_engagement' : IDL.Func([IDL.Nat64], [Result_5], ['query']),
+    'get_engagement' : IDL.Func([IDL.Nat64], [Result_6], ['query']),
     'get_engagement_checklists' : IDL.Func([IDL.Nat64], [Result_21], ['query']),
-    'get_entity' : IDL.Func([IDL.Nat64], [Result_6], ['query']),
+    'get_entity' : IDL.Func([IDL.Nat64], [Result_7], ['query']),
     'get_my_document_requests' : IDL.Func([], [Result_20], ['query']),
-    'get_organization' : IDL.Func([IDL.Nat64], [Result_7], ['query']),
+    'get_organization' : IDL.Func([IDL.Nat64], [Result_8], ['query']),
     'get_resource_activity_logs' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Nat64)],
-        [Result_13],
+        [Result_14],
         ['query'],
       ),
-    'get_template' : IDL.Func([IDL.Nat64], [Result_8], ['query']),
-    'get_trial_balance' : IDL.Func([IDL.Nat64], [Result_9], ['query']),
+    'get_template' : IDL.Func([IDL.Nat64], [Result_9], ['query']),
+    'get_trial_balance' : IDL.Func([IDL.Nat64], [Result_10], ['query']),
     'get_trial_balance_accounts' : IDL.Func(
         [IDL.Nat64],
         [Result_22],
@@ -744,10 +755,10 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_user_activity_logs' : IDL.Func(
         [IDL.Principal, IDL.Opt(IDL.Nat64)],
-        [Result_13],
+        [Result_14],
         ['query'],
       ),
-    'get_working_paper' : IDL.Func([IDL.Nat64], [Result_10], ['query']),
+    'get_working_paper' : IDL.Func([IDL.Nat64], [Result_11], ['query']),
     'grant_client_access' : IDL.Func(
         [GrantClientAccessRequest],
         [Result_23],
@@ -755,18 +766,18 @@ export const idlFactory = ({ IDL }) => {
       ),
     'grant_document_access' : IDL.Func(
         [IDL.Nat64, IDL.Principal],
-        [Result_11],
+        [Result_12],
         [],
       ),
     'import_excel' : IDL.Func([ImportExcelRequest], [Result_18], []),
     'import_trial_balance_csv' : IDL.Func(
         [IDL.Nat64, IDL.Text, IDL.Vec(CsvAccountRow)],
-        [Result_9],
+        [Result_10],
         [],
       ),
     'link_document_to_working_paper' : IDL.Func(
         [IDL.Nat64, IDL.Nat64],
-        [Result_11],
+        [Result_12],
         [],
       ),
     'list_ajes_by_engagement' : IDL.Func([IDL.Nat64], [Result_24], ['query']),
@@ -824,7 +835,7 @@ export const idlFactory = ({ IDL }) => {
     'review_aje' : IDL.Func([IDL.Nat64, IDL.Bool], [Result_2], []),
     'revoke_document_access' : IDL.Func(
         [IDL.Nat64, IDL.Principal],
-        [Result_11],
+        [Result_12],
         [],
       ),
     'submit_aje' : IDL.Func([IDL.Nat64], [Result_2], []),
@@ -833,18 +844,18 @@ export const idlFactory = ({ IDL }) => {
         [Result_1],
         [],
       ),
-    'update_client' : IDL.Func([UpdateClientRequest], [Result_4], []),
-    'update_engagement' : IDL.Func([UpdateEngagementRequest], [Result_5], []),
-    'update_entity' : IDL.Func([UpdateEntityRequest], [Result_6], []),
+    'update_client' : IDL.Func([UpdateClientRequest], [Result_5], []),
+    'update_engagement' : IDL.Func([UpdateEngagementRequest], [Result_6], []),
+    'update_entity' : IDL.Func([UpdateEntityRequest], [Result_7], []),
     'update_organization' : IDL.Func(
         [UpdateOrganizationRequest],
-        [Result_7],
+        [Result_8],
         [],
       ),
-    'update_user_email' : IDL.Func([IDL.Text], [Result_11], []),
-    'update_user_language' : IDL.Func([IDL.Text], [Result_11], []),
-    'update_user_name' : IDL.Func([IDL.Text], [Result_11], []),
-    'update_user_role' : IDL.Func([IDL.Principal, UserRole], [Result_11], []),
+    'update_user_email' : IDL.Func([IDL.Text], [Result_12], []),
+    'update_user_language' : IDL.Func([IDL.Text], [Result_12], []),
+    'update_user_name' : IDL.Func([IDL.Text], [Result_12], []),
+    'update_user_role' : IDL.Func([IDL.Principal, UserRole], [Result_12], []),
     'upload_document' : IDL.Func([UploadDocumentRequest], [Result_19], []),
     'validate_trial_balance' : IDL.Func([IDL.Nat64], [Result_35], ['query']),
     'verify_activity_log' : IDL.Func([IDL.Nat64], [Result_36], ['query']),

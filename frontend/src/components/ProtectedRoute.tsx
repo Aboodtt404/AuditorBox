@@ -23,6 +23,12 @@ export default function ProtectedRoute({
       return;
     }
 
+    // Check if profile is completed - redirect to setup if not
+    if (!user.profile_completed) {
+      navigate('/profile-setup');
+      return;
+    }
+
     // Check if admin access required
     if (requireAdmin && user.role && !('Admin' in user.role)) {
       navigate('/client-portal');
@@ -42,6 +48,11 @@ export default function ProtectedRoute({
         <CircularProgress />
       </Box>
     );
+  }
+
+  // Block access if profile not completed
+  if (!user.profile_completed) {
+    return null;
   }
 
   // Block access if requirements not met

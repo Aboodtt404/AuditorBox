@@ -21,19 +21,24 @@ import {
   Select,
   FormControl,
   InputLabel,
+  CircularProgress,
+  Stack,
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
+import { useAuth } from '../hooks/useAuth';
 import { Engagement, Organization, Entity } from '../types';
 
 const Engagements = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { isAuthenticated, user } = useAuth();
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [clients, setClients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -46,11 +51,14 @@ const Engagements = () => {
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isAuthenticated && user) {
+      loadData();
+    }
+  }, [isAuthenticated, user]);
 
   const loadData = async () => {
     try {
+      setLoading(true);
       const [engs, orgs, ents, clnts] = await Promise.all([
         call<Engagement[]>('list_engagements'),
         call<Organization[]>('list_organizations'),
@@ -63,6 +71,8 @@ const Engagements = () => {
       setClients(clnts);
     } catch (error) {
       console.error('Failed to load data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,6 +108,20 @@ const Engagements = () => {
       console.error('Failed to save engagement:', error);
     }
   };
+
+  // Show loading while data is being fetched
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <Stack spacing={2} alignItems="center">
+            <CircularProgress size={48} />
+            <Typography variant="h6" color="text.secondary">Loading engagements...</Typography>
+          </Stack>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>

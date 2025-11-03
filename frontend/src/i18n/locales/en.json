@@ -195,6 +195,26 @@
     "createdAt": "Created At",
     "changeRole": "Change Role"
   },
+  "roles": {
+    "admin": "Administrator",
+    "partner": "Partner",
+    "manager": "Manager",
+    "senior": "Senior Auditor",
+    "staff": "Staff",
+    "clientUser": "Client User"
+  },
+  "profileSetup": {
+    "title": "Welcome to AuditorBox",
+    "subtitle": "Let's set up your profile to get started",
+    "fullName": "Full Name",
+    "email": "Email Address",
+    "requestedRole": "Requested Role",
+    "roleHelperText": "Your administrator will approve your role",
+    "noteTitle": "Note:",
+    "noteText": "The role you select is a request. Your administrator will review and approve the appropriate access level for your account.",
+    "completeProfile": "Complete Profile",
+    "poweredBy": "Powered by Internet Computer blockchain"
+  },
   "activityLog": {
     "title": "Activity Log",
     "action": "Action",

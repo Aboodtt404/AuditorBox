@@ -21,6 +21,7 @@ import {
   Alert,
   Stack,
   Grid,
+  CircularProgress,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -29,6 +30,8 @@ import {
   Pending as PendingIcon,
 } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
 interface DocumentRequest {
@@ -49,24 +52,44 @@ interface DocumentRequest {
 
 const ClientPortal = () => {
   const { call } = useBackend();
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   const [requests, setRequests] = useState<DocumentRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<DocumentRequest | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadRequests();
-  }, []);
+    // Only load requests when authenticated and user is loaded
+    if (isAuthenticated && user) {
+      loadRequests();
+    } else if (isAuthenticated === false && user === null) {
+      // Authentication failed or user not loaded after initialization
+      setLoading(false);
+      
+      // Redirect to landing page after 3 seconds
+      const timer = setTimeout(() => {
+        navigate('/');
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const loadRequests = async () => {
     try {
+      setLoading(true);
       const data = await call<DocumentRequest[]>('get_my_document_requests', []);
       setRequests(data);
+      setError(null);
     } catch (err) {
       console.error('Failed to load document requests:', err);
       setError(err instanceof Error ? err.message : 'Failed to load requests');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,6 +164,48 @@ const ClientPortal = () => {
 
   const pendingRequests = requests.filter(r => isPending(r));
   const completedRequests = requests.filter(r => !isPending(r));
+
+  // Show loading while authentication is initializing or data is loading
+  if (loading && (!isAuthenticated || !user)) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <Stack spacing={2} alignItems="center">
+            <CircularProgress size={48} />
+            <Typography variant="h6" color="text.secondary">Loading your portal...</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Please wait while we set up your account
+            </Typography>
+          </Stack>
+        </Box>
+      </Container>
+    );
+  }
+
+  // If not authenticated after loading, show message and redirect
+  if (!isAuthenticated || !user) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <Stack spacing={3} alignItems="center" sx={{ maxWidth: 500 }}>
+            <Alert severity="warning" sx={{ width: '100%' }}>
+              You are not authenticated. Please log in to access the client portal.
+              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                Redirecting to login page in 3 seconds...
+              </Typography>
+            </Alert>
+            <Button 
+              variant="contained" 
+              size="large"
+              onClick={() => navigate('/')}
+            >
+              Go to Login Now
+            </Button>
+          </Stack>
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>

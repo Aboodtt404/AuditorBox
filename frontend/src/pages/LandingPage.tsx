@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Box, Container, Typography, Button, Grid, Card, CardContent, useTheme } from '@mui/material';
 import {
   Business as BusinessIcon,
@@ -67,12 +68,29 @@ const benefits = [
 export default function LandingPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, user } = useAuth();
   const theme = useTheme();
+
+  // Auto-redirect authenticated users to their appropriate dashboard
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Check if profile is completed
+      if (!user.profile_completed) {
+        navigate('/profile-setup');
+        return;
+      }
+
+      // Redirect based on role
+      const isClientUser = user.role && 'ClientUser' in user.role;
+      const redirectPath = isClientUser ? '/client-portal' : '/engagements';
+      navigate(redirectPath);
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
-      navigate('/organizations');
+      // This will be handled by the useEffect above
+      return;
     } else {
       login();
     }

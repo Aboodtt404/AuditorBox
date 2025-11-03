@@ -5,6 +5,7 @@ import Navigation from './components/Navigation';
 import PageLayout from './components/PageLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
+import ProfileSetup from './pages/ProfileSetup';
 import Profile from './pages/Profile';
 import Organizations from './pages/Organizations';
 import Entities from './pages/Entities';
@@ -28,6 +29,7 @@ function App() {
           <Navigation />
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
             <Route
               path="/profile"
               element={
