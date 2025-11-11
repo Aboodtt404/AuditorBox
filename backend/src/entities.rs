@@ -1,5 +1,6 @@
 use candid::Principal;
 use ic_cdk::api::time;
+use candid::encode_args;
 
 use crate::activity_log::log_activity;
 use crate::auth;
@@ -33,16 +34,18 @@ pub fn create_entity(caller: Principal, req: CreateEntityRequest) -> Result<Enti
         storage.borrow_mut().entities.insert(entity.id, entity.clone());
     });
 
-    // Add entity to organization
-    organizations::add_entity_to_organization(req.organization_id, entity.id)?;
-
+    let snapshot = encode_args((entity.clone(),)).ok();
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "Entity".to_string(),
+        "create_entity".to_string(),
+        "entity".to_string(),
         entity.id.to_string(),
-        format!("Created entity: {}", entity.name),
+        format!("Entity {} created", entity.name),
+        snapshot,
     );
+
+    // Add entity to organization
+    organizations::add_entity_to_organization(req.organization_id, entity.id)?;
 
     Ok(entity)
 }
@@ -110,12 +113,14 @@ pub fn update_entity(caller: Principal, req: UpdateEntityRequest) -> Result<Enti
         storage.borrow_mut().entities.insert(entity.id, entity.clone());
     });
 
+    let snapshot = encode_args((entity.clone(),)).ok();
     log_activity(
         caller,
-        "UPDATE".to_string(),
-        "Entity".to_string(),
+        "update_entity".to_string(),
+        "entity".to_string(),
         entity.id.to_string(),
-        format!("Updated entity: {}", entity.name),
+        format!("Entity {} updated", entity.name),
+        snapshot,
     );
 
     Ok(entity)
@@ -140,12 +145,14 @@ pub fn delete_entity(caller: Principal, id: u64) -> Result<()> {
         storage.borrow_mut().entities.remove(&id);
     });
 
+    let snapshot = encode_args((entity.clone(),)).ok();
     log_activity(
         caller,
-        "DELETE".to_string(),
-        "Entity".to_string(),
+        "delete_entity".to_string(),
+        "entity".to_string(),
         id.to_string(),
-        format!("Deleted entity: {}", entity.name),
+        format!("Entity {} deleted", entity.name),
+        snapshot,
     );
 
     Ok(())

@@ -46,8 +46,9 @@ pub struct Organization {
 // XBRL Taxonomy
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum XBRLTaxonomy {
-    USGAAP,
-    IFRS,
+    EAS,    // Egyptian Accounting Standards
+    IFRS,   // International Financial Reporting Standards
+    GCC,    // GCC Financial Reporting Standards
     Custom(String),
 }
 
@@ -64,14 +65,20 @@ pub struct Entity {
     pub created_by: Principal,
 }
 
-// Client (Legacy)
+// Client
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct Client {
     pub id: u64,
     pub name: String,
+    pub name_ar: Option<String>,
     pub contact_email: String,
     pub contact_phone: String,
     pub address: String,
+    pub tax_registration_number: Option<String>,
+    pub commercial_registration: Option<String>,
+    pub industry_code: Option<String>,
+    pub organization_id: Option<u64>,  // Optional link to Organization
+    pub entity_id: Option<u64>,        // Optional link to Entity
     pub created_at: u64,
     pub created_by: Principal,
 }
@@ -272,9 +279,10 @@ pub struct ActivityLogEntry {
     pub details: String,
     pub timestamp: u64,
     pub data_hash: String,           // SHA-256 hash of entry data
-    pub signature: String,            // Cryptographic signature
-    pub previous_hash: String,        // Hash of previous entry (blockchain link)
-    pub block_height: u64,           // Block height in the audit trail chain
+    pub signature: String,           // Cryptographic signature for authenticity
+    pub previous_hash: String,       // Previous entry signature for blockchain chaining
+    pub block_height: u64,
+    pub snapshot: Option<Vec<u8>>,   // Serialized snapshot of resource state (for revert)
 }
 
 // API Request/Response Types
@@ -312,18 +320,30 @@ pub struct UpdateEntityRequest {
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct CreateClientRequest {
     pub name: String,
+    pub name_ar: Option<String>,
     pub contact_email: String,
     pub contact_phone: String,
     pub address: String,
+    pub tax_registration_number: Option<String>,
+    pub commercial_registration: Option<String>,
+    pub industry_code: Option<String>,
+    pub organization_id: Option<u64>,
+    pub entity_id: Option<u64>,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct UpdateClientRequest {
     pub id: u64,
     pub name: String,
+    pub name_ar: Option<String>,
     pub contact_email: String,
     pub contact_phone: String,
     pub address: String,
+    pub tax_registration_number: Option<String>,
+    pub commercial_registration: Option<String>,
+    pub industry_code: Option<String>,
+    pub organization_id: Option<u64>,
+    pub entity_id: Option<u64>,
 }
 
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
@@ -518,6 +538,420 @@ pub struct CreateAjeLineItemRequest {
     pub debit_amount: i64,
     pub credit_amount: i64,
     pub description: String,
+}
+
+// Financial Statements
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub enum FSCategory {
+    Asset,
+    Liability,
+    Equity,
+    Revenue,
+    Expense,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct FSLineItem {
+    pub code: String,
+    pub name: String,
+    pub category: FSCategory,
+    pub subcategory: String,
+    pub order: u64,
+    pub is_subtotal: bool,
+    pub parent: Option<String>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct FSLine {
+    pub line_item: FSLineItem,
+    pub amount: i64, // in cents
+    pub mapped_accounts: Vec<u64>, // trial balance account IDs
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct FSNote {
+    pub note_number: u64,
+    pub title: String,
+    pub content: String,
+    pub created_at: u64,
+    pub created_by: Principal,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct FinancialStatement {
+    pub id: u64,
+    pub engagement_id: u64,
+    pub trial_balance_id: u64,
+    pub taxonomy: XBRLTaxonomy,
+    pub period_end_date: String,
+    pub lines: Vec<FSLine>,
+    pub notes: Vec<FSNote>,
+    pub created_at: u64,
+    pub created_by: Principal,
+    pub last_modified: u64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct GenerateFSRequest {
+    pub trial_balance_id: u64,
+    pub taxonomy: XBRLTaxonomy,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct UpdateFSLineMappingRequest {
+    pub account_id: u64,
+    pub fs_line_item_code: String,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct AddFSNoteRequest {
+    pub fs_id: u64,
+    pub title: String,
+    pub content: String,
+}
+
+// ============================================================================
+// PHASE 1: PRE-ENGAGEMENT & SETUP
+// ============================================================================
+
+// Client Acceptance Risk Assessment
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub enum RiskLevel {
+    Low,
+    Medium,
+    High,
+    Unacceptable,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub enum AcceptanceDecision {
+    Accepted,
+    Rejected,
+    RequiresPartnerReview,
+    Pending,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct ClientAcceptanceQuestionnaire {
+    pub management_integrity_risk: RiskLevel,
+    pub financial_stability_risk: RiskLevel,
+    pub industry_risk: RiskLevel,
+    pub regulatory_complexity_risk: RiskLevel,
+    pub fee_collection_risk: RiskLevel,
+    pub independence_threats: bool,
+    pub conflicts_of_interest: bool,
+    pub resources_available: bool,
+    pub technical_expertise_available: bool,
+    pub notes: String,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct ClientAcceptance {
+    pub id: u64,
+    pub client_id: u64,
+    pub questionnaire: ClientAcceptanceQuestionnaire,
+    pub overall_risk: RiskLevel,
+    pub decision: AcceptanceDecision,
+    pub decision_rationale: String,
+    pub reviewed_by: Principal,
+    pub reviewed_at: u64,
+    pub partner_approved_by: Option<Principal>,
+    pub partner_approved_at: Option<u64>,
+    pub created_at: u64,
+    pub created_by: Principal,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateClientAcceptanceRequest {
+    pub client_id: u64,
+    pub questionnaire: ClientAcceptanceQuestionnaire,
+    pub decision_rationale: String,
+}
+
+// Engagement Letter
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub enum EngagementType {
+    Audit,
+    Review,
+    Compilation,
+    TaxPreparation,
+    Consulting,
+    Other(String),
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub enum EngagementLetterStatus {
+    Draft,
+    SentToClient,
+    Signed,
+    Declined,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct EngagementLetter {
+    pub id: u64,
+    pub engagement_id: Option<u64>,
+    pub client_id: u64,
+    pub engagement_type: EngagementType,
+    pub scope_of_services: String,
+    pub management_responsibilities: String,
+    pub auditor_responsibilities: String,
+    pub limitations_of_engagement: String,
+    pub fee_structure: String,
+    pub estimated_completion_date: String,
+    pub special_terms: String,
+    pub status: EngagementLetterStatus,
+    pub sent_date: Option<u64>,
+    pub signed_date: Option<u64>,
+    pub signed_by_client_name: Option<String>,
+    pub created_at: u64,
+    pub created_by: Principal,
+    pub last_modified_at: u64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateEngagementLetterRequest {
+    pub client_id: u64,
+    pub engagement_type: EngagementType,
+    pub scope_of_services: String,
+    pub fee_structure: String,
+    pub estimated_completion_date: String,
+    pub special_terms: Option<String>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct SignEngagementLetterRequest {
+    pub letter_id: u64,
+    pub client_name: String,
+}
+
+// Enhanced Engagement with Phase 1 Support
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct EnhancedEngagement {
+    pub id: u64,
+    pub name: String,
+    pub description: String,
+    pub link: EngagementLink,
+    pub engagement_type: EngagementType,
+    pub start_date: u64,
+    pub end_date: u64,
+    pub status: String,
+    pub template_id: Option<u64>,
+    pub prior_year_engagement_id: Option<u64>,
+    pub client_acceptance_id: Option<u64>,
+    pub engagement_letter_id: Option<u64>,
+    pub partner_in_charge: Option<Principal>,
+    pub manager_in_charge: Option<Principal>,
+    pub budget_hours: Option<f64>,
+    pub created_at: u64,
+    pub created_by: Principal,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateEnhancedEngagementRequest {
+    pub name: String,
+    pub description: String,
+    pub link: EngagementLink,
+    pub engagement_type: EngagementType,
+    pub start_date: u64,
+    pub end_date: u64,
+    pub template_id: Option<u64>,
+    pub prior_year_engagement_id: Option<u64>,
+    pub client_acceptance_id: Option<u64>,
+    pub engagement_letter_id: Option<u64>,
+    pub partner_in_charge: Option<Principal>,
+    pub manager_in_charge: Option<Principal>,
+    pub budget_hours: Option<f64>,
+}
+
+// Conflict of Interest Check
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct ConflictCheck {
+    pub id: u64,
+    pub client_id: u64,
+    pub related_parties: Vec<String>,
+    pub conflicts_found: bool,
+    pub conflict_details: Vec<String>,
+    pub resolution_notes: String,
+    pub cleared: bool,
+    pub cleared_by: Option<Principal>,
+    pub cleared_at: Option<u64>,
+    pub created_at: u64,
+    pub created_by: Principal,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateConflictCheckRequest {
+    pub client_id: u64,
+    pub related_parties: Vec<String>,
+    pub potential_conflicts: Vec<String>,
+    pub resolution_notes: String,
+}
+
+// Engagement Setup Template
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct EngagementSetupTemplate {
+    pub id: u64,
+    pub name: String,
+    pub engagement_type: EngagementType,
+    pub description: String,
+    pub default_procedures: Vec<String>,
+    pub required_documents: Vec<String>,
+    pub default_milestones: Vec<MilestoneTemplate>,
+    pub estimated_hours: f64,
+    pub is_default: bool,
+    pub created_at: u64,
+    pub created_by: Principal,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct MilestoneTemplate {
+    pub name: String,
+    pub description: String,
+    pub days_from_start: u64,
+    pub estimated_hours: f64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateEngagementSetupTemplateRequest {
+    pub name: String,
+    pub engagement_type: EngagementType,
+    pub description: String,
+    pub default_procedures: Vec<String>,
+    pub required_documents: Vec<String>,
+    pub default_milestones: Vec<MilestoneTemplate>,
+    pub estimated_hours: f64,
+}
+
+// Engagement Planning & Tracking
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub enum MilestoneStatus {
+    NotStarted,
+    InProgress,
+    Completed,
+    Blocked,
+    Cancelled,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct EngagementMilestone {
+    pub id: u64,
+    pub engagement_id: u64,
+    pub name: String,
+    pub description: String,
+    pub due_date: u64,
+    pub status: MilestoneStatus,
+    pub assigned_to: Option<Principal>,
+    pub estimated_hours: f64,
+    pub actual_hours: f64,
+    pub completed_date: Option<u64>,
+    pub completed_by: Option<Principal>,
+    pub dependencies: Vec<u64>,
+    pub created_at: u64,
+    pub created_by: Principal,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateMilestoneRequest {
+    pub engagement_id: u64,
+    pub name: String,
+    pub description: String,
+    pub due_date: u64,
+    pub assigned_to: Option<Principal>,
+    pub estimated_hours: f64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct UpdateMilestoneRequest {
+    pub milestone_id: u64,
+    pub status: Option<MilestoneStatus>,
+    pub actual_hours: Option<f64>,
+    pub assigned_to: Option<Principal>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct EngagementBudget {
+    pub id: u64,
+    pub engagement_id: u64,
+    pub total_budgeted_hours: f64,
+    pub total_actual_hours: f64,
+    pub partner_hours: f64,
+    pub manager_hours: f64,
+    pub senior_hours: f64,
+    pub staff_hours: f64,
+    pub partner_rate: f64,
+    pub manager_rate: f64,
+    pub senior_rate: f64,
+    pub staff_rate: f64,
+    pub total_budgeted_fee: f64,
+    pub total_actual_fee: f64,
+    pub created_at: u64,
+    pub created_by: Principal,
+    pub last_updated_at: u64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateBudgetRequest {
+    pub engagement_id: u64,
+    pub total_budgeted_hours: f64,
+    pub partner_hours: f64,
+    pub manager_hours: f64,
+    pub senior_hours: f64,
+    pub staff_hours: f64,
+    pub partner_rate: f64,
+    pub manager_rate: f64,
+    pub senior_rate: f64,
+    pub staff_rate: f64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct TimeEntry {
+    pub id: u64,
+    pub engagement_id: u64,
+    pub milestone_id: Option<u64>,
+    pub user: Principal,
+    pub date: u64,
+    pub hours: f64,
+    pub description: String,
+    pub billable: bool,
+    pub created_at: u64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateTimeEntryRequest {
+    pub engagement_id: u64,
+    pub milestone_id: Option<u64>,
+    pub date: u64,
+    pub hours: f64,
+    pub description: String,
+    pub billable: bool,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct EngagementDashboard {
+    pub engagement: Engagement,
+    pub budget: Option<EngagementBudget>,
+    pub milestones: Vec<EngagementMilestone>,
+    pub completion_percentage: f64,
+    pub budget_utilization: f64,
+    pub on_schedule: bool,
+    pub at_risk_milestones: Vec<EngagementMilestone>,
+    pub recent_time_entries: Vec<TimeEntry>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateEngagementFromTemplateRequest {
+    pub name: String,
+    pub description: String,
+    pub link: EngagementLink,
+    pub start_date: u64,
+    pub end_date: u64,
+    pub template_id: u64,
+    pub prior_year_engagement_id: Option<u64>,
+    pub client_acceptance_id: Option<u64>,
+    pub engagement_letter_id: Option<u64>,
+    pub partner_in_charge: Option<Principal>,
+    pub manager_in_charge: Option<Principal>,
 }
 
 // Result types

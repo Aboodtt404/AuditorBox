@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { useAuth } from '../hooks/useAuth';
 import { Engagement, Organization, Entity } from '../types';
+import { formatDate } from '../utils/dateFormatter';
 
 const Engagements = () => {
   const { t } = useTranslation();
@@ -162,10 +163,10 @@ const Engagements = () => {
                   </TableCell>
                   <TableCell>{eng.status}</TableCell>
                   <TableCell>
-                    {new Date(Number(eng.start_date) / 1000000).toLocaleDateString()}
+                    {formatDate(eng.start_date)}
                   </TableCell>
                   <TableCell>
-                    {new Date(Number(eng.end_date) / 1000000).toLocaleDateString()}
+                    {formatDate(eng.end_date)}
                   </TableCell>
                   <TableCell align="right">
                     <IconButton size="small" color="primary"><Edit /></IconButton>

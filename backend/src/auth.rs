@@ -141,6 +141,10 @@ pub fn is_admin(user: &User) -> bool {
     user.role == UserRole::Admin
 }
 
+pub fn is_partner(user: &User) -> bool {
+    user.role == UserRole::Partner || user.role == UserRole::Admin
+}
+
 pub fn is_partner_or_above(user: &User) -> bool {
     matches!(user.role, UserRole::Admin | UserRole::Partner)
 }

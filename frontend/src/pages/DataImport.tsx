@@ -28,6 +28,13 @@ const DataImport = () => {
   const [selectedSheet, setSelectedSheet] = useState(0);
   const [uploading, setUploading] = useState(false);
 
+  const getColumnType = (type: any): string => {
+    if (typeof type === 'object' && type !== null) {
+      return Object.keys(type)[0];
+    }
+    return String(type);
+  };
+
   const onDrop = async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
 
@@ -88,7 +95,7 @@ const DataImport = () => {
                   <Chip label="PII" size="small" color="warning" sx={{ ml: 1 }} />
                 ) : null}
               </TableCell>
-              <TableCell>{col.detected_type}</TableCell>
+              <TableCell>{getColumnType(col.detected_type)}</TableCell>
               <TableCell>{col.null_percent.toFixed(1)}%</TableCell>
               <TableCell>{col.unique_count.toString()}</TableCell>
               <TableCell>{col.min_value}</TableCell>

@@ -1,8 +1,7 @@
-use candid::Principal;
+use candid::{Principal, encode_args};
 use ic_cdk::api::time;
 use calamine::{Reader, open_workbook_from_rs, Xlsx, Data};
 use std::io::Cursor;
-use regex::Regex;
 use std::collections::HashSet;
 
 use crate::activity_log::log_activity;
@@ -57,10 +56,11 @@ pub fn import_excel(caller: Principal, req: ImportExcelRequest) -> Result<Import
 
     log_activity(
         caller,
-        "IMPORT".to_string(),
-        "Dataset".to_string(),
+        "import_excel".to_string(),
+        "dataset".to_string(),
         dataset.id.to_string(),
-        format!("Imported dataset: {}", req.name),
+        format!("Dataset {} imported from {}", dataset.id, dataset.file_name),
+        encode_args((dataset.clone(),)).ok(),
     );
 
     Ok(dataset)
@@ -82,7 +82,9 @@ fn process_sheet(
         });
     }
 
-    // Extract headers (first row)
+    let max_rows_to_store = 100.min(height);
+    let max_rows_to_analyze = 50.min(height - 1);
+
     let mut headers = Vec::new();
     for col_idx in 0..width {
         let cell = range.get((0, col_idx));
@@ -99,9 +101,11 @@ fn process_sheet(
         headers.push(header);
     }
 
-    // Extract data (skip header row)
     let mut data_rows = Vec::new();
-    for row_idx in 1..height {
+    for row_idx in 1..max_rows_to_store {
+        if row_idx >= height {
+            break;
+        }
         let mut row = Vec::new();
         for col_idx in 0..width {
             let cell = range.get((row_idx, col_idx));
@@ -111,13 +115,16 @@ fn process_sheet(
         data_rows.push(row);
     }
 
-    // Analyze columns
     let mut columns = Vec::new();
     for (col_idx, header) in headers.iter().enumerate() {
-        let column_data: Vec<String> = data_rows
-            .iter()
-            .map(|row| row.get(col_idx).unwrap_or(&String::new()).clone())
-            .collect();
+        let mut column_data: Vec<String> = Vec::new();
+        for row_idx in 1..=max_rows_to_analyze {
+            if row_idx >= height {
+                break;
+            }
+            let cell = range.get((row_idx, col_idx));
+            column_data.push(cell_to_string(cell));
+        }
 
         let metadata = analyze_column(header.clone(), column_data)?;
         columns.push(metadata);
@@ -126,7 +133,7 @@ fn process_sheet(
     Ok(SheetData {
         name: sheet_name.to_string(),
         columns,
-        row_count: (height - 1) as u64, // Exclude header
+        row_count: (height - 1) as u64,
         data: data_rows,
     })
 }
@@ -156,28 +163,23 @@ fn analyze_column(name: String, data: Vec<String>) -> Result<ColumnMetadata> {
         0.0
     };
 
-    // Get non-empty values
     let non_empty: Vec<&String> = data.iter().filter(|s| !s.is_empty()).collect();
     
-    // Count unique values
-    let unique_set: HashSet<&String> = non_empty.iter().cloned().collect();
+    let sample_for_unique = non_empty.iter().take(50);
+    let unique_set: HashSet<_> = sample_for_unique.collect();
     let unique_count = unique_set.len() as u64;
 
-    // Detect column type
     let detected_type = detect_column_type(&non_empty);
 
-    // Get min/max values
-    let (min_value, max_value) = get_min_max(&non_empty, &detected_type);
+    let (min_value, max_value) = get_min_max_simple(&non_empty, &detected_type);
 
-    // Get sample values (up to 5)
     let sample_values: Vec<String> = non_empty
         .iter()
         .take(5)
         .map(|s| (*s).clone())
         .collect();
 
-    // Detect PII
-    let pii_detection = detect_pii(&non_empty);
+    let pii_detection = detect_pii_simple(&non_empty);
 
     Ok(ColumnMetadata {
         name: name.clone(),
@@ -192,147 +194,93 @@ fn analyze_column(name: String, data: Vec<String>) -> Result<ColumnMetadata> {
     })
 }
 
-// Detect column type
 fn detect_column_type(values: &[&String]) -> ColumnType {
     if values.is_empty() {
         return ColumnType::Text;
     }
 
+    let sample_size = values.len().min(20);
     let mut numeric_count = 0;
-    let mut date_count = 0;
-    let mut boolean_count = 0;
     let mut currency_count = 0;
 
-    for value in values.iter().take(100) {
-        // Check for boolean
-        let lower = value.to_lowercase();
-        if lower == "true" || lower == "false" || lower == "yes" || lower == "no" 
-           || lower == "1" || lower == "0" {
-            boolean_count += 1;
-            continue;
-        }
-
-        // Check for currency (contains currency symbols)
-        if value.contains('$') || value.contains('€') || value.contains('£') 
-           || value.contains('¥') {
+    for value in values.iter().take(sample_size) {
+        if value.contains('$') || value.contains('€') || value.contains('£') || value.contains('¥') {
             currency_count += 1;
             continue;
         }
 
-        // Check for numeric
         let clean_value = value.replace(",", "").replace(" ", "");
         if clean_value.parse::<f64>().is_ok() {
             numeric_count += 1;
-            continue;
-        }
-
-        // Check for date patterns
-        if is_date_like(value) {
-            date_count += 1;
         }
     }
 
-    let sample_size = values.len().min(100);
-    let threshold = sample_size as f64 * 0.7; // 70% threshold
+    let threshold = sample_size as f64 * 0.6;
 
     if currency_count as f64 >= threshold {
         ColumnType::Currency
-    } else if boolean_count as f64 >= threshold {
-        ColumnType::Boolean
     } else if numeric_count as f64 >= threshold {
         ColumnType::Numeric
-    } else if date_count as f64 >= threshold {
-        ColumnType::Date
     } else {
         ColumnType::Text
     }
 }
 
-// Check if string looks like a date
-fn is_date_like(s: &str) -> bool {
-    // Simple date pattern matching
-    let date_patterns = vec![
-        r"\d{4}-\d{2}-\d{2}",           // 2023-12-31
-        r"\d{2}/\d{2}/\d{4}",           // 12/31/2023
-        r"\d{2}-\d{2}-\d{4}",           // 12-31-2023
-        r"\d{4}/\d{2}/\d{2}",           // 2023/12/31
-    ];
-
-    for pattern in date_patterns {
-        if let Ok(re) = Regex::new(pattern) {
-            if re.is_match(s) {
-                return true;
-            }
-        }
-    }
-    false
-}
-
-// Get min and max values
-fn get_min_max(values: &[&String], col_type: &ColumnType) -> (String, String) {
+fn get_min_max_simple(values: &[&String], col_type: &ColumnType) -> (String, String) {
     if values.is_empty() {
         return (String::new(), String::new());
     }
 
+    let sample = values.iter().take(20);
+
     match col_type {
         ColumnType::Numeric | ColumnType::Currency => {
-            let mut numbers: Vec<f64> = Vec::new();
-            for value in values {
+            let mut min = f64::INFINITY;
+            let mut max = f64::NEG_INFINITY;
+            
+            for value in sample {
                 let clean = value.replace(",", "").replace("$", "")
                     .replace("€", "").replace("£", "").replace("¥", "")
                     .replace(" ", "");
                 if let Ok(num) = clean.parse::<f64>() {
-                    numbers.push(num);
+                    if num < min { min = num; }
+                    if num > max { max = num; }
                 }
             }
             
-            if numbers.is_empty() {
-                return (String::new(), String::new());
-            }
-
-            let min = numbers.iter().cloned().fold(f64::INFINITY, f64::min);
-            let max = numbers.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+            if min == f64::INFINITY {
+                (String::new(), String::new())
+            } else {
             (min.to_string(), max.to_string())
+            }
         }
         _ => {
-            // For text/date, use lexicographic ordering
-            let mut sorted: Vec<&String> = values.to_vec();
-            sorted.sort();
-            (
-                sorted.first().unwrap_or(&&String::new()).to_string(),
-                sorted.last().unwrap_or(&&String::new()).to_string(),
-            )
+            (String::new(), String::new())
         }
     }
 }
 
-// Detect PII in column data
-fn detect_pii(values: &[&String]) -> PIIDetection {
-    let email_re = Regex::new(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").unwrap();
-    let phone_re = Regex::new(r"(\+\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}").unwrap();
-    let name_re = Regex::new(r"^[A-Z][a-z]+\s[A-Z][a-z]+").unwrap();
-    
+fn detect_pii_simple(values: &[&String]) -> PIIDetection {
     let mut has_emails = false;
     let mut has_phones = false;
-    let mut has_names = false;
 
-    for value in values.iter().take(50) {
-        if email_re.is_match(value) {
+    for value in values.iter().take(10) {
+        if value.contains('@') && value.contains('.') {
             has_emails = true;
         }
-        if phone_re.is_match(value) {
+        if value.contains("(") && value.contains(")") && value.chars().filter(|c| c.is_numeric()).count() >= 7 {
             has_phones = true;
         }
-        if name_re.is_match(value) {
-            has_names = true;
+        if has_emails && has_phones {
+            break;
         }
     }
 
     PIIDetection {
-        has_names,
+        has_names: false,
         has_emails,
         has_phone_numbers: has_phones,
-        has_national_ids: false, // Would need country-specific patterns
+        has_national_ids: false,
     }
 }
 
@@ -377,4 +325,5 @@ pub fn list_datasets_by_engagement(caller: Principal, engagement_id: u64) -> Res
 
     Ok(datasets)
 }
+
 

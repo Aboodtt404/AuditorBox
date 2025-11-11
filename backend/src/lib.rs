@@ -9,9 +9,12 @@ mod client_portal;
 mod clients;
 mod data_import;
 mod documents;
+mod engagement_planning;
 mod engagements;
 mod entities;
+mod financial_statements;
 mod organizations;
+mod pre_engagement;
 mod storage;
 mod templates;
 mod trial_balance;
@@ -25,6 +28,7 @@ use types::*;
 fn init() {
     ic_cdk::println!("AuditorBox canister initialized");
     templates::initialize_default_templates();
+    engagement_planning::initialize_default_engagement_templates();
 }
 
 // ============================================================================
@@ -168,6 +172,18 @@ fn get_client(id: u64) -> Result<Client> {
 fn list_clients() -> Result<Vec<Client>> {
     let caller = ic_cdk::caller();
     clients::list_clients(caller)
+}
+
+#[query]
+fn list_clients_by_organization(organization_id: u64) -> Result<Vec<Client>> {
+    let caller = ic_cdk::caller();
+    clients::list_clients_by_organization(caller, organization_id)
+}
+
+#[query]
+fn list_clients_by_entity(entity_id: u64) -> Result<Vec<Client>> {
+    let caller = ic_cdk::caller();
+    clients::list_clients_by_entity(caller, entity_id)
 }
 
 #[update]
@@ -375,6 +391,12 @@ fn get_resource_activity_logs(
 ) -> Result<Vec<ActivityLogEntry>> {
     let caller = ic_cdk::caller();
     activity_log::get_resource_activity_logs(caller, resource_type, resource_id, limit)
+}
+
+#[update]
+fn revert_activity_entry(entry_id: u64) -> Result<()> {
+    let caller = ic_cdk::caller();
+    activity_log::revert_activity_entry(caller, entry_id)
 }
 
 // ============================================================================
@@ -615,6 +637,167 @@ fn list_ajes_by_engagement(engagement_id: u64) -> Result<Vec<AdjustingJournalEnt
 fn verify_aje_blockchain(aje_id: u64) -> Result<adjustments::AjeBlockchainVerification> {
     let caller = ic_cdk::caller();
     adjustments::verify_aje_blockchain(caller, aje_id)
+}
+
+// ============================================================================
+// Financial Statements API
+// ============================================================================
+
+#[update]
+fn generate_financial_statements(request: GenerateFSRequest) -> Result<FinancialStatement> {
+    let caller = ic_cdk::caller();
+    financial_statements::generate_financial_statements(caller, request)
+}
+
+#[query]
+fn get_financial_statement(fs_id: u64) -> Result<FinancialStatement> {
+    let caller = ic_cdk::caller();
+    financial_statements::get_financial_statement(caller, fs_id)
+}
+
+#[query]
+fn list_financial_statements_by_engagement(engagement_id: u64) -> Result<Vec<FinancialStatement>> {
+    let caller = ic_cdk::caller();
+    financial_statements::list_financial_statements_by_engagement(caller, engagement_id)
+}
+
+#[update]
+fn update_fs_line_mapping(request: UpdateFSLineMappingRequest) -> Result<()> {
+    let caller = ic_cdk::caller();
+    financial_statements::update_fs_line_mapping(caller, request)
+}
+
+#[update]
+fn add_fs_note(request: AddFSNoteRequest) -> Result<()> {
+    let caller = ic_cdk::caller();
+    financial_statements::add_fs_note(caller, request)
+}
+
+#[query]
+fn get_line_items_for_taxonomy(taxonomy: XBRLTaxonomy) -> Vec<FSLineItem> {
+    financial_statements::get_line_items_for_taxonomy(&taxonomy)
+}
+
+// ============================================================================
+// PHASE 1: PRE-ENGAGEMENT & SETUP
+// ============================================================================
+
+#[update]
+fn create_client_acceptance(request: CreateClientAcceptanceRequest) -> Result<ClientAcceptance> {
+    let caller = ic_cdk::caller();
+    pre_engagement::create_client_acceptance(caller, request)
+}
+
+#[update]
+fn approve_client_acceptance(acceptance_id: u64) -> Result<ClientAcceptance> {
+    let caller = ic_cdk::caller();
+    pre_engagement::approve_client_acceptance(caller, acceptance_id)
+}
+
+#[query]
+fn list_client_acceptances_by_client(client_id: u64) -> Result<Vec<ClientAcceptance>> {
+    let caller = ic_cdk::caller();
+    pre_engagement::list_client_acceptances_by_client(caller, client_id)
+}
+
+#[update]
+fn create_engagement_letter(request: CreateEngagementLetterRequest) -> Result<EngagementLetter> {
+    let caller = ic_cdk::caller();
+    pre_engagement::create_engagement_letter(caller, request)
+}
+
+#[update]
+fn send_engagement_letter(letter_id: u64) -> Result<EngagementLetter> {
+    let caller = ic_cdk::caller();
+    pre_engagement::send_engagement_letter(caller, letter_id)
+}
+
+#[update]
+fn sign_engagement_letter(request: SignEngagementLetterRequest) -> Result<EngagementLetter> {
+    let caller = ic_cdk::caller();
+    pre_engagement::sign_engagement_letter(caller, request)
+}
+
+#[query]
+fn list_engagement_letters_by_client(client_id: u64) -> Result<Vec<EngagementLetter>> {
+    let caller = ic_cdk::caller();
+    pre_engagement::list_engagement_letters_by_client(caller, client_id)
+}
+
+#[update]
+fn create_conflict_check(request: CreateConflictCheckRequest) -> Result<ConflictCheck> {
+    let caller = ic_cdk::caller();
+    pre_engagement::create_conflict_check(caller, request)
+}
+
+#[query]
+fn list_conflict_checks_by_client(client_id: u64) -> Result<Vec<ConflictCheck>> {
+    let caller = ic_cdk::caller();
+    pre_engagement::list_conflict_checks_by_client(caller, client_id)
+}
+
+// ============================================================================
+// ENGAGEMENT PLANNING & SETUP
+// ============================================================================
+
+#[update]
+fn create_engagement_setup_template(request: CreateEngagementSetupTemplateRequest) -> Result<EngagementSetupTemplate> {
+    let caller = ic_cdk::caller();
+    engagement_planning::create_engagement_setup_template(caller, request)
+}
+
+#[query]
+fn list_engagement_templates() -> Result<Vec<EngagementSetupTemplate>> {
+    let caller = ic_cdk::caller();
+    engagement_planning::list_engagement_templates(caller)
+}
+
+#[update]
+fn create_engagement_from_template(request: CreateEngagementFromTemplateRequest) -> Result<(Engagement, Vec<EngagementMilestone>)> {
+    let caller = ic_cdk::caller();
+    engagement_planning::create_engagement_from_template(caller, request)
+}
+
+#[update]
+fn create_milestone(request: CreateMilestoneRequest) -> Result<EngagementMilestone> {
+    let caller = ic_cdk::caller();
+    engagement_planning::create_milestone(caller, request)
+}
+
+#[update]
+fn update_milestone(request: UpdateMilestoneRequest) -> Result<EngagementMilestone> {
+    let caller = ic_cdk::caller();
+    engagement_planning::update_milestone(caller, request)
+}
+
+#[query]
+fn list_milestones_by_engagement(engagement_id: u64) -> Result<Vec<EngagementMilestone>> {
+    let caller = ic_cdk::caller();
+    engagement_planning::list_milestones_by_engagement(caller, engagement_id)
+}
+
+#[update]
+fn create_budget(request: CreateBudgetRequest) -> Result<EngagementBudget> {
+    let caller = ic_cdk::caller();
+    engagement_planning::create_budget(caller, request)
+}
+
+#[update]
+fn create_time_entry(request: CreateTimeEntryRequest) -> Result<TimeEntry> {
+    let caller = ic_cdk::caller();
+    engagement_planning::create_time_entry(caller, request)
+}
+
+#[query]
+fn list_time_entries_by_engagement(engagement_id: u64) -> Result<Vec<TimeEntry>> {
+    let caller = ic_cdk::caller();
+    engagement_planning::list_time_entries_by_engagement(caller, engagement_id)
+}
+
+#[query]
+fn get_engagement_dashboard(engagement_id: u64) -> Result<EngagementDashboard> {
+    let caller = ic_cdk::caller();
+    engagement_planning::get_engagement_dashboard(caller, engagement_id)
 }
 
 // Export candid interface

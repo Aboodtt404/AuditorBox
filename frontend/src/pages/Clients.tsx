@@ -18,38 +18,56 @@ import {
   DialogActions,
   TextField,
   Chip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
-import { Client, Engagement } from '../types';
+import { Client, Engagement, Organization, Entity } from '../types';
 
 const Clients = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
   const [clients, setClients] = useState<Client[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [entities, setEntities] = useState<Entity[]>([]);
   const [engagementCounts, setEngagementCounts] = useState<Record<string, number>>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    name_ar: '',
     contact_email: '',
     contact_phone: '',
     address: '',
+    tax_registration_number: '',
+    commercial_registration: '',
+    industry_code: '',
+    organization_id: '',
+    entity_id: '',
   });
 
   useEffect(() => {
-    loadClients();
+    loadData();
   }, []);
 
-  const loadClients = async () => {
+  const loadData = async () => {
     try {
-      const data = await call<Client[]>('list_clients');
-      setClients(data);
+      const [clientsData, orgsData, entitiesData] = await Promise.all([
+        call<Client[]>('list_clients'),
+        call<Organization[]>('list_organizations'),
+        call<Entity[]>('list_entities'),
+      ]);
+      setClients(clientsData);
+      setOrganizations(orgsData);
+      setEntities(entitiesData);
       
       // Load engagement counts for each client
       const counts: Record<string, number> = {};
       await Promise.all(
-        data.map(async (client) => {
+        clientsData.map(async (client) => {
           try {
             const engagements = await call<Engagement[]>('list_engagements_by_client', [client.id]);
             counts[client.id.toString()] = engagements.length;
@@ -64,26 +82,54 @@ const Clients = () => {
     }
   };
 
+  const normalizeOptional = (value: string) => 
+    value.trim() === '' ? [] : [value];
+
   const handleSave = async () => {
     try {
-      await call('create_client', [formData]);
+      const payload = {
+        name: formData.name,
+        name_ar: normalizeOptional(formData.name_ar),
+        contact_email: formData.contact_email,
+        contact_phone: formData.contact_phone,
+        address: formData.address,
+        tax_registration_number: normalizeOptional(formData.tax_registration_number),
+        commercial_registration: normalizeOptional(formData.commercial_registration),
+        industry_code: normalizeOptional(formData.industry_code),
+        organization_id: formData.organization_id ? [BigInt(formData.organization_id)] : [],
+        entity_id: formData.entity_id ? [BigInt(formData.entity_id)] : [],
+      };
+
+      await call('create_client', [payload]);
       setDialogOpen(false);
-      loadClients();
+      setFormData({
+        name: '',
+        name_ar: '',
+        contact_email: '',
+        contact_phone: '',
+        address: '',
+        tax_registration_number: '',
+        commercial_registration: '',
+        industry_code: '',
+        organization_id: '',
+        entity_id: '',
+      });
+      loadData();
     } catch (error) {
       console.error('Failed to save client:', error);
     }
   };
 
   const handleDelete = async (id: bigint, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete client "${name}"?`)) {
+    if (!window.confirm(t('clients.deleteConfirm', { name }))) {
       return;
     }
     try {
       await call('delete_client', [id]);
-      loadClients();
+      loadData();
     } catch (error) {
       console.error('Failed to delete client:', error);
-      alert('Failed to delete client. You may not have permission.');
+      alert(t('clients.deleteFailed'));
     }
   };
 
@@ -103,7 +149,7 @@ const Clients = () => {
               <TableCell>{t('clients.name')}</TableCell>
               <TableCell>{t('clients.contactEmail')}</TableCell>
               <TableCell>{t('clients.contactPhone')}</TableCell>
-              <TableCell>Engagements</TableCell>
+              <TableCell>{t('clients.engagements')}</TableCell>
               <TableCell align="right">{t('common.edit')}</TableCell>
             </TableRow>
           </TableHead>
@@ -136,33 +182,89 @@ const Clients = () => {
         </Table>
       </TableContainer>
 
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>{t('clients.create')}</DialogTitle>
         <DialogContent>
-          <TextField
-            label={t('clients.name')}
-            fullWidth
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            label={t('clients.contactEmail')}
-            fullWidth
-            value={formData.contact_email}
-            onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
-            margin="normal"
-          />
-          <TextField
-            label={t('clients.contactPhone')}
-            fullWidth
-            value={formData.contact_phone}
-            onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
-            margin="normal"
-          />
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 1 }}>
+            <TextField
+              label={t('clients.name')}
+              fullWidth
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+            <TextField
+              label={t('clients.nameAr')}
+              fullWidth
+              value={formData.name_ar}
+              onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+            />
+            <TextField
+              label={t('clients.contactEmail')}
+              fullWidth
+              required
+              type="email"
+              value={formData.contact_email}
+              onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+            />
+            <TextField
+              label={t('clients.contactPhone')}
+              fullWidth
+              required
+              value={formData.contact_phone}
+              onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+            />
+            <TextField
+              label={t('clients.taxRegistrationNumber')}
+              fullWidth
+              value={formData.tax_registration_number}
+              onChange={(e) => setFormData({ ...formData, tax_registration_number: e.target.value })}
+            />
+            <TextField
+              label={t('clients.commercialRegistration')}
+              fullWidth
+              value={formData.commercial_registration}
+              onChange={(e) => setFormData({ ...formData, commercial_registration: e.target.value })}
+            />
+            <TextField
+              label={t('clients.industryCode')}
+              fullWidth
+              value={formData.industry_code}
+              onChange={(e) => setFormData({ ...formData, industry_code: e.target.value })}
+            />
+            <FormControl fullWidth>
+              <InputLabel>{t('clients.organization')}</InputLabel>
+              <Select
+                value={formData.organization_id}
+                onChange={(e) => setFormData({ ...formData, organization_id: e.target.value })}
+              >
+                {organizations.map((org) => (
+                  <MenuItem key={org.id.toString()} value={org.id.toString()}>
+                    {org.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>{t('clients.entity')}</InputLabel>
+              <Select
+                value={formData.entity_id}
+                onChange={(e) => setFormData({ ...formData, entity_id: e.target.value })}
+              >
+                {entities
+                  .filter((entity) => !formData.organization_id || entity.organization_id.toString() === formData.organization_id)
+                  .map((entity) => (
+                    <MenuItem key={entity.id.toString()} value={entity.id.toString()}>
+                      {entity.name}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Box>
           <TextField
             label={t('clients.address')}
             fullWidth
+            required
             multiline
             rows={3}
             value={formData.address}

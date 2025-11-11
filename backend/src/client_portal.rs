@@ -1,4 +1,4 @@
-use candid::{CandidType, Deserialize, Principal};
+use candid::{encode_args, CandidType, Deserialize, Principal};
 use ic_cdk::api::time;
 use serde::Serialize;
 
@@ -139,10 +139,11 @@ pub fn create_document_request(
 
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "DocumentRequest".to_string(),
+        "create_document_request".to_string(),
+        "document_request".to_string(),
         request.id.to_string(),
-        format!("Created document request: {}", input.title),
+        format!("Document request {} created", request.id),
+        encode_args((request.clone(),)).ok(),
     );
 
     Ok(request)
@@ -185,12 +186,13 @@ pub fn grant_client_access(
     log_activity(
         caller,
         "GRANT_ACCESS".to_string(),
-        "ClientAccess".to_string(),
+        "client_access".to_string(),
         input.engagement_id.to_string(),
         format!(
             "Granted client access to engagement for {}",
             input.client_principal.to_text()
         ),
+        None,
     );
 
     Ok(access)
@@ -319,10 +321,11 @@ pub fn fulfill_document_request(
 
     log_activity(
         caller,
-        "FULFILL".to_string(),
-        "DocumentRequest".to_string(),
+        "fulfill_document_request".to_string(),
+        "document_request".to_string(),
         request.id.to_string(),
-        format!("Fulfilled document request: {}", request.title),
+        format!("Document request {} fulfilled", request.id),
+        encode_args((request.clone(),)).ok(),
     );
 
     Ok(request)
@@ -363,7 +366,7 @@ pub fn approve_document_request(
     log_activity(
         caller,
         if input.approved { "APPROVE" } else { "REJECT" }.to_string(),
-        "DocumentRequest".to_string(),
+        "document_request".to_string(),
         request.id.to_string(),
         format!(
             "{} document request: {}{}",
@@ -371,6 +374,7 @@ pub fn approve_document_request(
             request.title,
             input.rejection_reason.map(|r| format!(" - Reason: {}", r)).unwrap_or_default()
         ),
+        encode_args((request.clone(),)).ok(),
     );
 
     Ok(request)

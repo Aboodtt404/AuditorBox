@@ -1,4 +1,4 @@
-use candid::{CandidType, Deserialize, Principal};
+use candid::{encode_args, CandidType, Deserialize, Principal};
 use ic_cdk::api::time;
 use serde::Serialize;
 
@@ -150,12 +150,14 @@ pub fn create_template(caller: Principal, req: CreateTemplateRequest) -> Result<
             .insert(template.id, template.clone());
     });
 
+    let snapshot = encode_args((template.clone(),)).ok();
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "AuditTemplate".to_string(),
+        "create_template".to_string(),
+        "template".to_string(),
         template.id.to_string(),
-        format!("Created audit template: {}", req.name),
+        format!("Template {} created", template.name),
+        snapshot,
     );
 
     Ok(template)
@@ -272,13 +274,14 @@ pub fn apply_template_to_engagement(
 
     log_activity(
         caller,
-        "APPLY_TEMPLATE".to_string(),
-        "EngagementChecklist".to_string(),
-        checklist.id.to_string(),
+        "apply_template_to_engagement".to_string(),
+        "engagement".to_string(),
+        req.engagement_id.to_string(),
         format!(
             "Applied template {} to engagement {}",
             template.name, req.engagement_id
         ),
+        None,
     );
 
     Ok(checklist)
@@ -364,10 +367,11 @@ pub fn update_checklist_item(
 
     log_activity(
         caller,
-        "UPDATE".to_string(),
-        "ChecklistItem".to_string(),
+        "update_checklist_item".to_string(),
+        "checklist_item".to_string(),
         req.item_id,
         format!("Updated checklist item in checklist {}", checklist.id),
+        None,
     );
 
     Ok(checklist)

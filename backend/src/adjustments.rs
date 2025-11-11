@@ -1,4 +1,4 @@
-use candid::Principal;
+use candid::{encode_args, Principal};
 use ic_cdk::api::time;
 
 use crate::activity_log::log_activity;
@@ -109,15 +109,11 @@ pub fn create_aje(caller: Principal, req: CreateAjeRequest) -> Result<AdjustingJ
 
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "AdjustingJournalEntry".to_string(),
+        "create_aje".to_string(),
+        "aje".to_string(),
         aje.id.to_string(),
-        format!("Created AJE {}: {} (${}.{})", 
-            req.aje_number, 
-            req.description, 
-            total_debits / 100, 
-            total_debits % 100
-        ),
+        format!("AJE {} created", aje.id),
+        encode_args((aje.clone(),)).ok(),
     );
 
     Ok(aje)
@@ -147,10 +143,11 @@ pub fn submit_aje(caller: Principal, aje_id: u64) -> Result<AdjustingJournalEntr
 
     log_activity(
         caller,
-        "SUBMIT".to_string(),
-        "AdjustingJournalEntry".to_string(),
+        "submit_aje".to_string(),
+        "aje".to_string(),
         aje.id.to_string(),
-        format!("Submitted AJE {} for review", aje.aje_number),
+        format!("AJE {} submitted", aje.id),
+        encode_args((aje.clone(),)).ok(),
     );
 
     Ok(aje)
@@ -186,10 +183,11 @@ pub fn review_aje(caller: Principal, aje_id: u64, approved: bool) -> Result<Adju
 
     log_activity(
         caller,
-        if approved { "REVIEW_APPROVE" } else { "REVIEW_REJECT" }.to_string(),
-        "AdjustingJournalEntry".to_string(),
+        "review_aje".to_string(),
+        "aje".to_string(),
         aje.id.to_string(),
-        format!("Reviewed AJE {}: {}", aje.aje_number, if approved { "Approved" } else { "Rejected" }),
+        format!("AJE {} reviewed", aje.id),
+        encode_args((aje.clone(),)).ok(),
     );
 
     Ok(aje)
@@ -231,10 +229,11 @@ pub fn approve_aje(caller: Principal, aje_id: u64) -> Result<AdjustingJournalEnt
 
     log_activity(
         caller,
-        "APPROVE".to_string(),
-        "AdjustingJournalEntry".to_string(),
+        "approve_aje".to_string(),
+        "aje".to_string(),
         aje.id.to_string(),
-        format!("Approved AJE {} for posting", aje.aje_number),
+        format!("AJE {} approved", aje.id),
+        encode_args((aje.clone(),)).ok(),
     );
 
     Ok(aje)
@@ -300,10 +299,11 @@ pub fn post_aje(caller: Principal, aje_id: u64) -> Result<AdjustingJournalEntry>
 
     log_activity(
         caller,
-        "POST".to_string(),
-        "AdjustingJournalEntry".to_string(),
+        "post_aje".to_string(),
+        "aje".to_string(),
         aje.id.to_string(),
-        format!("Posted AJE {} to trial balance", aje.aje_number),
+        format!("AJE {} posted", aje.id),
+        encode_args((aje.clone(),)).ok(),
     );
 
     Ok(aje)

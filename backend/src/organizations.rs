@@ -1,5 +1,6 @@
 use candid::Principal;
 use ic_cdk::api::time;
+use candid::encode_args;
 
 use crate::activity_log::log_activity;
 use crate::auth;
@@ -14,7 +15,7 @@ pub fn create_organization(caller: Principal, req: CreateOrganizationRequest) ->
         return Err("Insufficient permissions to create organization".to_string());
     }
 
-    let org = Organization {
+    let organization = Organization {
         id: next_org_id(),
         name: req.name,
         description: req.description,
@@ -24,18 +25,20 @@ pub fn create_organization(caller: Principal, req: CreateOrganizationRequest) ->
     };
 
     STORAGE.with(|storage| {
-        storage.borrow_mut().organizations.insert(org.id, org.clone());
+        storage.borrow_mut().organizations.insert(organization.id, organization.clone());
     });
 
+    let snapshot = encode_args((organization.clone(),)).ok();
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "Organization".to_string(),
-        org.id.to_string(),
-        format!("Created organization: {}", org.name),
+        "create_organization".to_string(),
+        "organization".to_string(),
+        organization.id.to_string(),
+        format!("Organization {} created", organization.name),
+        snapshot,
     );
 
-    Ok(org)
+    Ok(organization)
 }
 
 // Get organization by ID
@@ -71,26 +74,28 @@ pub fn update_organization(caller: Principal, req: UpdateOrganizationRequest) ->
         return Err("Insufficient permissions to update organization".to_string());
     }
 
-    let mut org = STORAGE
+    let mut organization = STORAGE
         .with(|storage| storage.borrow().organizations.get(&req.id))
         .ok_or_else(|| "Organization not found".to_string())?;
 
-    org.name = req.name;
-    org.description = req.description;
+    organization.name = req.name;
+    organization.description = req.description;
 
     STORAGE.with(|storage| {
-        storage.borrow_mut().organizations.insert(org.id, org.clone());
+        storage.borrow_mut().organizations.insert(organization.id, organization.clone());
     });
 
+    let snapshot = encode_args((organization.clone(),)).ok();
     log_activity(
         caller,
-        "UPDATE".to_string(),
-        "Organization".to_string(),
-        org.id.to_string(),
-        format!("Updated organization: {}", org.name),
+        "update_organization".to_string(),
+        "organization".to_string(),
+        organization.id.to_string(),
+        format!("Organization {} updated", organization.name),
+        snapshot,
     );
 
-    Ok(org)
+    Ok(organization)
 }
 
 // Delete organization
@@ -101,12 +106,12 @@ pub fn delete_organization(caller: Principal, id: u64) -> Result<()> {
         return Err("Insufficient permissions to delete organization".to_string());
     }
 
-    let org = STORAGE
+    let organization = STORAGE
         .with(|storage| storage.borrow().organizations.get(&id))
         .ok_or_else(|| "Organization not found".to_string())?;
 
     // Check if organization has entities
-    if !org.entity_ids.is_empty() {
+    if !organization.entity_ids.is_empty() {
         return Err("Cannot delete organization with entities".to_string());
     }
 
@@ -114,12 +119,14 @@ pub fn delete_organization(caller: Principal, id: u64) -> Result<()> {
         storage.borrow_mut().organizations.remove(&id);
     });
 
+    let snapshot = encode_args((organization.clone(),)).ok();
     log_activity(
         caller,
-        "DELETE".to_string(),
-        "Organization".to_string(),
+        "delete_organization".to_string(),
+        "organization".to_string(),
         id.to_string(),
-        format!("Deleted organization: {}", org.name),
+        format!("Organization {} deleted", organization.name),
+        snapshot,
     );
 
     Ok(())
@@ -127,14 +134,14 @@ pub fn delete_organization(caller: Principal, id: u64) -> Result<()> {
 
 // Add entity to organization (internal use)
 pub fn add_entity_to_organization(org_id: u64, entity_id: u64) -> Result<()> {
-    let mut org = STORAGE
+    let mut organization = STORAGE
         .with(|storage| storage.borrow().organizations.get(&org_id))
         .ok_or_else(|| "Organization not found".to_string())?;
 
-    if !org.entity_ids.contains(&entity_id) {
-        org.entity_ids.push(entity_id);
+    if !organization.entity_ids.contains(&entity_id) {
+        organization.entity_ids.push(entity_id);
         STORAGE.with(|storage| {
-            storage.borrow_mut().organizations.insert(org.id, org);
+            storage.borrow_mut().organizations.insert(organization.id, organization);
         });
     }
 
@@ -143,14 +150,14 @@ pub fn add_entity_to_organization(org_id: u64, entity_id: u64) -> Result<()> {
 
 // Remove entity from organization (internal use)
 pub fn remove_entity_from_organization(org_id: u64, entity_id: u64) -> Result<()> {
-    let mut org = STORAGE
+    let mut organization = STORAGE
         .with(|storage| storage.borrow().organizations.get(&org_id))
         .ok_or_else(|| "Organization not found".to_string())?;
 
-    org.entity_ids.retain(|&id| id != entity_id);
+    organization.entity_ids.retain(|&id| id != entity_id);
 
     STORAGE.with(|storage| {
-        storage.borrow_mut().organizations.insert(org.id, org);
+        storage.borrow_mut().organizations.insert(organization.id, organization);
     });
 
     Ok(())

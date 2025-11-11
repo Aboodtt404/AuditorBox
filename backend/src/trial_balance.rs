@@ -1,4 +1,4 @@
-use candid::{CandidType, Principal};
+use candid::{encode_args, CandidType, Principal};
 use ic_cdk::api::time;
 use serde::{Deserialize, Serialize};
 
@@ -7,7 +7,6 @@ use crate::auth;
 use crate::storage::{next_trial_balance_id, next_account_id, STORAGE};
 use crate::types::{Result, TrialBalance, TrialBalanceAccount, AccountType, CreateTrialBalanceRequest, UpdateAccountRequest};
 
-// Create a new trial balance for an engagement
 pub fn create_trial_balance(caller: Principal, req: CreateTrialBalanceRequest) -> Result<TrialBalance> {
     let user = auth::get_user(caller).ok_or("User not found")?;
 
@@ -15,7 +14,6 @@ pub fn create_trial_balance(caller: Principal, req: CreateTrialBalanceRequest) -
         return Err("Insufficient permissions to create trial balance".to_string());
     }
 
-    // Verify engagement exists
     let _engagement = STORAGE
         .with(|storage| storage.borrow().engagements.get(&req.engagement_id))
         .ok_or("Engagement not found")?;
@@ -37,33 +35,26 @@ pub fn create_trial_balance(caller: Principal, req: CreateTrialBalanceRequest) -
         storage.borrow_mut().trial_balances.insert(trial_balance.id, trial_balance.clone());
     });
 
+    let snapshot = encode_args((trial_balance.clone(),)).ok();
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "TrialBalance".to_string(),
+        "create_trial_balance".to_string(),
+        "trial_balance".to_string(),
         trial_balance.id.to_string(),
         format!("Created trial balance for engagement {}", req.engagement_id),
+        snapshot,
     );
 
     Ok(trial_balance)
 }
 
-// Add an account to a trial balance
-pub fn add_account(caller: Principal, trial_balance_id: u64, req: UpdateAccountRequest) -> Result<TrialBalanceAccount> {
-    let user = auth::get_user(caller).ok_or("User not found")?;
-
-    if !auth::can_edit_engagement(&user) {
-        return Err("Insufficient permissions to modify trial balance".to_string());
-    }
-
-    // Verify trial balance exists
-    let _tb = STORAGE
-        .with(|storage| storage.borrow().trial_balances.get(&trial_balance_id))
-        .ok_or("Trial balance not found")?;
-
-    let account_name = req.account_name.clone();
-    
-    let account = TrialBalanceAccount {
+fn build_trial_balance_account(
+    trial_balance_id: u64,
+    req: UpdateAccountRequest,
+    caller: Principal,
+    created_at: u64,
+) -> TrialBalanceAccount {
+    TrialBalanceAccount {
         id: next_account_id(),
         trial_balance_id,
         account_number: req.account_number,
@@ -74,26 +65,45 @@ pub fn add_account(caller: Principal, trial_balance_id: u64, req: UpdateAccountR
         fs_line_item: req.fs_line_item,
         notes: req.notes.unwrap_or_default(),
         is_reconciled: false,
-        created_at: time(),
+        created_at,
         created_by: caller,
-    };
+    }
+}
+
+pub fn add_account(caller: Principal, trial_balance_id: u64, req: UpdateAccountRequest) -> Result<TrialBalanceAccount> {
+    let user = auth::get_user(caller).ok_or("User not found")?;
+
+    if !auth::can_edit_engagement(&user) {
+        return Err("Insufficient permissions to modify trial balance".to_string());
+    }
+
+    let _tb = STORAGE
+        .with(|storage| storage.borrow().trial_balances.get(&trial_balance_id))
+        .ok_or("Trial balance not found")?;
+
+    let created_at = time();
+    let account = build_trial_balance_account(trial_balance_id, req, caller, created_at);
 
     STORAGE.with(|storage| {
         storage.borrow_mut().trial_balance_accounts.insert(account.id, account.clone());
     });
 
+    let snapshot = encode_args((account.clone(),)).ok();
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "TrialBalanceAccount".to_string(),
+        "add_trial_balance_account".to_string(),
+        "trial_balance_account".to_string(),
         account.id.to_string(),
-        format!("Added account {} to trial balance {}", account_name, trial_balance_id),
+        format!(
+            "Account {} added to trial balance {}",
+            account.account_number, account.trial_balance_id
+        ),
+        snapshot,
     );
 
     Ok(account)
 }
 
-// Get trial balance by ID
 pub fn get_trial_balance(caller: Principal, id: u64) -> Result<TrialBalance> {
     let _user = auth::get_user(caller).ok_or("User not found")?;
 
@@ -102,7 +112,6 @@ pub fn get_trial_balance(caller: Principal, id: u64) -> Result<TrialBalance> {
         .ok_or_else(|| "Trial balance not found".to_string())
 }
 
-// Get all accounts for a trial balance
 pub fn get_accounts(caller: Principal, trial_balance_id: u64) -> Result<Vec<TrialBalanceAccount>> {
     let _user = auth::get_user(caller).ok_or("User not found")?;
 
@@ -119,7 +128,6 @@ pub fn get_accounts(caller: Principal, trial_balance_id: u64) -> Result<Vec<Tria
     Ok(accounts)
 }
 
-// List trial balances for an engagement
 pub fn list_trial_balances_by_engagement(caller: Principal, engagement_id: u64) -> Result<Vec<TrialBalance>> {
     let _user = auth::get_user(caller).ok_or("User not found")?;
 
@@ -136,7 +144,6 @@ pub fn list_trial_balances_by_engagement(caller: Principal, engagement_id: u64) 
     Ok(trial_balances)
 }
 
-// Validate trial balance (debits = credits)
 pub fn validate_trial_balance(caller: Principal, trial_balance_id: u64) -> Result<TrialBalanceValidation> {
     let _user = auth::get_user(caller).ok_or("User not found")?;
 
@@ -167,7 +174,6 @@ pub fn validate_trial_balance(caller: Principal, trial_balance_id: u64) -> Resul
     })
 }
 
-// Map account to financial statement line item
 pub fn map_to_fs_line(caller: Principal, account_id: u64, fs_line_item: String) -> Result<TrialBalanceAccount> {
     let user = auth::get_user(caller).ok_or("User not found")?;
 
@@ -185,18 +191,19 @@ pub fn map_to_fs_line(caller: Principal, account_id: u64, fs_line_item: String) 
         storage.borrow_mut().trial_balance_accounts.insert(account.id, account.clone());
     });
 
+    let snapshot = encode_args((account.clone(),)).ok();
     log_activity(
         caller,
-        "UPDATE".to_string(),
-        "TrialBalanceAccount".to_string(),
+        "map_account_to_fs_line".to_string(),
+        "trial_balance_account".to_string(),
         account.id.to_string(),
         format!("Mapped account {} to FS line item {}", account.account_name, fs_line_item),
+        snapshot,
     );
 
     Ok(account)
 }
 
-// Import trial balance from CSV data
 pub fn import_trial_balance_csv(
     caller: Principal,
     engagement_id: u64,
@@ -209,7 +216,6 @@ pub fn import_trial_balance_csv(
         return Err("Insufficient permissions to import trial balance".to_string());
     }
 
-    // Create trial balance
     let tb = create_trial_balance(
         caller,
         CreateTrialBalanceRequest {
@@ -220,15 +226,12 @@ pub fn import_trial_balance_csv(
         },
     )?;
 
-    // Import accounts
     let account_count = csv_data.len();
+    let mut accounts = Vec::with_capacity(account_count);
+    let import_timestamp = time();
     for row in csv_data {
         let account_type = infer_account_type(&row.account_number, &row.account_name);
-        
-        add_account(
-            caller,
-            tb.id,
-            UpdateAccountRequest {
+        let account_request = UpdateAccountRequest {
                 account_number: row.account_number,
                 account_name: row.account_name,
                 account_type,
@@ -236,27 +239,38 @@ pub fn import_trial_balance_csv(
                 credit_balance: row.credit_balance,
                 fs_line_item: None,
                 notes: None,
-            },
-        )?;
+        };
+
+        accounts.push(build_trial_balance_account(tb.id, account_request, caller.clone(), import_timestamp));
     }
 
+    let accounts_snapshot = accounts.clone();
+    STORAGE.with(|storage| {
+        let mut storage = storage.borrow_mut();
+        for account in accounts_snapshot.iter() {
+            storage
+                .trial_balance_accounts
+                .insert(account.id, account.clone());
+        }
+    });
+
+    let snapshot = encode_args((accounts_snapshot,)).ok();
     log_activity(
         caller,
-        "IMPORT".to_string(),
-        "TrialBalance".to_string(),
+        "import_trial_balance_csv".to_string(),
+        "trial_balance".to_string(),
         tb.id.to_string(),
         format!("Imported trial balance with {} accounts", account_count),
+        snapshot,
     );
 
     Ok(tb)
 }
 
-// Helper: Infer account type from account number/name
 fn infer_account_type(account_number: &str, account_name: &str) -> AccountType {
     let number = account_number.parse::<u32>().unwrap_or(0);
     let name_lower = account_name.to_lowercase();
 
-    // Standard account number ranges
     if number >= 1000 && number < 2000 {
         return AccountType::Asset;
     }
@@ -273,7 +287,6 @@ fn infer_account_type(account_number: &str, account_name: &str) -> AccountType {
         return AccountType::Expense;
     }
 
-    // Fallback to name-based inference
     if name_lower.contains("asset") || name_lower.contains("receivable") || name_lower.contains("cash") {
         AccountType::Asset
     } else if name_lower.contains("liability") || name_lower.contains("payable") || name_lower.contains("loan") {
@@ -285,11 +298,10 @@ fn infer_account_type(account_number: &str, account_name: &str) -> AccountType {
     } else if name_lower.contains("expense") || name_lower.contains("cost") {
         AccountType::Expense
     } else {
-        AccountType::Asset // Default fallback
+        AccountType::Asset
     }
 }
 
-// CSV import structure
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct CsvAccountRow {
     pub account_number: String,
@@ -298,7 +310,6 @@ pub struct CsvAccountRow {
     pub credit_balance: i64,
 }
 
-// Validation result
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct TrialBalanceValidation {
     pub trial_balance_id: u64,

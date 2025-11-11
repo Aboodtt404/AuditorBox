@@ -33,6 +33,10 @@ import {
   Logout as LogoutIcon,
   FolderShared as PortalIcon,
   AccountBalance as TrialBalanceIcon,
+  CheckCircleOutline as AcceptanceIcon,
+  Email as LetterIcon,
+  Block as ConflictIcon,
+  Dashboard as PlanningIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -45,14 +49,20 @@ const menuItems = [
   { path: '/organizations', icon: BusinessIcon, label: 'nav.organizations', firmOnly: true },
   { path: '/entities', icon: EntityIcon, label: 'nav.entities', firmOnly: true },
   { path: '/clients', icon: ClientIcon, label: 'nav.clients', firmOnly: true },
+  { path: '/client-acceptance', icon: AcceptanceIcon, label: 'nav.clientAcceptance', firmOnly: true },
+  { path: '/conflict-check', icon: ConflictIcon, label: 'nav.conflictCheck', firmOnly: true },
+  { path: '/engagement-letters', icon: LetterIcon, label: 'nav.engagementLetters', firmOnly: true },
   { path: '/engagements', icon: EngagementIcon, label: 'nav.engagements', firmOnly: true },
+  { path: '/engagement-planning', icon: PlanningIcon, label: 'nav.engagementPlanning', firmOnly: true },
   { path: '/data-import', icon: UploadIcon, label: 'nav.dataImport', firmOnly: true },
   { path: '/trial-balance', icon: TrialBalanceIcon, label: 'nav.trialBalance', firmOnly: true },
+  { path: '/financial-statements', icon: TrialBalanceIcon, label: 'nav.financialStatements', firmOnly: true },
   { path: '/working-papers', icon: PaperIcon, label: 'nav.workingPapers', firmOnly: true },
   { path: '/documents', icon: DocumentIcon, label: 'nav.documents', firmOnly: true },
   { path: '/client-portal', icon: PortalIcon, label: 'nav.clientPortal', clientOnly: true },
   { path: '/users', icon: UserIcon, label: 'nav.users', adminOnly: true },
   { path: '/activity-log', icon: LogIcon, label: 'nav.activityLog', firmOnly: true },
+  { path: '/mock-data', icon: LogIcon, label: 'nav.mockData', firmOnly: true },
 ];
 
 export default function Navigation() {

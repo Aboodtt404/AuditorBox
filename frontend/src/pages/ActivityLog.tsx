@@ -23,10 +23,12 @@ import {
   DialogActions,
   Button,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import {
   VerifiedUser as VerifiedIcon,
   Info as InfoIcon,
+  Undo as UndoIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
@@ -44,6 +46,8 @@ const ActivityLog = () => {
   const [limit, setLimit] = useState(100);
   const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
   const [showChainVerification, setShowChainVerification] = useState(false);
+  const [revertingEntryId, setRevertingEntryId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadLogs();
@@ -51,6 +55,7 @@ const ActivityLog = () => {
 
   const loadLogs = async () => {
     try {
+      setLoading(true);
       const data = await call<ActivityLogEntry[]>('get_activity_logs', [[BigInt(limit)]]);
       setLogs(data);
       
@@ -70,6 +75,8 @@ const ActivityLog = () => {
       }
     } catch (error) {
       console.error('Failed to load activity logs:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,19 +88,55 @@ const ActivityLog = () => {
   };
 
   const getActionColor = (action: string) => {
-    switch (action.toUpperCase()) {
-      case 'CREATE':
-        return 'success';
-      case 'UPDATE':
-        return 'info';
-      case 'DELETE':
-        return 'error';
-      case 'IMPORT':
-        return 'warning';
-      case 'UPLOAD':
-        return 'primary';
-      default:
-        return 'default';
+    const normalized = action.toLowerCase();
+    if (normalized.startsWith('create') || normalized.startsWith('revert_create')) {
+      return 'success';
+    }
+    if (normalized.startsWith('update') || normalized.startsWith('revert_update')) {
+      return 'info';
+    }
+    if (normalized.startsWith('delete') || normalized.startsWith('revert_delete')) {
+      return 'error';
+    }
+    if (normalized.includes('import')) {
+      return 'warning';
+    }
+    if (normalized.includes('upload')) {
+      return 'primary';
+    }
+    return 'default';
+  };
+
+  const hasSnapshot = (entry: ActivityLogEntry): boolean => {
+    if (!('snapshot' in entry)) return false;
+    const snapshot = (entry as any).snapshot;
+    if (!snapshot) return false;
+    if (Array.isArray(snapshot)) {
+      return snapshot.length > 0;
+    }
+    return true;
+  };
+
+  const handleRevert = async (entry: ActivityLogEntry) => {
+    if (!hasSnapshot(entry)) {
+      alert(t('activityLog.revertUnavailable'));
+      return;
+    }
+
+    if (!window.confirm(t('activityLog.revertConfirm', { id: entry.id.toString() }))) {
+      return;
+    }
+
+    try {
+      setRevertingEntryId(Number(entry.id));
+      await call('revert_activity_entry', [entry.id]);
+      await loadLogs();
+      alert(t('activityLog.revertSuccess'));
+    } catch (error) {
+      console.error('Failed to revert entry:', error);
+      alert(t('activityLog.revertFailure'));
+    } finally {
+      setRevertingEntryId(null);
     }
   };
 
@@ -117,14 +160,13 @@ const ActivityLog = () => {
           startIcon={<VerifiedIcon />}
           onClick={() => setShowChainVerification(true)}
         >
-          Verify Blockchain Chain
+          {t('activityLog.verifyChain')}
         </Button>
       </Box>
 
       <Alert severity="info" sx={{ mb: 2 }} icon={<InfoIcon />}>
         <Typography variant="body2">
-          All activity logs are cryptographically signed and stored on the Internet Computer blockchain,
-          ensuring tamper-proof audit trails. Click the verification icon next to any entry to verify its integrity.
+          {t('activityLog.blockchainInfo')}
         </Typography>
       </Alert>
 
@@ -136,7 +178,7 @@ const ActivityLog = () => {
               value={filterAction}
               onChange={(e) => setFilterAction(e.target.value)}
             >
-              <MenuItem value="">All</MenuItem>
+              <MenuItem value="">{t('activityLog.allActions')}</MenuItem>
               {uniqueActions.map((action) => (
                 <MenuItem key={action} value={action}>
                   {action}
@@ -151,7 +193,7 @@ const ActivityLog = () => {
               value={filterResource}
               onChange={(e) => setFilterResource(e.target.value)}
             >
-              <MenuItem value="">All</MenuItem>
+              <MenuItem value="">{t('activityLog.allResources')}</MenuItem>
               {uniqueResources.map((resource) => (
                 <MenuItem key={resource} value={resource}>
                   {resource}
@@ -161,7 +203,7 @@ const ActivityLog = () => {
           </FormControl>
 
           <FormControl sx={{ minWidth: 150 }}>
-            <InputLabel>Limit</InputLabel>
+            <InputLabel>{t('activityLog.limit')}</InputLabel>
             <Select value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
               <MenuItem value={50}>50</MenuItem>
               <MenuItem value={100}>100</MenuItem>
@@ -176,18 +218,20 @@ const ActivityLog = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Block #</TableCell>
+              <TableCell>{t('activityLog.blockHeight')}</TableCell>
               <TableCell>{t('activityLog.timestamp')}</TableCell>
               <TableCell>{t('activityLog.user')}</TableCell>
               <TableCell>{t('activityLog.action')}</TableCell>
               <TableCell>{t('activityLog.resource')}</TableCell>
-              <TableCell>Resource ID</TableCell>
+              <TableCell>{t('activityLog.resourceId')}</TableCell>
               <TableCell>{t('activityLog.details')}</TableCell>
-              <TableCell align="center">Blockchain</TableCell>
+              <TableCell align="center">{t('activityLog.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredLogs.map((log) => {
+              const entryIdNumber = Number(log.id);
+              const isReverting = revertingEntryId === entryIdNumber;
               return (
                 <TableRow key={log.id.toString()} hover>
                   <TableCell>
@@ -217,7 +261,7 @@ const ActivityLog = () => {
                   <TableCell>{log.resource_id}</TableCell>
                   <TableCell>{log.details}</TableCell>
                   <TableCell align="center">
-                    <Tooltip title="Verify blockchain proof">
+                    <Tooltip title={t('activityLog.verifyEntry')}>
                       <IconButton
                         size="small"
                         color="primary"
@@ -225,6 +269,22 @@ const ActivityLog = () => {
                       >
                         <VerifiedIcon fontSize="small" />
                       </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t('activityLog.revert')}>
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="secondary"
+                          onClick={() => handleRevert(log)}
+                          disabled={isReverting || !hasSnapshot(log) || log.action.startsWith('revert_')}
+                        >
+                          {isReverting ? (
+                            <CircularProgress size={16} />
+                          ) : (
+                            <UndoIcon fontSize="small" />
+                          )}
+                        </IconButton>
+                      </span>
                     </Tooltip>
                   </TableCell>
                 </TableRow>
@@ -234,9 +294,14 @@ const ActivityLog = () => {
         </Table>
       </TableContainer>
 
-      {filteredLogs.length === 0 && (
+      {filteredLogs.length === 0 && !loading && (
         <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Typography color="text.secondary">No activity logs found</Typography>
+          <Typography color="text.secondary">{t('activityLog.noLogs')}</Typography>
+        </Box>
+      )}
+      {loading && (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <CircularProgress />
         </Box>
       )}
 
@@ -247,14 +312,14 @@ const ActivityLog = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Blockchain Verification</DialogTitle>
+        <DialogTitle>{t('activityLog.verifyDialogTitle')}</DialogTitle>
         <DialogContent>
           {selectedEntryId !== null && (
             <BlockchainVerification entryId={selectedEntryId} />
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSelectedEntryId(null)}>Close</Button>
+          <Button onClick={() => setSelectedEntryId(null)}>{t('common.close')}</Button>
         </DialogActions>
       </Dialog>
 
@@ -265,12 +330,12 @@ const ActivityLog = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Verify Entire Blockchain Chain</DialogTitle>
+        <DialogTitle>{t('activityLog.verifyChainTitle')}</DialogTitle>
         <DialogContent>
           <ChainVerification />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowChainVerification(false)}>Close</Button>
+          <Button onClick={() => setShowChainVerification(false)}>{t('common.close')}</Button>
         </DialogActions>
       </Dialog>
     </Container>

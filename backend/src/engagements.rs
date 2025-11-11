@@ -1,5 +1,6 @@
 use candid::Principal;
 use ic_cdk::api::time;
+use candid::encode_args;
 
 use crate::activity_log::log_activity;
 use crate::auth;
@@ -52,12 +53,14 @@ pub fn create_engagement(caller: Principal, req: CreateEngagementRequest) -> Res
             .insert(engagement.id, engagement.clone());
     });
 
+    let snapshot = encode_args((engagement.clone(),)).ok();
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "Engagement".to_string(),
+        "create_engagement".to_string(),
+        "engagement".to_string(),
         engagement.id.to_string(),
-        format!("Created engagement: {}", engagement.name),
+        format!("Engagement {} created", engagement.name),
+        snapshot,
     );
 
     Ok(engagement)
@@ -164,12 +167,14 @@ pub fn update_engagement(caller: Principal, req: UpdateEngagementRequest) -> Res
             .insert(engagement.id, engagement.clone());
     });
 
+    let snapshot = encode_args((engagement.clone(),)).ok();
     log_activity(
         caller,
-        "UPDATE".to_string(),
-        "Engagement".to_string(),
+        "update_engagement".to_string(),
+        "engagement".to_string(),
         engagement.id.to_string(),
-        format!("Updated engagement: {}", engagement.name),
+        format!("Engagement {} updated", engagement.name),
+        snapshot,
     );
 
     Ok(engagement)
@@ -191,12 +196,14 @@ pub fn delete_engagement(caller: Principal, id: u64) -> Result<()> {
         storage.borrow_mut().engagements.remove(&id);
     });
 
+    let snapshot = encode_args((engagement.clone(),)).ok();
     log_activity(
         caller,
-        "DELETE".to_string(),
-        "Engagement".to_string(),
-        id.to_string(),
-        format!("Deleted engagement: {}", engagement.name),
+        "delete_engagement".to_string(),
+        "engagement".to_string(),
+        engagement.id.to_string(),
+        format!("Engagement {} deleted", engagement.name),
+        snapshot,
     );
 
     Ok(())

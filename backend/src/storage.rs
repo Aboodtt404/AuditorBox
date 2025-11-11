@@ -239,6 +239,102 @@ impl Storable for AjeLineItem {
     const BOUND: Bound = Bound::Unbounded;
 }
 
+impl Storable for FinancialStatement {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for ClientAcceptance {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for EngagementLetter {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for ConflictCheck {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for EngagementSetupTemplate {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for EngagementMilestone {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for EngagementBudget {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for TimeEntry {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
 // Storable for String keys
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct StorableString(pub String);
@@ -274,6 +370,14 @@ pub struct Storage {
     pub trial_balance_accounts: StableBTreeMap<u64, TrialBalanceAccount, Memory>,
     pub adjusting_entries: StableBTreeMap<u64, AdjustingJournalEntry, Memory>,
     pub aje_line_items: StableBTreeMap<u64, AjeLineItem, Memory>,
+    pub financial_statements: StableBTreeMap<u64, FinancialStatement, Memory>,
+    pub client_acceptances: StableBTreeMap<u64, ClientAcceptance, Memory>,
+    pub engagement_letters: StableBTreeMap<u64, EngagementLetter, Memory>,
+    pub conflict_checks: StableBTreeMap<u64, ConflictCheck, Memory>,
+    pub engagement_templates: StableBTreeMap<u64, EngagementSetupTemplate, Memory>,
+    pub engagement_milestones: StableBTreeMap<u64, EngagementMilestone, Memory>,
+    pub engagement_budgets: StableBTreeMap<u64, EngagementBudget, Memory>,
+    pub time_entries: StableBTreeMap<u64, TimeEntry, Memory>,
 }
 
 thread_local! {
@@ -301,6 +405,14 @@ thread_local! {
                 trial_balance_accounts: StableBTreeMap::init(m.get(MemoryId::new(14))),
                 adjusting_entries: StableBTreeMap::init(m.get(MemoryId::new(15))),
                 aje_line_items: StableBTreeMap::init(m.get(MemoryId::new(16))),
+                financial_statements: StableBTreeMap::init(m.get(MemoryId::new(17))),
+                client_acceptances: StableBTreeMap::init(m.get(MemoryId::new(18))),
+                engagement_letters: StableBTreeMap::init(m.get(MemoryId::new(19))),
+                conflict_checks: StableBTreeMap::init(m.get(MemoryId::new(20))),
+                engagement_templates: StableBTreeMap::init(m.get(MemoryId::new(21))),
+                engagement_milestones: StableBTreeMap::init(m.get(MemoryId::new(22))),
+                engagement_budgets: StableBTreeMap::init(m.get(MemoryId::new(23))),
+                time_entries: StableBTreeMap::init(m.get(MemoryId::new(24))),
             }
         })
     );
@@ -318,6 +430,7 @@ thread_local! {
     pub static NEXT_ACCOUNT_ID: RefCell<u64> = RefCell::new(1);
     pub static NEXT_AJE_ID: RefCell<u64> = RefCell::new(1);
     pub static NEXT_AJE_LINE_ITEM_ID: RefCell<u64> = RefCell::new(1);
+    pub static NEXT_FS_ID: RefCell<u64> = RefCell::new(1);
 }
 
 // Helper functions for ID generation
@@ -422,6 +535,15 @@ pub fn next_aje_id() -> u64 {
 
 pub fn next_aje_line_item_id() -> u64 {
     NEXT_AJE_LINE_ITEM_ID.with(|counter| {
+        let mut counter = counter.borrow_mut();
+        let id = *counter;
+        *counter += 1;
+        id
+    })
+}
+
+pub fn next_fs_id() -> u64 {
+    NEXT_FS_ID.with(|counter| {
         let mut counter = counter.borrow_mut();
         let id = *counter;
         *counter += 1;

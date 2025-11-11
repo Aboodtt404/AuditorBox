@@ -1,4 +1,4 @@
-use candid::Principal;
+use candid::{encode_args, Principal};
 use ic_cdk::api::time;
 
 use crate::activity_log::log_activity;
@@ -63,10 +63,11 @@ pub fn create_working_paper(
 
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "WorkingPaper".to_string(),
+        "create_working_paper".to_string(),
+        "working_paper".to_string(),
         working_paper.id.to_string(),
-        format!("Created working paper: {}", req.name),
+        format!("Working paper {} created", working_paper.name),
+        encode_args((working_paper.clone(),)).ok(),
     );
 
     Ok(working_paper)
@@ -361,17 +362,27 @@ pub fn link_document_to_working_paper(
 
     if !wp.linked_document_ids.contains(&document_id) {
         wp.linked_document_ids.push(document_id);
-        STORAGE.with(|storage| {
-            storage.borrow_mut().working_papers.insert(wp.id, wp);
-        });
     }
+
+    let snapshot_wp = wp.clone();
+
+    STORAGE.with(|storage| {
+        storage
+            .borrow_mut()
+            .working_papers
+            .insert(wp.id, snapshot_wp.clone());
+    });
 
     log_activity(
         caller,
-        "LINK".to_string(),
-        "WorkingPaper".to_string(),
+        "link_document_to_working_paper".to_string(),
+        "working_paper".to_string(),
         working_paper_id.to_string(),
-        format!("Linked document {} to working paper", document_id),
+        format!(
+            "Document {} linked to working paper {}",
+            document_id, working_paper_id
+        ),
+        encode_args((snapshot_wp,)).ok(),
     );
 
     Ok(())

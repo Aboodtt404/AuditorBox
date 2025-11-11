@@ -17,7 +17,8 @@ export interface User {
 }
 
 export enum XBRLTaxonomy {
-  USGAAP = 'USGAAP',
+  EAS = 'EAS',
+  GCC = 'GCC',
   IFRS = 'IFRS',
 }
 
@@ -44,9 +45,15 @@ export interface Entity {
 export interface Client {
   id: bigint;
   name: string;
+  name_ar?: string;
   contact_email: string;
   contact_phone: string;
   address: string;
+  tax_registration_number?: string;
+  commercial_registration?: string;
+  industry_code?: string;
+  organization_id?: bigint;
+  entity_id?: bigint;
   created_at: bigint;
   created_by: string;
 }
@@ -216,6 +223,7 @@ export interface ActivityLogEntry {
   signature: string;
   previous_hash: string;
   block_height: bigint;
+  snapshot?: [] | [Uint8Array];
 }
 
 export interface BlockchainProof {

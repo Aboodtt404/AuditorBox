@@ -1,4 +1,4 @@
-use candid::Principal;
+use candid::{encode_args, Principal};
 use ic_cdk::api::time;
 
 use crate::activity_log::log_activity;
@@ -55,10 +55,11 @@ pub fn upload_document(caller: Principal, req: UploadDocumentRequest) -> Result<
 
     log_activity(
         caller,
-        "UPLOAD".to_string(),
-        "Document".to_string(),
+        "upload_document".to_string(),
+        "document".to_string(),
         document.id.to_string(),
-        format!("Uploaded document: {}", req.name),
+        format!("Document {} uploaded", document.name),
+        encode_args((document.clone(),)).ok(),
     );
 
     Ok(document)
@@ -100,10 +101,11 @@ pub fn download_document(caller: Principal, id: u64) -> Result<Vec<u8>> {
 
     log_activity(
         caller,
-        "DOWNLOAD".to_string(),
-        "Document".to_string(),
+        "download_document".to_string(),
+        "document".to_string(),
         id.to_string(),
         format!("Downloaded document: {}", document.name),
+        None,
     );
 
     Ok(data)
@@ -209,10 +211,11 @@ pub fn grant_document_access(
 
         log_activity(
             caller,
-            "GRANT_ACCESS".to_string(),
-            "Document".to_string(),
+            "grant_document_access".to_string(),
+            "document".to_string(),
             document_id.to_string(),
-            format!("Granted access to principal: {}", principal),
+            format!("Document {} access granted to {}", document_id, principal),
+            None,
         );
     }
 
@@ -238,19 +241,22 @@ pub fn revoke_document_access(
 
     document.access_principals.retain(|p| p != &principal);
 
+    let snapshot = encode_args((document.clone(),)).ok();
+
     STORAGE.with(|storage| {
         storage
             .borrow_mut()
             .documents
-            .insert(document.id, document);
+            .insert(document.id, document.clone());
     });
 
     log_activity(
         caller,
-        "REVOKE_ACCESS".to_string(),
-        "Document".to_string(),
-        document_id.to_string(),
-        format!("Revoked access from principal: {}", principal),
+        "revoke_document_access".to_string(),
+        "document".to_string(),
+        document.id.to_string(),
+        format!("Document {} access revoked for {}", document.id, principal),
+        snapshot,
     );
 
     Ok(())
@@ -269,16 +275,19 @@ pub fn delete_document(caller: Principal, id: u64) -> Result<()> {
         return Err("Insufficient permissions to delete document".to_string());
     }
 
+    let snapshot = encode_args((document.clone(),)).ok();
+
     STORAGE.with(|storage| {
         storage.borrow_mut().documents.remove(&id);
     });
 
     log_activity(
         caller,
-        "DELETE".to_string(),
-        "Document".to_string(),
+        "delete_document".to_string(),
+        "document".to_string(),
         id.to_string(),
-        format!("Deleted document: {}", document.name),
+        format!("Document {} deleted", id),
+        snapshot,
     );
 
     Ok(())

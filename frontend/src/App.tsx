@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { CustomThemeProvider } from './ThemeProvider';
 import { AuthProvider } from './hooks/useAuth';
 import Navigation from './components/Navigation';
 import PageLayout from './components/PageLayout';
@@ -18,12 +18,16 @@ import UserManagement from './pages/UserManagement';
 import ActivityLog from './pages/ActivityLog';
 import ClientPortal from './pages/ClientPortal';
 import TrialBalance from './pages/TrialBalance';
-import theme from './theme';
+import FinancialStatements from './pages/FinancialStatements';
+// import ClientAcceptance from './pages/ClientAcceptance';
+import EngagementLetters from './pages/EngagementLetters';
+import ConflictCheck from './pages/ConflictCheck';
+import EngagementPlanning from './pages/EngagementPlanning';
+import MockDataGenerator from './pages/MockDataGenerator';
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <CustomThemeProvider>
       <AuthProvider>
         <Router>
           <Navigation />
@@ -146,10 +150,70 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/financial-statements"
+              element={
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <FinancialStatements />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route
+              path="/client-acceptance"
+              element={
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <ClientAcceptance />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            /> */}
+            <Route
+              path="/engagement-letters"
+              element={
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <EngagementLetters />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/conflict-check"
+              element={
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <ConflictCheck />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/engagement-planning"
+              element={
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <EngagementPlanning />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/mock-data"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <PageLayout>
+                    <MockDataGenerator />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </Router>
       </AuthProvider>
-    </ThemeProvider>
+    </CustomThemeProvider>
   );
 }
 

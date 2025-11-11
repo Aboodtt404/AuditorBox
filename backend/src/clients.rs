@@ -1,5 +1,6 @@
 use candid::Principal;
 use ic_cdk::api::time;
+use candid::encode_args;
 
 use crate::activity_log::log_activity;
 use crate::auth;
@@ -17,9 +18,15 @@ pub fn create_client(caller: Principal, req: CreateClientRequest) -> Result<Clie
     let client = Client {
         id: next_client_id(),
         name: req.name,
+        name_ar: req.name_ar,
         contact_email: req.contact_email,
         contact_phone: req.contact_phone,
         address: req.address,
+        tax_registration_number: req.tax_registration_number,
+        commercial_registration: req.commercial_registration,
+        industry_code: req.industry_code,
+        organization_id: req.organization_id,
+        entity_id: req.entity_id,
         created_at: time(),
         created_by: caller,
     };
@@ -28,12 +35,14 @@ pub fn create_client(caller: Principal, req: CreateClientRequest) -> Result<Clie
         storage.borrow_mut().clients.insert(client.id, client.clone());
     });
 
+    let snapshot = encode_args((client.clone(),)).ok();
     log_activity(
         caller,
-        "CREATE".to_string(),
-        "Client".to_string(),
+        "create_client".to_string(),
+        "client".to_string(),
         client.id.to_string(),
-        format!("Created client: {}", client.name),
+        format!("Client {} created", client.name),
+        snapshot,
     );
 
     Ok(client)
@@ -77,20 +86,28 @@ pub fn update_client(caller: Principal, req: UpdateClientRequest) -> Result<Clie
         .ok_or_else(|| "Client not found".to_string())?;
 
     client.name = req.name;
+    client.name_ar = req.name_ar;
     client.contact_email = req.contact_email;
     client.contact_phone = req.contact_phone;
     client.address = req.address;
+    client.tax_registration_number = req.tax_registration_number;
+    client.commercial_registration = req.commercial_registration;
+    client.industry_code = req.industry_code;
+    client.organization_id = req.organization_id;
+    client.entity_id = req.entity_id;
 
     STORAGE.with(|storage| {
         storage.borrow_mut().clients.insert(client.id, client.clone());
     });
 
+    let snapshot = encode_args((client.clone(),)).ok();
     log_activity(
         caller,
-        "UPDATE".to_string(),
-        "Client".to_string(),
+        "update_client".to_string(),
+        "client".to_string(),
         client.id.to_string(),
-        format!("Updated client: {}", client.name),
+        format!("Client {} updated", client.name),
+        snapshot,
     );
 
     Ok(client)
@@ -112,14 +129,50 @@ pub fn delete_client(caller: Principal, id: u64) -> Result<()> {
         storage.borrow_mut().clients.remove(&id);
     });
 
+    let snapshot = encode_args((client.clone(),)).ok();
     log_activity(
         caller,
-        "DELETE".to_string(),
-        "Client".to_string(),
+        "delete_client".to_string(),
+        "client".to_string(),
         id.to_string(),
-        format!("Deleted client: {}", client.name),
+        format!("Client {} deleted", client.name),
+        snapshot,
     );
 
     Ok(())
+}
+
+// List clients by organization
+pub fn list_clients_by_organization(caller: Principal, organization_id: u64) -> Result<Vec<Client>> {
+    let _user = auth::get_user(caller).ok_or("User not found")?;
+
+    let clients = STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .clients
+            .iter()
+            .filter(|(_, client)| client.organization_id == Some(organization_id))
+            .map(|(_, client)| client)
+            .collect()
+    });
+
+    Ok(clients)
+}
+
+// List clients by entity
+pub fn list_clients_by_entity(caller: Principal, entity_id: u64) -> Result<Vec<Client>> {
+    let _user = auth::get_user(caller).ok_or("User not found")?;
+
+    let clients = STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .clients
+            .iter()
+            .filter(|(_, client)| client.entity_id == Some(entity_id))
+            .map(|(_, client)| client)
+            .collect()
+    });
+
+    Ok(clients)
 }
 

@@ -41,6 +41,22 @@ const Entities = () => {
     taxonomy_config: '{}',
   });
 
+  const getTaxonomyDisplay = (taxonomy: any) => {
+    if (!taxonomy || !Array.isArray(taxonomy) || taxonomy.length === 0) {
+      return t('entities.noTaxonomy');
+    }
+    
+    const taxonomyKey = Object.keys(taxonomy[0])[0];
+    const taxonomyNames: Record<string, string> = {
+      'EAS': 'EAS (Egyptian Accounting Standards)',
+      'GCC': 'GCC Standards',
+      'IFRS': 'IFRS',
+      'Custom': 'Custom'
+    };
+    
+    return taxonomyNames[taxonomyKey] || taxonomyKey;
+  };
+
   useEffect(() => {
     loadData();
   }, []);
@@ -60,14 +76,28 @@ const Entities = () => {
 
   const handleSave = async () => {
     try {
+      // Properly handle optional taxonomy field - Candid expects [] for None or [value] for Some
+      let taxonomy: any[] = [];
+      if (formData.taxonomy && formData.taxonomy !== '') {
+        taxonomy = [{ [formData.taxonomy]: null }];
+      }
+
       await call('create_entity', [{
         organization_id: BigInt(formData.organization_id),
         name: formData.name,
         description: formData.description,
-        taxonomy: formData.taxonomy ? [{ [formData.taxonomy]: null }] : [],
+        taxonomy: taxonomy,
         taxonomy_config: formData.taxonomy_config,
       }]);
+      
       setDialogOpen(false);
+      setFormData({
+        organization_id: '',
+        name: '',
+        description: '',
+        taxonomy: '',
+        taxonomy_config: '{}',
+      });
       loadData();
     } catch (error) {
       console.error('Failed to save entity:', error);
@@ -101,7 +131,7 @@ const Entities = () => {
                   {organizations.find((o) => o.id === entity.organization_id)?.name}
                 </TableCell>
                 <TableCell>
-                  {entity.taxonomy ? JSON.stringify(entity.taxonomy) : 'None'}
+                  {getTaxonomyDisplay(entity.taxonomy)}
                 </TableCell>
                 <TableCell align="right">
                   <IconButton size="small" color="primary"><Edit /></IconButton>
@@ -152,7 +182,8 @@ const Entities = () => {
               onChange={(e) => setFormData({ ...formData, taxonomy: e.target.value })}
             >
               <MenuItem value="">None</MenuItem>
-              <MenuItem value="USGAAP">US GAAP</MenuItem>
+              <MenuItem value="EAS">EAS (Egyptian Accounting Standards)</MenuItem>
+              <MenuItem value="GCC">GCC Standards</MenuItem>
               <MenuItem value="IFRS">IFRS</MenuItem>
             </Select>
           </FormControl>

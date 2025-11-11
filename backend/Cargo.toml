@@ -17,3 +17,6 @@ calamine = { version = "0.24", default-features = false, features = ["dates"] }
 regex = "1.10"
 base64 = "0.21"
 
+[package.metadata.ic]
+candid = "backend.did"
+
