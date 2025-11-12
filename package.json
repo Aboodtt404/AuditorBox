@@ -6,7 +6,8 @@
     "dev": "cd frontend && vite",
     "build": "cd frontend && vite build",
     "preview": "cd frontend && vite preview",
-    "install-frontend": "cd frontend && npm install"
+    "install-frontend": "cd frontend && npm install",
+    "sync-ids": "bash scripts/sync-canister-ids.sh"
   },
   "workspaces": [
     "frontend"

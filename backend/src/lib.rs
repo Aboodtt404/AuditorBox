@@ -440,6 +440,45 @@ fn grant_client_access(
     client_portal::grant_client_access(caller, input)
 }
 
+// Invitation System
+#[update]
+fn create_invitation(
+    input: client_portal::CreateInvitationRequest,
+) -> Result<client_portal::EngagementInvitation> {
+    let caller = ic_cdk::caller();
+    client_portal::create_invitation(caller, input)
+}
+
+#[query]
+fn get_my_invitations() -> Result<Vec<client_portal::EngagementInvitation>> {
+    let caller = ic_cdk::caller();
+    client_portal::get_my_invitations(caller)
+}
+
+#[update]
+fn accept_invitation(
+    input: client_portal::AcceptInvitationRequest,
+) -> Result<client_portal::ClientAccess> {
+    let caller = ic_cdk::caller();
+    client_portal::accept_invitation(caller, input)
+}
+
+#[update]
+fn reject_invitation(
+    input: client_portal::RejectInvitationRequest,
+) -> Result<client_portal::EngagementInvitation> {
+    let caller = ic_cdk::caller();
+    client_portal::reject_invitation(caller, input)
+}
+
+#[query]
+fn get_invitations_for_engagement(
+    engagement_id: u64,
+) -> Result<Vec<client_portal::EngagementInvitation>> {
+    let caller = ic_cdk::caller();
+    client_portal::get_invitations_for_engagement(caller, engagement_id)
+}
+
 #[query]
 fn get_document_requests_for_engagement(
     engagement_id: u64,
@@ -452,6 +491,12 @@ fn get_document_requests_for_engagement(
 fn get_my_document_requests() -> Result<Vec<client_portal::DocumentRequest>> {
     let caller = ic_cdk::caller();
     client_portal::get_my_document_requests(caller)
+}
+
+#[query]
+fn get_my_engagements() -> Result<Vec<(u64, String, String)>> {
+    let caller = ic_cdk::caller();
+    client_portal::get_my_engagements(caller)
 }
 
 #[update]

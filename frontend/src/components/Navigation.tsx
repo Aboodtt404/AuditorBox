@@ -59,6 +59,7 @@ const menuItems = [
   { path: '/financial-statements', icon: TrialBalanceIcon, label: 'nav.financialStatements', firmOnly: true },
   { path: '/working-papers', icon: PaperIcon, label: 'nav.workingPapers', firmOnly: true },
   { path: '/documents', icon: DocumentIcon, label: 'nav.documents', firmOnly: true },
+  { path: '/document-requests', icon: DocumentIcon, label: 'nav.documentRequests', firmOnly: true },
   { path: '/client-portal', icon: PortalIcon, label: 'nav.clientPortal', clientOnly: true },
   { path: '/users', icon: UserIcon, label: 'nav.users', adminOnly: true },
   { path: '/activity-log', icon: LogIcon, label: 'nav.activityLog', firmOnly: true },

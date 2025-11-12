@@ -8,7 +8,7 @@ use std::cell::RefCell;
 use candid::{Principal, Encode, Decode};
 
 use crate::types::*;
-use crate::client_portal::{DocumentRequest, ClientAccess};
+use crate::client_portal::{DocumentRequest, ClientAccess, EngagementInvitation};
 use crate::templates::{AuditTemplate, EngagementChecklist};
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
@@ -154,6 +154,18 @@ impl Storable for DocumentRequest {
 }
 
 impl Storable for ClientAccess {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(Encode!(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
+impl Storable for EngagementInvitation {
     fn to_bytes(&self) -> Cow<[u8]> {
         Cow::Owned(Encode!(self).unwrap())
     }
@@ -364,6 +376,7 @@ pub struct Storage {
     pub activity_logs: StableBTreeMap<u64, ActivityLogEntry, Memory>,
     pub client_portal_requests: StableBTreeMap<u64, DocumentRequest, Memory>,
     pub client_access: StableBTreeMap<StorableString, ClientAccess, Memory>,
+    pub engagement_invitations: StableBTreeMap<u64, EngagementInvitation, Memory>,
     pub audit_templates: StableBTreeMap<u64, AuditTemplate, Memory>,
     pub engagement_checklists: StableBTreeMap<u64, EngagementChecklist, Memory>,
     pub trial_balances: StableBTreeMap<u64, TrialBalance, Memory>,
@@ -399,6 +412,7 @@ thread_local! {
                 activity_logs: StableBTreeMap::init(m.get(MemoryId::new(8))),
                 client_portal_requests: StableBTreeMap::init(m.get(MemoryId::new(9))),
                 client_access: StableBTreeMap::init(m.get(MemoryId::new(10))),
+                engagement_invitations: StableBTreeMap::init(m.get(MemoryId::new(25))),
                 audit_templates: StableBTreeMap::init(m.get(MemoryId::new(11))),
                 engagement_checklists: StableBTreeMap::init(m.get(MemoryId::new(12))),
                 trial_balances: StableBTreeMap::init(m.get(MemoryId::new(13))),

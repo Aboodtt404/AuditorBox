@@ -51,6 +51,34 @@ pub enum ClientAccessLevel {
     Full,
 }
 
+// Engagement Invitation - email-based invitation system
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct EngagementInvitation {
+    pub id: u64,
+    pub engagement_id: u64,
+    pub engagement_name: String, // Cache for display
+    pub invited_email: String,
+    pub invited_by: Principal,
+    pub invited_by_name: String, // Cache for display
+    pub invited_at: u64,
+    pub access_level: ClientAccessLevel,
+    pub status: InvitationStatus,
+    pub accepted_at: Option<u64>,
+    pub accepted_by: Option<Principal>, // Actual principal who accepted
+    pub rejected_at: Option<u64>,
+    pub rejection_reason: Option<String>,
+    pub message: Option<String>, // Optional message from inviter
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
+pub enum InvitationStatus {
+    Pending,
+    Accepted,
+    Rejected,
+    Expired,
+    Cancelled,
+}
+
 // Request Types
 #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct CreateDocumentRequestInput {
@@ -84,6 +112,25 @@ pub struct ApproveDocumentInput {
     pub request_id: u64,
     pub approved: bool,
     pub rejection_reason: Option<String>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct CreateInvitationRequest {
+    pub engagement_id: u64,
+    pub invited_email: String,
+    pub access_level: ClientAccessLevel,
+    pub message: Option<String>,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct AcceptInvitationRequest {
+    pub invitation_id: u64,
+}
+
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+pub struct RejectInvitationRequest {
+    pub invitation_id: u64,
+    pub reason: Option<String>,
 }
 
 // Create a document request
@@ -260,6 +307,38 @@ pub fn get_my_document_requests(caller: Principal) -> Result<Vec<DocumentRequest
     Ok(requests)
 }
 
+// Get list of engagements the current client has access to
+pub fn get_my_engagements(caller: Principal) -> Result<Vec<(u64, String, String)>> {
+    let _user = auth::get_user(caller).ok_or("User not found")?;
+
+    // Get all engagements this client has access to
+    let accessible_engagement_ids: Vec<u64> = STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .client_access
+            .iter()
+            .filter(|(key, _)| key.0.starts_with(&caller.to_text()))
+            .map(|(_, access)| access.engagement_id)
+            .collect()
+    });
+
+    // Fetch engagement details
+    let engagements: Vec<(u64, String, String)> = STORAGE.with(|storage| {
+        accessible_engagement_ids
+            .iter()
+            .filter_map(|&eng_id| {
+                storage
+                    .borrow()
+                    .engagements
+                    .get(&eng_id)
+                    .map(|eng| (eng.id, eng.name.clone(), eng.status.clone()))
+            })
+            .collect()
+    });
+
+    Ok(engagements)
+}
+
 // Client fulfills a document request by uploading a document
 pub fn fulfill_document_request(
     caller: Principal,
@@ -408,5 +487,272 @@ pub fn get_client_access_for_engagement(
 pub fn has_client_access(caller: Principal, engagement_id: u64) -> bool {
     let key = StorableString(format!("{}:{}", caller.to_text(), engagement_id));
     STORAGE.with(|storage| storage.borrow().client_access.contains_key(&key))
+}
+
+// ============================================================================
+// Invitation System
+// ============================================================================
+
+// Create an invitation (email-based)
+pub fn create_invitation(
+    caller: Principal,
+    input: CreateInvitationRequest,
+) -> Result<EngagementInvitation> {
+    let user = auth::get_user(caller).ok_or("User not found")?;
+
+    // Only senior and above can send invitations
+    if !auth::is_senior_or_above(&user) {
+        return Err("Insufficient permissions to send invitations".to_string());
+    }
+
+    // Verify engagement exists
+    let engagement = STORAGE
+        .with(|storage| storage.borrow().engagements.get(&input.engagement_id))
+        .ok_or_else(|| "Engagement not found".to_string())?;
+
+    // Validate email format
+    if !input.invited_email.contains('@') {
+        return Err("Invalid email address".to_string());
+    }
+
+    // Check if there's already a pending invitation for this email + engagement
+    let existing_invitation = STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .engagement_invitations
+            .iter()
+            .find(|(_, inv)| {
+                inv.engagement_id == input.engagement_id
+                    && inv.invited_email == input.invited_email
+                    && inv.status == InvitationStatus::Pending
+            })
+            .map(|(_, inv)| inv)
+    });
+
+    if existing_invitation.is_some() {
+        return Err("An invitation to this email for this engagement already exists".to_string());
+    }
+
+    let id = STORAGE.with(|storage| {
+        let borrowed = storage.borrow_mut();
+        let current_max = borrowed
+            .engagement_invitations
+            .iter()
+            .map(|(_, inv)| inv.id)
+            .max()
+            .unwrap_or(0);
+        current_max + 1
+    });
+
+    let invitation = EngagementInvitation {
+        id,
+        engagement_id: input.engagement_id,
+        engagement_name: engagement.name.clone(),
+        invited_email: input.invited_email.clone(),
+        invited_by: caller,
+        invited_by_name: user.name.clone(),
+        invited_at: time(),
+        access_level: input.access_level.clone(),
+        status: InvitationStatus::Pending,
+        accepted_at: None,
+        accepted_by: None,
+        rejected_at: None,
+        rejection_reason: None,
+        message: input.message.clone(),
+    };
+
+    STORAGE.with(|storage| {
+        storage
+            .borrow_mut()
+            .engagement_invitations
+            .insert(invitation.id, invitation.clone());
+    });
+
+    log_activity(
+        caller,
+        "create_invitation".to_string(),
+        "engagement_invitation".to_string(),
+        invitation.id.to_string(),
+        format!(
+            "Sent invitation to {} for engagement {}",
+            input.invited_email, engagement.name
+        ),
+        encode_args((invitation.clone(),)).ok(),
+    );
+
+    Ok(invitation)
+}
+
+// Get invitations for current user (by email)
+pub fn get_my_invitations(caller: Principal) -> Result<Vec<EngagementInvitation>> {
+    let user = auth::get_user(caller).ok_or("User not found")?;
+
+    // Must be a client user
+    if !auth::is_client_user(&user) {
+        return Err("Only client users can view invitations".to_string());
+    }
+
+    let invitations = STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .engagement_invitations
+            .iter()
+            .filter(|(_, inv)| {
+                inv.invited_email.to_lowercase() == user.email.to_lowercase()
+                    && inv.status == InvitationStatus::Pending
+            })
+            .map(|(_, inv)| inv)
+            .collect()
+    });
+
+    Ok(invitations)
+}
+
+// Accept invitation
+pub fn accept_invitation(
+    caller: Principal,
+    input: AcceptInvitationRequest,
+) -> Result<ClientAccess> {
+    let user = auth::get_user(caller).ok_or("User not found")?;
+
+    // Must be a client user
+    if !auth::is_client_user(&user) {
+        return Err("Only client users can accept invitations".to_string());
+    }
+
+    let mut invitation = STORAGE
+        .with(|storage| storage.borrow().engagement_invitations.get(&input.invitation_id))
+        .ok_or_else(|| "Invitation not found".to_string())?;
+
+    // Verify email matches
+    if invitation.invited_email.to_lowercase() != user.email.to_lowercase() {
+        return Err("This invitation was not sent to your email address".to_string());
+    }
+
+    // Check status
+    if invitation.status != InvitationStatus::Pending {
+        return Err(format!("Invitation is no longer pending (status: {:?})", invitation.status));
+    }
+
+    // Update invitation status
+    invitation.status = InvitationStatus::Accepted;
+    invitation.accepted_at = Some(time());
+    invitation.accepted_by = Some(caller);
+
+    STORAGE.with(|storage| {
+        storage
+            .borrow_mut()
+            .engagement_invitations
+            .insert(invitation.id, invitation.clone());
+    });
+
+    // Grant access
+    let access = ClientAccess {
+        principal: caller,
+        engagement_id: invitation.engagement_id,
+        granted_by: invitation.invited_by,
+        granted_at: time(),
+        access_level: invitation.access_level.clone(),
+    };
+
+    let key = StorableString(format!("{}:{}", caller.to_text(), invitation.engagement_id));
+
+    STORAGE.with(|storage| {
+        storage
+            .borrow_mut()
+            .client_access
+            .insert(key, access.clone());
+    });
+
+    log_activity(
+        caller,
+        "accept_invitation".to_string(),
+        "engagement_invitation".to_string(),
+        invitation.id.to_string(),
+        format!(
+            "Accepted invitation to engagement {}",
+            invitation.engagement_name
+        ),
+        encode_args((access.clone(),)).ok(),
+    );
+
+    Ok(access)
+}
+
+// Reject invitation
+pub fn reject_invitation(
+    caller: Principal,
+    input: RejectInvitationRequest,
+) -> Result<EngagementInvitation> {
+    let user = auth::get_user(caller).ok_or("User not found")?;
+
+    // Must be a client user
+    if !auth::is_client_user(&user) {
+        return Err("Only client users can reject invitations".to_string());
+    }
+
+    let mut invitation = STORAGE
+        .with(|storage| storage.borrow().engagement_invitations.get(&input.invitation_id))
+        .ok_or_else(|| "Invitation not found".to_string())?;
+
+    // Verify email matches
+    if invitation.invited_email.to_lowercase() != user.email.to_lowercase() {
+        return Err("This invitation was not sent to your email address".to_string());
+    }
+
+    // Check status
+    if invitation.status != InvitationStatus::Pending {
+        return Err(format!("Invitation is no longer pending (status: {:?})", invitation.status));
+    }
+
+    // Update invitation status
+    invitation.status = InvitationStatus::Rejected;
+    invitation.rejected_at = Some(time());
+    invitation.rejection_reason = input.reason.clone();
+
+    STORAGE.with(|storage| {
+        storage
+            .borrow_mut()
+            .engagement_invitations
+            .insert(invitation.id, invitation.clone());
+    });
+
+    log_activity(
+        caller,
+        "reject_invitation".to_string(),
+        "engagement_invitation".to_string(),
+        invitation.id.to_string(),
+        format!(
+            "Rejected invitation to engagement {}",
+            invitation.engagement_name
+        ),
+        encode_args((invitation.clone(),)).ok(),
+    );
+
+    Ok(invitation)
+}
+
+// Get all invitations for an engagement (firm view)
+pub fn get_invitations_for_engagement(
+    caller: Principal,
+    engagement_id: u64,
+) -> Result<Vec<EngagementInvitation>> {
+    let user = auth::get_user(caller).ok_or("User not found")?;
+
+    if !auth::is_staff_or_above(&user) {
+        return Err("Insufficient permissions".to_string());
+    }
+
+    let invitations = STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .engagement_invitations
+            .iter()
+            .filter(|(_, inv)| inv.engagement_id == engagement_id)
+            .map(|(_, inv)| inv)
+            .collect()
+    });
+
+    Ok(invitations)
 }
 

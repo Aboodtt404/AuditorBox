@@ -55,6 +55,8 @@ const ClientPortal = () => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [requests, setRequests] = useState<DocumentRequest[]>([]);
+  const [invitations, setInvitations] = useState<any[]>([]);
+  const [engagements, setEngagements] = useState<any[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<DocumentRequest | null>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -65,7 +67,7 @@ const ClientPortal = () => {
   useEffect(() => {
     // Only load requests when authenticated and user is loaded
     if (isAuthenticated && user) {
-      loadRequests();
+      loadData();
     } else if (isAuthenticated === false && user === null) {
       // Authentication failed or user not loaded after initialization
       setLoading(false);
@@ -79,17 +81,49 @@ const ClientPortal = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const loadRequests = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const data = await call<DocumentRequest[]>('get_my_document_requests', []);
-      setRequests(data);
+      const [reqs, invites, engs] = await Promise.all([
+        call<DocumentRequest[]>('get_my_document_requests', []),
+        call<any[]>('get_my_invitations', []).catch(() => []),
+        call<Array<[bigint, string, string]>>('get_my_engagements', []).catch(() => []),
+      ]);
+      setRequests(reqs);
+      setInvitations(invites);
+      setEngagements(engs);
       setError(null);
     } catch (err) {
-      console.error('Failed to load document requests:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load requests');
+      console.error('Failed to load data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAcceptInvitation = async (invitationId: bigint) => {
+    try {
+      await call('accept_invitation', [{ invitation_id: invitationId }]);
+      alert('✅ Invitation accepted! You now have access to the engagement.');
+      await loadData();
+    } catch (err) {
+      console.error('Failed to accept invitation:', err);
+      alert('Failed to accept invitation: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    }
+  };
+
+  const handleRejectInvitation = async (invitationId: bigint) => {
+    const reason = prompt('Why are you rejecting this invitation? (Optional)');
+    try {
+      await call('reject_invitation', [{
+        invitation_id: invitationId,
+        reason: reason ? [reason] : [],
+      }]);
+      alert('Invitation rejected');
+      await loadData();
+    } catch (err) {
+      console.error('Failed to reject invitation:', err);
+      alert('Failed to reject invitation: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
 
@@ -129,7 +163,7 @@ const ClientPortal = () => {
       setUploadDialogOpen(false);
       setUploadFile(null);
       setSelectedRequest(null);
-      await loadRequests();
+      await loadData();
     } catch (err) {
       console.error('Failed to upload document:', err);
       setError(err instanceof Error ? err.message : 'Upload failed');
@@ -222,6 +256,107 @@ const ClientPortal = () => {
         <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
           {error}
         </Alert>
+      )}
+
+      {/* Pending Invitations */}
+      {invitations.length > 0 && (
+        <Paper sx={{ mb: 4, borderLeft: 4, borderColor: 'primary.main' }}>
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', bgcolor: 'primary.50' }}>
+            <Typography variant="h6" color="primary">
+              🎉 You have {invitations.length} pending invitation{invitations.length > 1 ? 's' : ''}!
+            </Typography>
+          </Box>
+          <Box sx={{ p: 2 }}>
+            {invitations.map((invitation) => (
+              <Card key={invitation.id.toString()} variant="outlined" sx={{ mb: 2 }}>
+                <CardContent>
+                  <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} md={8}>
+                      <Typography variant="h6" gutterBottom>
+                        {invitation.engagement_name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <strong>From:</strong> {invitation.invited_by_name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <strong>Access Level:</strong> {
+                          'ViewOnly' in invitation.access_level ? 'View Only' :
+                          'UploadDocuments' in invitation.access_level ? 'Upload Documents' :
+                          'Full' in invitation.access_level ? 'Full Access' : 'Unknown'
+                        }
+                      </Typography>
+                      {invitation.message && invitation.message[0] && (
+                        <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
+                          <Typography variant="body2" fontStyle="italic">
+                            "{invitation.message[0]}"
+                          </Typography>
+                        </Box>
+                      )}
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Stack spacing={1}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          fullWidth
+                          onClick={() => handleAcceptInvitation(invitation.id)}
+                        >
+                          Accept Invitation
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          fullWidth
+                          onClick={() => handleRejectInvitation(invitation.id)}
+                        >
+                          Decline
+                        </Button>
+                      </Stack>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </Paper>
+      )}
+
+      {/* My Engagements */}
+      {engagements.length > 0 && (
+        <Paper sx={{ mb: 4 }}>
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+            <Typography variant="h6">
+              My Engagements ({engagements.length})
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Engagements you have been granted access to
+            </Typography>
+          </Box>
+          <Box sx={{ p: 2 }}>
+            <Grid container spacing={2}>
+              {engagements.map(([id, name, status]) => (
+                <Grid item xs={12} sm={6} md={4} key={id.toString()}>
+                  <Card variant="outlined" sx={{ height: '100%' }}>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        {name}
+                      </Typography>
+                      <Chip 
+                        label={status} 
+                        size="small"
+                        color={status === 'Active' ? 'success' : 'default'}
+                        sx={{ mb: 2 }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        Engagement ID: {id.toString()}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        </Paper>
       )}
 
       {/* Pending Requests */}

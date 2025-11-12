@@ -14,6 +14,7 @@ import Engagements from './pages/Engagements';
 import DataImport from './pages/DataImport';
 import WorkingPapers from './pages/WorkingPapers';
 import DocumentSubmission from './pages/DocumentSubmission';
+import DocumentRequests from './pages/DocumentRequests';
 import UserManagement from './pages/UserManagement';
 import ActivityLog from './pages/ActivityLog';
 import ClientPortal from './pages/ClientPortal';
@@ -108,6 +109,16 @@ function App() {
                 <ProtectedRoute requireFirmUser>
                   <PageLayout>
                     <DocumentSubmission />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/document-requests"
+              element={
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <DocumentRequests />
                   </PageLayout>
                 </ProtectedRoute>
               }

@@ -23,6 +23,7 @@ import {
   InputLabel,
   CircularProgress,
   Stack,
+  Chip,
 } from '@mui/material';
 import { Add, Edit, Delete, PersonAdd } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
@@ -41,13 +42,13 @@ const Engagements = () => {
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [grantAccessDialogOpen, setGrantAccessDialogOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [selectedEngagement, setSelectedEngagement] = useState<Engagement | null>(null);
-  const [users, setUsers] = useState<any[]>([]);
-  const [clientAccess, setClientAccess] = useState<any[]>([]);
-  const [accessFormData, setAccessFormData] = useState({
-    client_principal: '',
+  const [invitations, setInvitations] = useState<any[]>([]);
+  const [inviteFormData, setInviteFormData] = useState({
+    email: '',
     access_level: 'UploadDocuments',
+    message: '',
   });
   const [formData, setFormData] = useState({
     name: '',
@@ -68,18 +69,16 @@ const Engagements = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [engs, orgs, ents, clnts, usrs] = await Promise.all([
+      const [engs, orgs, ents, clnts] = await Promise.all([
         call<Engagement[]>('list_engagements'),
         call<Organization[]>('list_organizations'),
         call<Entity[]>('list_entities'),
         call<any[]>('list_clients'),
-        call<any[]>('list_users').catch(() => []), // Only admin can list users
       ]);
       setEngagements(engs);
       setOrganizations(orgs);
       setEntities(ents);
       setClients(clnts);
-      setUsers(usrs);
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -120,69 +119,80 @@ const Engagements = () => {
     }
   };
 
-  const handleGrantAccessClick = async (engagement: Engagement) => {
+  const handleInviteClick = async (engagement: Engagement) => {
     setSelectedEngagement(engagement);
-    setAccessFormData({
-      client_principal: '',
+    setInviteFormData({
+      email: '',
       access_level: 'UploadDocuments',
+      message: '',
     });
     
-    // Load existing client access for this engagement
+    // Load existing invitations for this engagement
     try {
-      const access = await call<any[]>('get_client_access_for_engagement', [engagement.id]);
-      setClientAccess(access);
+      const invites = await call<any[]>('get_invitations_for_engagement', [engagement.id]);
+      setInvitations(invites);
+      console.log('Loaded invitations for engagement:', invites);
     } catch (error) {
-      console.error('Failed to load client access:', error);
-      setClientAccess([]);
+      console.error('Failed to load invitations:', error);
+      setInvitations([]);
     }
     
-    setGrantAccessDialogOpen(true);
+    setInviteDialogOpen(true);
   };
 
-  const handleGrantAccess = async () => {
-    if (!selectedEngagement || !accessFormData.client_principal) {
-      alert('Please select a client user');
+  const handleSendInvitation = async () => {
+    if (!selectedEngagement || !inviteFormData.email) {
+      alert('Please enter a client email address');
+      return;
+    }
+
+    // Basic email validation
+    if (!inviteFormData.email.includes('@')) {
+      alert('Please enter a valid email address');
       return;
     }
 
     try {
-      await call('grant_client_access', [{
-        client_principal: accessFormData.client_principal,
+      await call('create_invitation', [{
         engagement_id: selectedEngagement.id,
-        access_level: { [accessFormData.access_level]: null },
+        invited_email: inviteFormData.email,
+        access_level: { [inviteFormData.access_level]: null },
+        message: inviteFormData.message ? [inviteFormData.message] : [],
       }]);
       
-      alert('Client access granted successfully!');
-      setGrantAccessDialogOpen(false);
+      const accessLevelText = inviteFormData.access_level === 'ViewOnly' ? 'View Only' :
+                              inviteFormData.access_level === 'UploadDocuments' ? 'Upload Documents' : 'Full Access';
       
-      // Reload access list
-      const access = await call<any[]>('get_client_access_for_engagement', [selectedEngagement.id]);
-      setClientAccess(access);
+      alert(
+        `📧 Invitation Sent Successfully!\n\n` +
+        `To: ${inviteFormData.email}\n` +
+        `Engagement: ${selectedEngagement.name}\n` +
+        `Access Level: ${accessLevelText}\n\n` +
+        `The client will see this invitation when they log in with an account using this email address.`
+      );
+      
+      // Reload invitations list
+      const invites = await call<any[]>('get_invitations_for_engagement', [selectedEngagement.id]);
+      setInvitations(invites);
+      
+      // Clear form
+      setInviteFormData({
+        email: '',
+        access_level: 'UploadDocuments',
+        message: '',
+      });
     } catch (error) {
-      console.error('Failed to grant access:', error);
-      alert('Failed to grant access: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      console.error('Failed to send invitation:', error);
+      alert('❌ Failed to send invitation:\n\n' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
-  const getRoleName = (role: any): string => {
-    if (role.Admin) return 'Admin';
-    if (role.Partner) return 'Partner';
-    if (role.Manager) return 'Manager';
-    if (role.Senior) return 'Senior';
-    if (role.Staff) return 'Staff';
-    if (role.ClientUser) return 'Client User';
-    return 'Unknown';
-  };
-
   const getAccessLevelName = (level: any): string => {
-    if (level.ViewOnly) return 'View Only';
-    if (level.UploadDocuments) return 'Upload Documents';
-    if (level.Full) return 'Full Access';
+    if ('ViewOnly' in level) return 'View Only';
+    if ('UploadDocuments' in level) return 'Upload Documents';
+    if ('Full' in level) return 'Full Access';
     return 'Unknown';
   };
-
-  // Filter users to show only ClientUser role
-  const clientUsers = users.filter(u => u.role.ClientUser);
 
   // Show loading while data is being fetched
   if (loading) {
@@ -246,8 +256,8 @@ const Engagements = () => {
                     <IconButton 
                       size="small" 
                       color="success"
-                      onClick={() => handleGrantAccessClick(eng)}
-                      title="Grant Client Access"
+                      onClick={() => handleInviteClick(eng)}
+                      title="Send Client Invitation"
                     >
                       <PersonAdd />
                     </IconButton>
@@ -368,15 +378,15 @@ const Engagements = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Grant Client Access Dialog */}
+      {/* Send Invitation Dialog */}
       <Dialog 
-        open={grantAccessDialogOpen} 
-        onClose={() => setGrantAccessDialogOpen(false)} 
+        open={inviteDialogOpen} 
+        onClose={() => setInviteDialogOpen(false)} 
         maxWidth="md" 
         fullWidth
       >
         <DialogTitle>
-          Grant Client Access
+          Send Engagement Invitation
           {selectedEngagement && (
             <Typography variant="subtitle2" color="text.secondary">
               Engagement: {selectedEngagement.name}
@@ -385,61 +395,103 @@ const Engagements = () => {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ mb: 3, mt: 2 }}>
-            <Typography variant="h6" gutterBottom>Grant New Access</Typography>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Select Client User</InputLabel>
-              <Select
-                value={accessFormData.client_principal}
-                onChange={(e) => setAccessFormData({ ...accessFormData, client_principal: e.target.value })}
-              >
-                {clientUsers.map((user) => (
-                  <MenuItem key={user.principal.toText()} value={user.principal.toText()}>
-                    {user.name} ({user.email}) - {getRoleName(user.role)}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Typography variant="h6" gutterBottom>Send New Invitation</Typography>
+            
+            <TextField
+              label="Client Email Address"
+              fullWidth
+              value={inviteFormData.email}
+              onChange={(e) => setInviteFormData({ ...inviteFormData, email: e.target.value })}
+              margin="normal"
+              placeholder="client@company.com"
+              helperText="The client will receive this invitation when they log in with this email"
+            />
+            
             <FormControl fullWidth margin="normal">
               <InputLabel>Access Level</InputLabel>
               <Select
-                value={accessFormData.access_level}
-                onChange={(e) => setAccessFormData({ ...accessFormData, access_level: e.target.value })}
+                value={inviteFormData.access_level}
+                onChange={(e) => setInviteFormData({ ...inviteFormData, access_level: e.target.value })}
               >
-                <MenuItem value="ViewOnly">View Only</MenuItem>
-                <MenuItem value="UploadDocuments">Upload Documents</MenuItem>
-                <MenuItem value="Full">Full Access</MenuItem>
+                <MenuItem value="ViewOnly">View Only - Can view document requests</MenuItem>
+                <MenuItem value="UploadDocuments">Upload Documents - Can view and upload (Recommended)</MenuItem>
+                <MenuItem value="Full">Full Access - Complete access to engagement</MenuItem>
               </Select>
             </FormControl>
+            
+            <TextField
+              label="Personal Message (Optional)"
+              fullWidth
+              multiline
+              rows={3}
+              value={inviteFormData.message}
+              onChange={(e) => setInviteFormData({ ...inviteFormData, message: e.target.value })}
+              margin="normal"
+              placeholder="Add a personal message to the invitation..."
+            />
           </Box>
 
-          {clientAccess.length > 0 && (
+          {invitations.length > 0 && (
             <Box sx={{ mt: 3 }}>
-              <Typography variant="h6" gutterBottom>Current Access Grants</Typography>
+              <Typography variant="h6" gutterBottom>Sent Invitations</Typography>
               <TableContainer component={Paper} variant="outlined">
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Principal ID</TableCell>
+                      <TableCell>Email</TableCell>
                       <TableCell>Access Level</TableCell>
-                      <TableCell>Granted By</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>Sent By</TableCell>
+                      <TableCell>Date</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {clientAccess.map((access, index) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
-                            {access.principal.toText().substring(0, 20)}...
-                          </Typography>
-                        </TableCell>
-                        <TableCell>{getAccessLevelName(access.access_level)}</TableCell>
-                        <TableCell>
-                          <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
-                            {access.granted_by.toText().substring(0, 20)}...
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {invitations.map((invitation, index) => {
+                      const getStatusColor = (status: any) => {
+                        if ('Pending' in status) return 'warning';
+                        if ('Accepted' in status) return 'success';
+                        if ('Rejected' in status) return 'error';
+                        if ('Expired' in status) return 'default';
+                        return 'default';
+                      };
+                      
+                      const getStatusText = (status: any) => {
+                        if ('Pending' in status) return 'Pending';
+                        if ('Accepted' in status) return 'Accepted';
+                        if ('Rejected' in status) return 'Rejected';
+                        if ('Expired' in status) return 'Expired';
+                        if ('Cancelled' in status) return 'Cancelled';
+                        return 'Unknown';
+                      };
+                      
+                      return (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="medium">
+                              {invitation.invited_email}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>{getAccessLevelName(invitation.access_level)}</TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={getStatusText(invitation.status)} 
+                              size="small"
+                              color={getStatusColor(invitation.status) as any}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption">
+                              {invitation.invited_by_name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption">
+                              {new Date(Number(invitation.invited_at) / 1000000).toLocaleDateString()}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -447,9 +499,9 @@ const Engagements = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setGrantAccessDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleGrantAccess} variant="contained" color="primary">
-            Grant Access
+          <Button onClick={() => setInviteDialogOpen(false)}>Close</Button>
+          <Button onClick={handleSendInvitation} variant="contained" color="primary">
+            Send Invitation
           </Button>
         </DialogActions>
       </Dialog>
