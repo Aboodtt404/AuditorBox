@@ -24,7 +24,7 @@ import {
   CircularProgress,
   Stack,
 } from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
+import { Add, Edit, Delete, PersonAdd } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { useAuth } from '../hooks/useAuth';
@@ -41,6 +41,14 @@ const Engagements = () => {
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [grantAccessDialogOpen, setGrantAccessDialogOpen] = useState(false);
+  const [selectedEngagement, setSelectedEngagement] = useState<Engagement | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [clientAccess, setClientAccess] = useState<any[]>([]);
+  const [accessFormData, setAccessFormData] = useState({
+    client_principal: '',
+    access_level: 'UploadDocuments',
+  });
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -60,16 +68,18 @@ const Engagements = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [engs, orgs, ents, clnts] = await Promise.all([
+      const [engs, orgs, ents, clnts, usrs] = await Promise.all([
         call<Engagement[]>('list_engagements'),
         call<Organization[]>('list_organizations'),
         call<Entity[]>('list_entities'),
         call<any[]>('list_clients'),
+        call<any[]>('list_users').catch(() => []), // Only admin can list users
       ]);
       setEngagements(engs);
       setOrganizations(orgs);
       setEntities(ents);
       setClients(clnts);
+      setUsers(usrs);
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -110,6 +120,70 @@ const Engagements = () => {
     }
   };
 
+  const handleGrantAccessClick = async (engagement: Engagement) => {
+    setSelectedEngagement(engagement);
+    setAccessFormData({
+      client_principal: '',
+      access_level: 'UploadDocuments',
+    });
+    
+    // Load existing client access for this engagement
+    try {
+      const access = await call<any[]>('get_client_access_for_engagement', [engagement.id]);
+      setClientAccess(access);
+    } catch (error) {
+      console.error('Failed to load client access:', error);
+      setClientAccess([]);
+    }
+    
+    setGrantAccessDialogOpen(true);
+  };
+
+  const handleGrantAccess = async () => {
+    if (!selectedEngagement || !accessFormData.client_principal) {
+      alert('Please select a client user');
+      return;
+    }
+
+    try {
+      await call('grant_client_access', [{
+        client_principal: accessFormData.client_principal,
+        engagement_id: selectedEngagement.id,
+        access_level: { [accessFormData.access_level]: null },
+      }]);
+      
+      alert('Client access granted successfully!');
+      setGrantAccessDialogOpen(false);
+      
+      // Reload access list
+      const access = await call<any[]>('get_client_access_for_engagement', [selectedEngagement.id]);
+      setClientAccess(access);
+    } catch (error) {
+      console.error('Failed to grant access:', error);
+      alert('Failed to grant access: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
+  const getRoleName = (role: any): string => {
+    if (role.Admin) return 'Admin';
+    if (role.Partner) return 'Partner';
+    if (role.Manager) return 'Manager';
+    if (role.Senior) return 'Senior';
+    if (role.Staff) return 'Staff';
+    if (role.ClientUser) return 'Client User';
+    return 'Unknown';
+  };
+
+  const getAccessLevelName = (level: any): string => {
+    if (level.ViewOnly) return 'View Only';
+    if (level.UploadDocuments) return 'Upload Documents';
+    if (level.Full) return 'Full Access';
+    return 'Unknown';
+  };
+
+  // Filter users to show only ClientUser role
+  const clientUsers = users.filter(u => u.role.ClientUser);
+
   // Show loading while data is being fetched
   if (loading) {
     return (
@@ -142,7 +216,7 @@ const Engagements = () => {
               <TableCell>{t('engagements.status')}</TableCell>
               <TableCell>{t('engagements.startDate')}</TableCell>
               <TableCell>{t('engagements.endDate')}</TableCell>
-              <TableCell align="right">{t('common.edit')}</TableCell>
+              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -169,6 +243,14 @@ const Engagements = () => {
                     {formatDate(eng.end_date)}
                   </TableCell>
                   <TableCell align="right">
+                    <IconButton 
+                      size="small" 
+                      color="success"
+                      onClick={() => handleGrantAccessClick(eng)}
+                      title="Grant Client Access"
+                    >
+                      <PersonAdd />
+                    </IconButton>
                     <IconButton size="small" color="primary"><Edit /></IconButton>
                     <IconButton size="small" color="error"><Delete /></IconButton>
                   </TableCell>
@@ -283,6 +365,92 @@ const Engagements = () => {
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
           <Button onClick={handleSave} variant="contained">{t('common.save')}</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Grant Client Access Dialog */}
+      <Dialog 
+        open={grantAccessDialogOpen} 
+        onClose={() => setGrantAccessDialogOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+      >
+        <DialogTitle>
+          Grant Client Access
+          {selectedEngagement && (
+            <Typography variant="subtitle2" color="text.secondary">
+              Engagement: {selectedEngagement.name}
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mb: 3, mt: 2 }}>
+            <Typography variant="h6" gutterBottom>Grant New Access</Typography>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Select Client User</InputLabel>
+              <Select
+                value={accessFormData.client_principal}
+                onChange={(e) => setAccessFormData({ ...accessFormData, client_principal: e.target.value })}
+              >
+                {clientUsers.map((user) => (
+                  <MenuItem key={user.principal.toText()} value={user.principal.toText()}>
+                    {user.name} ({user.email}) - {getRoleName(user.role)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Access Level</InputLabel>
+              <Select
+                value={accessFormData.access_level}
+                onChange={(e) => setAccessFormData({ ...accessFormData, access_level: e.target.value })}
+              >
+                <MenuItem value="ViewOnly">View Only</MenuItem>
+                <MenuItem value="UploadDocuments">Upload Documents</MenuItem>
+                <MenuItem value="Full">Full Access</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {clientAccess.length > 0 && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="h6" gutterBottom>Current Access Grants</Typography>
+              <TableContainer component={Paper} variant="outlined">
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Principal ID</TableCell>
+                      <TableCell>Access Level</TableCell>
+                      <TableCell>Granted By</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {clientAccess.map((access, index) => (
+                      <TableRow key={index}>
+                        <TableCell>
+                          <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
+                            {access.principal.toText().substring(0, 20)}...
+                          </Typography>
+                        </TableCell>
+                        <TableCell>{getAccessLevelName(access.access_level)}</TableCell>
+                        <TableCell>
+                          <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
+                            {access.granted_by.toText().substring(0, 20)}...
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setGrantAccessDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleGrantAccess} variant="contained" color="primary">
+            Grant Access
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

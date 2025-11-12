@@ -19,7 +19,7 @@ import ActivityLog from './pages/ActivityLog';
 import ClientPortal from './pages/ClientPortal';
 import TrialBalance from './pages/TrialBalance';
 import FinancialStatements from './pages/FinancialStatements';
-// import ClientAcceptance from './pages/ClientAcceptance';
+import ClientAcceptance from './pages/ClientAcceptance';
 import EngagementLetters from './pages/EngagementLetters';
 import ConflictCheck from './pages/ConflictCheck';
 import EngagementPlanning from './pages/EngagementPlanning';
@@ -160,7 +160,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            {/* <Route
+            {<Route
               path="/client-acceptance"
               element={
                 <ProtectedRoute requireFirmUser>
@@ -169,7 +169,7 @@ function App() {
                   </PageLayout>
                 </ProtectedRoute>
               }
-            /> */}
+            />}
             <Route
               path="/engagement-letters"
               element={

@@ -18,13 +18,235 @@ pub fn get_line_items_for_taxonomy(taxonomy: &XBRLTaxonomy) -> Vec<FSLineItem> {
 }
 
 fn get_eas_line_items() -> Vec<FSLineItem> {
-    // Egyptian Accounting Standards (EAS) - based on IFRS with local adaptations
-    get_ifrs_line_items() // EAS is largely aligned with IFRS
+    // Egyptian Accounting Standards (EAS) - uses same codes as US GAAP for now
+    // but with EAS-specific naming and presentation order
+    vec![
+        // Statement of Financial Position - Assets
+        FSLineItem {
+            code: "BS_CASH".to_string(),
+            name: "النقدية وما في حكمها / Cash and Cash Equivalents".to_string(),
+            category: FSCategory::Asset,
+            subcategory: "Current Assets".to_string(),
+            order: 1,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_AR".to_string(),
+            name: "المدينون التجاريون / Trade Receivables".to_string(),
+            category: FSCategory::Asset,
+            subcategory: "Current Assets".to_string(),
+            order: 2,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_INVENTORY".to_string(),
+            name: "المخزون / Inventories".to_string(),
+            category: FSCategory::Asset,
+            subcategory: "Current Assets".to_string(),
+            order: 3,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_PREPAID".to_string(),
+            name: "مصروفات مدفوعة مقدماً / Prepaid Expenses".to_string(),
+            category: FSCategory::Asset,
+            subcategory: "Current Assets".to_string(),
+            order: 4,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_CURRENT_ASSETS".to_string(),
+            name: "إجمالي الأصول المتداولة / Total Current Assets".to_string(),
+            category: FSCategory::Asset,
+            subcategory: "Current Assets".to_string(),
+            order: 5,
+            is_subtotal: true,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_PPE".to_string(),
+            name: "الممتلكات والآلات والمعدات / Property, Plant and Equipment".to_string(),
+            category: FSCategory::Asset,
+            subcategory: "Non-Current Assets".to_string(),
+            order: 6,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_ACCUM_DEPR".to_string(),
+            name: "مجمع الإهلاك / Accumulated Depreciation".to_string(),
+            category: FSCategory::Asset,
+            subcategory: "Non-Current Assets".to_string(),
+            order: 7,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_TOTAL_ASSETS".to_string(),
+            name: "إجمالي الأصول / Total Assets".to_string(),
+            category: FSCategory::Asset,
+            subcategory: "Total".to_string(),
+            order: 8,
+            is_subtotal: true,
+            parent: None,
+        },
+        // Liabilities
+        FSLineItem {
+            code: "BS_AP".to_string(),
+            name: "الدائنون التجاريون / Trade Payables".to_string(),
+            category: FSCategory::Liability,
+            subcategory: "Current Liabilities".to_string(),
+            order: 9,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_ACCRUED".to_string(),
+            name: "مصروفات مستحقة / Accrued Expenses".to_string(),
+            category: FSCategory::Liability,
+            subcategory: "Current Liabilities".to_string(),
+            order: 10,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_CURRENT_LIAB".to_string(),
+            name: "إجمالي الالتزامات المتداولة / Total Current Liabilities".to_string(),
+            category: FSCategory::Liability,
+            subcategory: "Current Liabilities".to_string(),
+            order: 11,
+            is_subtotal: true,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_LONG_TERM_DEBT".to_string(),
+            name: "قروض طويلة الأجل / Long-term Borrowings".to_string(),
+            category: FSCategory::Liability,
+            subcategory: "Non-Current Liabilities".to_string(),
+            order: 12,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_TOTAL_LIAB".to_string(),
+            name: "إجمالي الالتزامات / Total Liabilities".to_string(),
+            category: FSCategory::Liability,
+            subcategory: "Total".to_string(),
+            order: 13,
+            is_subtotal: true,
+            parent: None,
+        },
+        // Equity
+        FSLineItem {
+            code: "BS_CAPITAL".to_string(),
+            name: "رأس المال / Share Capital".to_string(),
+            category: FSCategory::Equity,
+            subcategory: "Equity".to_string(),
+            order: 14,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_RETAINED".to_string(),
+            name: "أرباح محتجزة / Retained Earnings".to_string(),
+            category: FSCategory::Equity,
+            subcategory: "Equity".to_string(),
+            order: 15,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "BS_TOTAL_EQUITY".to_string(),
+            name: "إجمالي حقوق الملكية / Total Equity".to_string(),
+            category: FSCategory::Equity,
+            subcategory: "Total".to_string(),
+            order: 16,
+            is_subtotal: true,
+            parent: None,
+        },
+        // Income Statement
+        FSLineItem {
+            code: "IS_REVENUE".to_string(),
+            name: "الإيرادات / Revenue".to_string(),
+            category: FSCategory::Revenue,
+            subcategory: "Revenue".to_string(),
+            order: 17,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "IS_COGS".to_string(),
+            name: "تكلفة المبيعات / Cost of Sales".to_string(),
+            category: FSCategory::Expense,
+            subcategory: "Cost of Sales".to_string(),
+            order: 18,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "IS_GROSS_PROFIT".to_string(),
+            name: "مجمل الربح / Gross Profit".to_string(),
+            category: FSCategory::Revenue,
+            subcategory: "Subtotal".to_string(),
+            order: 19,
+            is_subtotal: true,
+            parent: None,
+        },
+        FSLineItem {
+            code: "IS_OPEX".to_string(),
+            name: "مصروفات تشغيلية / Operating Expenses".to_string(),
+            category: FSCategory::Expense,
+            subcategory: "Operating Expenses".to_string(),
+            order: 20,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "IS_DEPRECIATION".to_string(),
+            name: "إهلاك / Depreciation".to_string(),
+            category: FSCategory::Expense,
+            subcategory: "Operating Expenses".to_string(),
+            order: 21,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "IS_INTEREST".to_string(),
+            name: "تكاليف التمويل / Finance Costs".to_string(),
+            category: FSCategory::Expense,
+            subcategory: "Finance Costs".to_string(),
+            order: 22,
+            is_subtotal: false,
+            parent: None,
+        },
+        FSLineItem {
+            code: "IS_OPERATING_PROFIT".to_string(),
+            name: "الربح التشغيلي / Operating Profit".to_string(),
+            category: FSCategory::Revenue,
+            subcategory: "Subtotal".to_string(),
+            order: 23,
+            is_subtotal: true,
+            parent: None,
+        },
+        FSLineItem {
+            code: "IS_NET_INCOME".to_string(),
+            name: "صافي الربح / Net Profit".to_string(),
+            category: FSCategory::Revenue,
+            subcategory: "Bottom Line".to_string(),
+            order: 24,
+            is_subtotal: true,
+            parent: None,
+        },
+    ]
 }
 
 fn get_gcc_line_items() -> Vec<FSLineItem> {
-    // GCC Standards - similar to IFRS
-    get_ifrs_line_items()
+    // GCC Standards - similar structure to EAS
+    get_eas_line_items()
 }
 
 fn get_us_gaap_line_items() -> Vec<FSLineItem> {
@@ -286,10 +508,16 @@ pub fn generate_financial_statements(
     for account in accounts.iter() {
         if let Some(fs_line) = &account.fs_line_item {
             if !fs_line.is_empty() {
-                let net_balance = if account.debit_balance > account.credit_balance {
-                    account.debit_balance as i64 - account.credit_balance as i64
-                } else {
-                    -(account.credit_balance as i64 - account.debit_balance as i64)
+                // Calculate net balance based on account type
+                // Assets & Expenses: Debit positive (Debit - Credit)
+                // Liabilities, Equity, Revenue: Credit positive (Credit - Debit)
+                let net_balance = match account.account_type {
+                    AccountType::Asset | AccountType::Expense => {
+                        account.debit_balance - account.credit_balance
+                    },
+                    AccountType::Liability | AccountType::Equity | AccountType::Revenue => {
+                        account.credit_balance - account.debit_balance
+                    },
                 };
 
                 *line_item_values.entry(fs_line.clone()).or_insert(0) += net_balance;
@@ -331,9 +559,15 @@ pub fn generate_financial_statements(
         line_item_values.get("IS_COGS").unwrap_or(&0)
     );
 
-    line_item_values.insert("IS_NET_INCOME".to_string(),
+    line_item_values.insert("IS_OPERATING_PROFIT".to_string(),
         line_item_values.get("IS_GROSS_PROFIT").unwrap_or(&0) -
-        line_item_values.get("IS_OPEX").unwrap_or(&0)
+        line_item_values.get("IS_OPEX").unwrap_or(&0) -
+        line_item_values.get("IS_DEPRECIATION").unwrap_or(&0)
+    );
+
+    line_item_values.insert("IS_NET_INCOME".to_string(),
+        line_item_values.get("IS_OPERATING_PROFIT").unwrap_or(&0) -
+        line_item_values.get("IS_INTEREST").unwrap_or(&0)
     );
 
     // Create FS line items with values

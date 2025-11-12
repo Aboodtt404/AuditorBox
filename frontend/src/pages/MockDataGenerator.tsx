@@ -34,7 +34,17 @@ const MockDataGenerator = () => {
   const [completed, setCompleted] = useState(false);
 
   const addLog = (step: string, status: 'success' | 'error' | 'pending', message: string) => {
-    setLogs((prev) => [...prev, { step, status, message }]);
+    setLogs((prev) => {
+      // If updating an existing step, replace it
+      const existingIndex = prev.findIndex(log => log.step === step);
+      if (existingIndex >= 0 && status !== 'pending') {
+        const updated = [...prev];
+        updated[existingIndex] = { step, status, message };
+        return updated;
+      }
+      // Otherwise add new log
+      return [...prev, { step, status, message }];
+    });
   };
 
   const generateMockData = async () => {
@@ -192,8 +202,86 @@ const MockDataGenerator = () => {
       
       addLog('clients', 'success', `Created ${createdClients.length} clients`);
 
+      // Step 4: Create Engagements
+      addLog('engagements', 'pending', 'Creating engagements...');
+      
+      const engagements = [
+        {
+          name: 'Nile Solar Technologies - FY2024 Audit',
+          description: 'Statutory audit of financial statements for year ended 31 December 2024',
+          link: { Client: createdClients[0].id },
+          start_date: BigInt(Date.now() * 1000000), // Current date
+          end_date: BigInt((Date.now() + 90 * 24 * 60 * 60 * 1000) * 1000000), // +90 days
+          status: 'In Progress',
+        },
+        {
+          name: 'Delta Textiles - Q1 2024 Review',
+          description: 'Limited review of Q1 2024 interim financial statements',
+          link: { Client: createdClients[2].id },
+          start_date: BigInt((Date.now() - 30 * 24 * 60 * 60 * 1000) * 1000000), // -30 days
+          end_date: BigInt(Date.now() * 1000000), // Today
+          status: 'Completed',
+        },
+      ];
+
+      const createdEngagements: any[] = [];
+      for (const engagement of engagements) {
+        const result = await call('create_engagement', [engagement]);
+        createdEngagements.push(result);
+      }
+      
+      addLog('engagements', 'success', `Created ${createdEngagements.length} engagements`);
+
+      // Step 5: Create Trial Balance with accounts
+      addLog('trial_balance', 'pending', 'Creating trial balance with accounts...');
+      
+      const trialBalanceReq = {
+        engagement_id: createdEngagements[0].id,
+        period_end_date: '2024-12-31',
+        description: 'FY2024 trial balance for Nile Solar Technologies',
+        currency: ['EGP'],
+      };
+
+      const trialBalance: any = await call('create_trial_balance', [trialBalanceReq]);
+      
+      // Add accounts to trial balance (using US GAAP codes for now as backend expects these)
+      const accounts = [
+        { account_number: '1001', account_name: 'Cash and Cash Equivalents', account_type: 'Asset', debit: BigInt(4300000), credit: BigInt(0), fs_line: 'BS_CASH' },
+        { account_number: '1200', account_name: 'Trade Receivables', account_type: 'Asset', debit: BigInt(4275000), credit: BigInt(0), fs_line: 'BS_AR' },
+        { account_number: '1300', account_name: 'Inventory', account_type: 'Asset', debit: BigInt(6150000), credit: BigInt(0), fs_line: 'BS_INVENTORY' },
+        { account_number: '1500', account_name: 'Property Plant and Equipment', account_type: 'Asset', debit: BigInt(18000000), credit: BigInt(0), fs_line: 'BS_PPE' },
+        { account_number: '1520', account_name: 'Accumulated Depreciation', account_type: 'Asset', debit: BigInt(0), credit: BigInt(5460000), fs_line: 'BS_ACCUM_DEPR' },
+        { account_number: '2001', account_name: 'Trade Payables', account_type: 'Liability', debit: BigInt(0), credit: BigInt(2890000), fs_line: 'BS_AP' },
+        { account_number: '2100', account_name: 'Accrued Expenses', account_type: 'Liability', debit: BigInt(0), credit: BigInt(725000), fs_line: 'BS_ACCRUED' },
+        { account_number: '2200', account_name: 'Bank Loans', account_type: 'Liability', debit: BigInt(0), credit: BigInt(7500000), fs_line: 'BS_LONG_TERM_DEBT' },
+        { account_number: '3001', account_name: 'Share Capital', account_type: 'Equity', debit: BigInt(0), credit: BigInt(10000000), fs_line: 'BS_CAPITAL' },
+        { account_number: '3200', account_name: 'Retained Earnings', account_type: 'Equity', debit: BigInt(0), credit: BigInt(2875000), fs_line: 'BS_RETAINED' },
+        { account_number: '4001', account_name: 'Revenue', account_type: 'Revenue', debit: BigInt(0), credit: BigInt(37250000), fs_line: 'IS_REVENUE' },
+        { account_number: '5001', account_name: 'Cost of Sales', account_type: 'Expense', debit: BigInt(23050000), credit: BigInt(0), fs_line: 'IS_COGS' },
+        { account_number: '6001', account_name: 'Operating Expenses', account_type: 'Expense', debit: BigInt(7185000), credit: BigInt(0), fs_line: 'IS_OPEX' },
+        { account_number: '6030', account_name: 'Depreciation Expense', account_type: 'Expense', debit: BigInt(1460000), credit: BigInt(0), fs_line: 'IS_DEPRECIATION' },
+        { account_number: '6080', account_name: 'Finance Costs', account_type: 'Expense', debit: BigInt(125000), credit: BigInt(0), fs_line: 'IS_INTEREST' },
+      ];
+
+      const createdAccounts: any[] = [];
+      for (const acc of accounts) {
+        const accountReq = {
+          account_number: acc.account_number,
+          account_name: acc.account_name,
+          account_type: { [acc.account_type]: null }, // Convert to enum variant
+          debit_balance: acc.debit,
+          credit_balance: acc.credit,
+          fs_line_item: [acc.fs_line], // Option<String>
+          notes: [], // Option<String>
+        };
+        const account: any = await call('add_trial_balance_account', [trialBalance.id, accountReq]);
+        createdAccounts.push(account);
+      }
+      
+      addLog('trial_balance', 'success', `Created trial balance with ${createdAccounts.length} pre-mapped accounts`);
+
       // Success
-      addLog('complete', 'success', 'Mock data generation completed successfully!');
+      addLog('complete', 'success', 'Mock data generation completed successfully! Ready for financial statement generation.');
       setCompleted(true);
 
     } catch (error: any) {
@@ -216,7 +304,7 @@ const MockDataGenerator = () => {
         </Typography>
         
         <Alert severity="info" sx={{ mb: 3 }}>
-          This will automatically create sample Egyptian organizations, entities, and clients for testing and demonstration purposes.
+          This will automatically create complete mock data for testing financial statement generation and all audit workflows.
         </Alert>
 
         <Box sx={{ mb: 3 }}>
@@ -240,6 +328,18 @@ const MockDataGenerator = () => {
               <ListItemText 
                 primary="5 Clients"
                 secondary="With Egyptian company details, Arabic names, tax IDs, linked to orgs/entities"
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText 
+                primary="2 Engagements"
+                secondary="FY2024 Audit and Q1 Review engagements"
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText 
+                primary="Trial Balance with 15 Pre-Mapped Accounts"
+                secondary="Complete trial balance for Nile Solar with accounts mapped to financial statement lines (EGP 59.4M balanced)"
               />
             </ListItem>
           </List>
@@ -302,10 +402,29 @@ const MockDataGenerator = () => {
             <Typography variant="body1" gutterBottom>
               <strong>Mock data created successfully!</strong>
             </Typography>
-            <Typography variant="body2">
-              You can now navigate to Organizations, Entities, and Clients pages to see the generated data.
-              Use these for creating engagements, client acceptances, and other audit workflows.
+            <Typography variant="body2" gutterBottom>
+              All data has been generated and is ready for use. You can now:
             </Typography>
+            <List dense>
+              <ListItem>
+                <ListItemText 
+                  primary="Navigate to Trial Balance"
+                  secondary="Select 'Nile Solar Technologies - FY2024 Audit' engagement to view the pre-mapped trial balance"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText 
+                  primary="Generate Financial Statements"
+                  secondary="Go to Financial Statements page, select the engagement, and click 'Generate' to create EAS-compliant statements"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText 
+                  primary="Explore All Features"
+                  secondary="Visit Organizations, Entities, Clients, and Engagements to see the complete data structure"
+                />
+              </ListItem>
+            </List>
           </Alert>
         )}
       </Paper>

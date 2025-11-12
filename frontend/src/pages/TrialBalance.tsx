@@ -95,6 +95,7 @@ export default function TrialBalance() {
   const [mapDialogOpen, setMapDialogOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<TBAccount | null>(null);
   const [selectedFSLine, setSelectedFSLine] = useState('');
+  const [availableLineItems, setAvailableLineItems] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     engagement_id: '',
     period_end_date: '',
@@ -105,7 +106,18 @@ export default function TrialBalance() {
 
   useEffect(() => {
     loadEngagements();
+    loadLineItems();
   }, []);
+
+  const loadLineItems = async () => {
+    try {
+      // Default to EAS taxonomy
+      const result: any = await call('get_line_items_for_taxonomy', [{ EAS: null }]);
+      setAvailableLineItems(Array.isArray(result) ? result : []);
+    } catch (error: any) {
+      console.error('Failed to load line items:', error);
+    }
+  };
 
   useEffect(() => {
     if (selectedTB) {
@@ -187,9 +199,8 @@ export default function TrialBalance() {
 
     try {
       await call('map_account_to_fs_line', [
-        selectedTB,
         selectedAccount.id,
-        selectedFSLine === '' ? [] : [selectedFSLine],
+        selectedFSLine,
       ]);
       
       setMapDialogOpen(false);
@@ -589,27 +600,19 @@ export default function TrialBalance() {
                   onChange={(e) => setSelectedFSLine(e.target.value)}
                 >
                   <MenuItem value="">Clear Mapping</MenuItem>
-                  <MenuItem value="Cash and Cash Equivalents">Cash and Cash Equivalents</MenuItem>
-                  <MenuItem value="Trade and Other Receivables">Trade and Other Receivables</MenuItem>
-                  <MenuItem value="Inventories">Inventories</MenuItem>
-                  <MenuItem value="Prepayments and Other Current Assets">Prepayments and Other Current Assets</MenuItem>
-                  <MenuItem value="Property, Plant and Equipment">Property, Plant and Equipment</MenuItem>
-                  <MenuItem value="Intangible Assets">Intangible Assets</MenuItem>
-                  <MenuItem value="Trade and Other Payables">Trade and Other Payables</MenuItem>
-                  <MenuItem value="Short-term Borrowings">Short-term Borrowings</MenuItem>
-                  <MenuItem value="Long-term Borrowings">Long-term Borrowings</MenuItem>
-                  <MenuItem value="Share Capital">Share Capital</MenuItem>
-                  <MenuItem value="Retained Earnings">Retained Earnings</MenuItem>
-                  <MenuItem value="Revenue">Revenue</MenuItem>
-                  <MenuItem value="Cost of Sales">Cost of Sales</MenuItem>
-                  <MenuItem value="Administrative Expenses">Administrative Expenses</MenuItem>
-                  <MenuItem value="Selling and Distribution Expenses">Selling and Distribution Expenses</MenuItem>
-                  <MenuItem value="Finance Costs">Finance Costs</MenuItem>
-                  <MenuItem value="Other Income">Other Income</MenuItem>
-                  <MenuItem value="Other Expenses">Other Expenses</MenuItem>
-                  <MenuItem value="Income Tax Expense">Income Tax Expense</MenuItem>
+                  {availableLineItems
+                    .filter(item => !item.is_subtotal) // Only show mappable line items, not subtotals
+                    .map(item => (
+                      <MenuItem key={item.code} value={item.code}>
+                        {item.code} - {item.name}
+                      </MenuItem>
+                    ))
+                  }
                 </Select>
               </FormControl>
+              <Alert severity="info" sx={{ mt: 2 }}>
+                <strong>Line Item Codes:</strong> Use these codes when mapping accounts. Subtotals are calculated automatically.
+              </Alert>
             </>
           )}
         </DialogContent>
