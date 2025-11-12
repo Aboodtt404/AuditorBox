@@ -29,6 +29,7 @@ import { Add, Edit, Delete, PersonAdd } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { useAuth } from '../hooks/useAuth';
+import { useNotification } from '../components/NotificationSystem';
 import { Engagement, Organization, Entity } from '../types';
 import { formatDate } from '../utils/dateFormatter';
 
@@ -36,6 +37,7 @@ const Engagements = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
   const { isAuthenticated, user } = useAuth();
+  const { showSuccess, showError, showWarning } = useNotification();
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
@@ -142,13 +144,13 @@ const Engagements = () => {
 
   const handleSendInvitation = async () => {
     if (!selectedEngagement || !inviteFormData.email) {
-      alert('Please enter a client email address');
+      showWarning('Please enter a client email address');
       return;
     }
 
     // Basic email validation
     if (!inviteFormData.email.includes('@')) {
-      alert('Please enter a valid email address');
+      showWarning('Please enter a valid email address');
       return;
     }
 
@@ -163,12 +165,12 @@ const Engagements = () => {
       const accessLevelText = inviteFormData.access_level === 'ViewOnly' ? 'View Only' :
                               inviteFormData.access_level === 'UploadDocuments' ? 'Upload Documents' : 'Full Access';
       
-      alert(
-        `📧 Invitation Sent Successfully!\n\n` +
-        `To: ${inviteFormData.email}\n` +
+      showSuccess(
+        `Invitation sent to ${inviteFormData.email}\n` +
         `Engagement: ${selectedEngagement.name}\n` +
         `Access Level: ${accessLevelText}\n\n` +
-        `The client will see this invitation when they log in with an account using this email address.`
+        `The client will see this invitation when they log in.`,
+        'Invitation Sent Successfully'
       );
       
       // Reload invitations list
@@ -183,7 +185,10 @@ const Engagements = () => {
       });
     } catch (error) {
       console.error('Failed to send invitation:', error);
-      alert('❌ Failed to send invitation:\n\n' + (error instanceof Error ? error.message : 'Unknown error'));
+      showError(
+        error instanceof Error ? error.message : 'Unknown error occurred',
+        'Failed to Send Invitation'
+      );
     }
   };
 

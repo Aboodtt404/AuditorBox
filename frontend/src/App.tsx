@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CustomThemeProvider } from './ThemeProvider';
 import { AuthProvider } from './hooks/useAuth';
+import { NotificationProvider } from './components/NotificationSystem';
 import Navigation from './components/Navigation';
 import PageLayout from './components/PageLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -29,10 +30,11 @@ import MockDataGenerator from './pages/MockDataGenerator';
 function App() {
   return (
     <CustomThemeProvider>
-      <AuthProvider>
-        <Router>
-          <Navigation />
-          <Routes>
+      <NotificationProvider>
+        <AuthProvider>
+          <Router>
+            <Navigation />
+            <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/profile-setup" element={<ProfileSetup />} />
             <Route
@@ -224,6 +226,7 @@ function App() {
           </Routes>
         </Router>
       </AuthProvider>
+      </NotificationProvider>
     </CustomThemeProvider>
   );
 }

@@ -26,6 +26,7 @@ import {
 } from '@mui/material';
 import { Add, Upload, CheckCircle, Error as ErrorIcon } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
+import { useNotification } from '../components/NotificationSystem';
 import { REGIONAL_CONFIG } from '../config/regional';
 
 interface TrialBalance {
@@ -82,6 +83,7 @@ interface Entity {
 
 export default function TrialBalance() {
   const { call } = useBackend();
+  const { showSuccess, showError, showWarning, showInfo } = useNotification();
   const [trialBalances, setTrialBalances] = useState<TrialBalance[]>([]);
   const [accounts, setAccounts] = useState<TBAccount[]>([]);
   const [validation, setValidation] = useState<Validation | null>(null);
@@ -207,10 +209,10 @@ export default function TrialBalance() {
       setSelectedAccount(null);
       setSelectedFSLine('');
       loadAccounts(selectedTB);
-      alert('Account mapped successfully!');
+      showSuccess(`Account mapped successfully to ${accountField}`, 'Mapping Updated');
     } catch (error: any) {
       console.error('Failed to map account:', error);
-      alert(`Failed to map account: ${error.message || error}`);
+      showError(error.message || error, 'Failed to Map Account');
     }
   };
 
@@ -259,10 +261,10 @@ export default function TrialBalance() {
       loadTrialBalances(BigInt(formData.engagement_id));
       setCsvData('');
       setFormData({ engagement_id: '', period_end_date: '', description: '', currency: REGIONAL_CONFIG.defaultCurrency });
-      alert('Trial balance imported successfully!');
+      showSuccess('Trial balance data imported and accounts loaded', 'Import Successful');
     } catch (error) {
       console.error('Failed to import CSV:', error);
-      alert(`Failed to import CSV: ${error instanceof Error ? error.message : 'Check console for details.'}`);
+      showError(error instanceof Error ? error.message : 'Check console for details.', 'Import Failed');
     }
   };
 
@@ -508,7 +510,7 @@ export default function TrialBalance() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => alert('Add Account functionality - Coming soon!')} variant="contained">Add Account</Button>
+          <Button onClick={() => showInfo('Add Account functionality coming soon')} variant="contained">Add Account</Button>
         </DialogActions>
       </Dialog>
 

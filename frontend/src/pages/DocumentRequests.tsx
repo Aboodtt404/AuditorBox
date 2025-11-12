@@ -23,7 +23,6 @@ import {
   InputLabel,
   Chip,
   Stack,
-  Alert,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -32,6 +31,8 @@ import {
   Description as DocumentIcon,
 } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
+import { useNotification } from '../components/NotificationSystem';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 interface Engagement {
   id: bigint;
@@ -56,6 +57,7 @@ interface DocumentRequest {
 
 const DocumentRequests = () => {
   const { call } = useBackend();
+  const { showSuccess, showError, showWarning } = useNotification();
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [requests, setRequests] = useState<DocumentRequest[]>([]);
   const [selectedEngagement, setSelectedEngagement] = useState<bigint | null>(null);
@@ -70,7 +72,8 @@ const DocumentRequests = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedRequestForReject, setSelectedRequestForReject] = useState<bigint | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [approveConfirmOpen, setApproveConfirmOpen] = useState(false);
+  const [selectedRequestForApprove, setSelectedRequestForApprove] = useState<DocumentRequest | null>(null);
 
   useEffect(() => {
     loadEngagements();
@@ -98,7 +101,7 @@ const DocumentRequests = () => {
       }
     } catch (err) {
       console.error('Failed to load engagements:', err);
-      setError('Failed to load engagements');
+      showError('Failed to load engagements. Please refresh the page.');
     }
   };
 
@@ -110,18 +113,18 @@ const DocumentRequests = () => {
       setRequests(reqs);
     } catch (err) {
       console.error('Failed to load document requests:', err);
-      setError('Failed to load document requests');
+      showError('Failed to load document requests. Please try again.');
     }
   };
 
   const handleCreateRequest = async () => {
     if (!selectedEngagement) {
-      setError('Please select an engagement');
+      showWarning('Please select an engagement');
       return;
     }
 
     if (!formData.title.trim()) {
-      setError('Please enter a title');
+      showWarning('Please enter a title for the document request');
       return;
     }
 
@@ -138,7 +141,7 @@ const DocumentRequests = () => {
 
       await call('create_document_request', [input]);
       
-      console.log('Document request created successfully');
+      showSuccess(`Document request "${formData.title}" created successfully`, 'Request Created');
       setDialogOpen(false);
       setFormData({
         title: '',
@@ -150,22 +153,37 @@ const DocumentRequests = () => {
       // Auto-refresh will update the UI
     } catch (err) {
       console.error('Failed to create document request:', err);
-      setError('Failed to create document request: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      showError(
+        err instanceof Error ? err.message : 'Unknown error occurred',
+        'Failed to Create Request'
+      );
     }
   };
 
-  const handleApprove = async (requestId: bigint) => {
+  const handleApproveClick = (request: DocumentRequest) => {
+    setSelectedRequestForApprove(request);
+    setApproveConfirmOpen(true);
+  };
+
+  const handleApprove = async () => {
+    if (!selectedRequestForApprove) return;
+
     try {
       await call('approve_document_request', [{
-        request_id: requestId,
+        request_id: selectedRequestForApprove.id,
         approved: true,
         rejection_reason: [],
       }]);
-      console.log('Document approved successfully');
+      showSuccess(`Document "${selectedRequestForApprove.title}" approved successfully`, 'Document Approved');
+      setApproveConfirmOpen(false);
+      setSelectedRequestForApprove(null);
       // Auto-refresh will update the UI
     } catch (err) {
       console.error('Failed to approve request:', err);
-      setError('Failed to approve: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      showError(
+        err instanceof Error ? err.message : 'Unknown error occurred',
+        'Failed to Approve'
+      );
     }
   };
 
@@ -177,7 +195,7 @@ const DocumentRequests = () => {
 
   const handleRejectConfirm = async () => {
     if (!selectedRequestForReject || !rejectionReason.trim()) {
-      setError('Please provide a rejection reason');
+      showWarning('Please provide a rejection reason');
       return;
     }
 
@@ -187,14 +205,17 @@ const DocumentRequests = () => {
         approved: false,
         rejection_reason: [rejectionReason],
       }]);
-      console.log('Document rejected successfully');
+      showSuccess('Document rejected and feedback sent to client', 'Document Rejected');
       setRejectDialogOpen(false);
       setSelectedRequestForReject(null);
       setRejectionReason('');
       // Auto-refresh will update the UI
     } catch (err) {
       console.error('Failed to reject request:', err);
-      setError('Failed to reject: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      showError(
+        err instanceof Error ? err.message : 'Unknown error occurred',
+        'Failed to Reject'
+      );
     }
   };
 
@@ -236,13 +257,6 @@ const DocumentRequests = () => {
           Create Request
         </Button>
       </Box>
-
-      {error && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-
 
       {/* Engagement Selector */}
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -376,7 +390,7 @@ const DocumentRequests = () => {
                         <IconButton
                           size="small"
                           color="success"
-                          onClick={() => handleApprove(req.id)}
+                          onClick={() => handleApproveClick(req)}
                           title="Approve Document"
                         >
                           <ApproveIcon />
@@ -541,14 +555,37 @@ const DocumentRequests = () => {
         </DialogActions>
       </Dialog>
 
+      {/* Approve Confirmation Dialog */}
+      <ConfirmDialog
+        open={approveConfirmOpen}
+        onClose={() => {
+          setApproveConfirmOpen(false);
+          setSelectedRequestForApprove(null);
+        }}
+        onConfirm={handleApprove}
+        title="Approve Document"
+        message={`Are you sure you want to approve "${selectedRequestForApprove?.title}"?\n\nThis will mark the document as accepted and notify the client.`}
+        confirmText="Approve"
+        cancelText="Cancel"
+        severity="success"
+        confirmColor="success"
+      />
+
       {/* Reject Document Dialog */}
       <Dialog 
         open={rejectDialogOpen} 
         onClose={() => setRejectDialogOpen(false)} 
         maxWidth="sm" 
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+          },
+        }}
       >
-        <DialogTitle>Reject Document</DialogTitle>
+        <DialogTitle sx={{ fontSize: '1.25rem', fontWeight: 700 }}>
+          Reject Document
+        </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" paragraph sx={{ mt: 1 }}>
             Please provide a reason for rejecting this document. This will be visible to the client.
@@ -567,13 +604,20 @@ const DocumentRequests = () => {
             autoFocus
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button 
+            onClick={() => setRejectDialogOpen(false)}
+            variant="outlined"
+            sx={{ minWidth: 100 }}
+          >
+            Cancel
+          </Button>
           <Button 
             onClick={handleRejectConfirm} 
             variant="contained" 
             color="error"
             disabled={!rejectionReason.trim()}
+            sx={{ minWidth: 100 }}
           >
             Reject Document
           </Button>

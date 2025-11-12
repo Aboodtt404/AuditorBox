@@ -67,7 +67,14 @@ const ClientPortal = () => {
   useEffect(() => {
     // Only load requests when authenticated and user is loaded
     if (isAuthenticated && user) {
-      loadData();
+      loadData(true); // Show loading on first load
+      
+      // Auto-refresh every 5 seconds (silent updates)
+      const interval = setInterval(() => {
+        loadData(false); // No loading spinner on refresh
+      }, 5000);
+      
+      return () => clearInterval(interval);
     } else if (isAuthenticated === false && user === null) {
       // Authentication failed or user not loaded after initialization
       setLoading(false);
@@ -81,9 +88,9 @@ const ClientPortal = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const loadData = async () => {
+  const loadData = async (showLoading = false) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const [reqs, invites, engs] = await Promise.all([
         call<DocumentRequest[]>('get_my_document_requests', []),
         call<any[]>('get_my_invitations', []).catch(() => []),
@@ -97,33 +104,33 @@ const ClientPortal = () => {
       console.error('Failed to load data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   const handleAcceptInvitation = async (invitationId: bigint) => {
     try {
       await call('accept_invitation', [{ invitation_id: invitationId }]);
-      alert('✅ Invitation accepted! You now have access to the engagement.');
-      await loadData();
+      console.log('Invitation accepted successfully');
+      // Auto-refresh will update the UI
     } catch (err) {
       console.error('Failed to accept invitation:', err);
-      alert('Failed to accept invitation: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      setError('Failed to accept invitation: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
 
   const handleRejectInvitation = async (invitationId: bigint) => {
-    const reason = prompt('Why are you rejecting this invitation? (Optional)');
+    // Silent reject - auto-refresh will show the change
     try {
       await call('reject_invitation', [{
         invitation_id: invitationId,
-        reason: reason ? [reason] : [],
+        reason: [],
       }]);
-      alert('Invitation rejected');
-      await loadData();
+      console.log('Invitation rejected');
+      // Auto-refresh will update the UI
     } catch (err) {
       console.error('Failed to reject invitation:', err);
-      alert('Failed to reject invitation: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      setError('Failed to reject invitation: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   };
 

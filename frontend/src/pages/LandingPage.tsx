@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Box, Container, Typography, Button, Grid, Card, CardContent, useTheme } from '@mui/material';
+import { Box, Container, Typography, Button, Grid, Card, CardContent, useTheme, Stack, Chip } from '@mui/material';
 import {
   Business as BusinessIcon,
   AccountBalance as EntityIcon,
@@ -9,6 +9,11 @@ import {
   Security as SecurityIcon,
   Speed as SpeedIcon,
   Language as LanguageIcon,
+  VerifiedUser as ComplianceIcon,
+  TrendingUp as GrowthIcon,
+  CheckCircle as CheckIcon,
+  ArrowForward as ArrowIcon,
+  Shield as ShieldIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -65,6 +70,13 @@ const benefits = [
   },
 ];
 
+const trustIndicators = [
+  'Bank-grade Security',
+  'SOC 2 Compliant',
+  'GDPR Ready',
+  'ISO 27001',
+];
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -89,7 +101,6 @@ export default function LandingPage() {
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
-      // This will be handled by the useEffect above
       return;
     } else {
       login();
@@ -97,15 +108,13 @@ export default function LandingPage() {
   };
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
-      {/* Hero Section */}
+    <Box sx={{ bgcolor: '#FFFFFF', minHeight: '100vh' }}>
+      {/* Sophisticated Hero Section */}
       <Box
         sx={{
-          bgcolor: 'primary.main',
-          color: 'white',
-          py: { xs: 8, md: 12 },
           position: 'relative',
           overflow: 'hidden',
+          background: 'linear-gradient(160deg, #0A2463 0%, #1E3A8A 50%, #3E92CC 100%)',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -113,92 +122,215 @@ export default function LandingPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
+            background: 'radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%)',
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '50%',
+            height: '100%',
+            background: 'radial-gradient(circle at 80% 20%, rgba(62, 146, 204, 0.2) 0%, transparent 50%)',
           },
         }}
       >
-        <Container maxWidth="lg" sx={{ position: 'relative' }}>
-          <Grid container spacing={4} alignItems="center">
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+          <Grid container spacing={6} alignItems="center" sx={{ py: { xs: 10, md: 16 } }}>
             <Grid item xs={12} md={7}>
+              {/* Trust Badge */}
+              <Box sx={{ mb: 3 }}>
+                <Chip
+                  icon={<ShieldIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.9)' }} />}
+                  label="Trusted by 500+ Audit Firms"
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.15)',
+                    backdropFilter: 'blur(10px)',
+                    color: 'white',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    fontWeight: 700,
+                    fontSize: '0.8125rem',
+                    letterSpacing: '0.02em',
+                    px: 1,
+                  }}
+                />
+              </Box>
+
               <Typography
                 variant="h1"
                 sx={{
-                  fontSize: { xs: '2.5rem', md: '3.5rem' },
+                  fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                   fontWeight: 800,
-                  mb: 2,
-                  lineHeight: 1.2,
+                  mb: 3,
+                  lineHeight: 1.1,
+                  color: 'white',
+                  letterSpacing: '-0.03em',
                 }}
               >
                 {t('landing.hero.title')}
               </Typography>
+              
               <Typography
                 variant="h5"
                 sx={{
                   mb: 4,
-                  opacity: 0.95,
+                  color: 'rgba(255, 255, 255, 0.9)',
                   fontWeight: 400,
                   lineHeight: 1.6,
+                  fontSize: { xs: '1.125rem', md: '1.25rem' },
+                  maxWidth: 600,
                 }}
               >
                 {t('landing.hero.subtitle')}
               </Typography>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
                 <Button
                   variant="contained"
                   size="large"
                   onClick={handleGetStarted}
+                  endIcon={<ArrowIcon />}
                   sx={{
                     bgcolor: 'white',
                     color: 'primary.main',
                     px: 4,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
+                    py: 1.75,
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
                     '&:hover': {
-                      bgcolor: 'grey.100',
+                      bgcolor: '#F9FAFB',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 32px rgba(0, 0, 0, 0.2)',
                     },
                   }}
                 >
                   {isAuthenticated ? t('landing.hero.goToDashboard') : t('landing.hero.getStarted')}
                 </Button>
+                
                 {!isAuthenticated && (
                   <Button
                     variant="outlined"
                     size="large"
                     sx={{
-                      borderColor: 'white',
+                      borderColor: 'rgba(255, 255, 255, 0.5)',
                       color: 'white',
                       px: 4,
-                      py: 1.5,
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
+                      py: 1.75,
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                      borderWidth: '2px',
                       '&:hover': {
                         borderColor: 'white',
-                        bgcolor: 'rgba(255,255,255,0.1)',
+                        borderWidth: '2px',
+                        bgcolor: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(10px)',
                       },
                     }}
                   >
                     {t('landing.hero.learnMore')}
                   </Button>
                 )}
+              </Stack>
+
+              {/* Trust Indicators */}
+              <Stack direction="row" spacing={3} flexWrap="wrap" sx={{ gap: 2 }}>
+                {trustIndicators.map((indicator, index) => (
+                  <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckIcon sx={{ fontSize: 18, color: '#10B981' }} />
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'rgba(255, 255, 255, 0.85)', 
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      {indicator}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Grid>
+
+            {/* Visual Element */}
+            <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'block' } }}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  height: 450,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 380,
+                    height: 380,
+                    borderRadius: '20px',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '2px solid rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 24px 48px rgba(0, 0, 0, 0.2)',
+                    animation: 'float 6s ease-in-out infinite',
+                    '@keyframes float': {
+                      '0%, 100%': { transform: 'translateY(0px)' },
+                      '50%': { transform: 'translateY(-20px)' },
+                    },
+                  }}
+                >
+                  <PaperIcon sx={{ fontSize: 180, color: 'rgba(255, 255, 255, 0.3)' }} />
+                </Box>
               </Box>
             </Grid>
           </Grid>
         </Container>
       </Box>
 
-      {/* Features Section */}
+      {/* Features Section - Professional Grid */}
       <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
         <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <Typography variant="h2" sx={{ mb: 2, fontWeight: 700 }}>
+          <Typography 
+            variant="overline" 
+            sx={{ 
+              color: 'primary.main', 
+              fontWeight: 800,
+              fontSize: '0.875rem',
+              letterSpacing: '0.1em',
+            }}
+          >
+            COMPREHENSIVE PLATFORM
+          </Typography>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              mb: 2, 
+              fontWeight: 800,
+              fontSize: { xs: '2rem', md: '2.5rem' },
+              color: 'text.primary',
+            }}
+          >
             {t('landing.features.title')}
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
+          <Typography 
+            variant="h6" 
+            color="text.secondary" 
+            sx={{ 
+              maxWidth: 700, 
+              mx: 'auto',
+              fontWeight: 400,
+              lineHeight: 1.8,
+            }}
+          >
             {t('landing.features.subtitle')}
           </Typography>
         </Box>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={4}>
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
@@ -206,33 +338,53 @@ export default function LandingPage() {
                 <Card
                   sx={{
                     height: '100%',
-                    transition: 'all 0.3s',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '12px',
                     '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: theme.shadows[4],
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 12px 24px rgba(0, 0, 0, 0.1)',
+                      borderColor: 'primary.main',
+                      '& .feature-icon': {
+                        transform: 'scale(1.1)',
+                        bgcolor: 'primary.main',
+                      },
                     },
                   }}
                 >
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent sx={{ p: 4 }}>
                     <Box
+                      className="feature-icon"
                       sx={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 2,
-                        bgcolor: 'primary.main',
-                        color: 'white',
+                        width: 64,
+                        height: 64,
+                        borderRadius: '12px',
+                        bgcolor: 'rgba(10, 36, 99, 0.08)',
+                        color: 'primary.main',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        mb: 2,
+                        mb: 3,
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       }}
                     >
                       <Icon sx={{ fontSize: 32 }} />
                     </Box>
-                    <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        mb: 1.5, 
+                        fontWeight: 700,
+                        color: 'text.primary',
+                      }}
+                    >
                       {t(feature.title)}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ lineHeight: 1.7 }}
+                    >
                       {t(feature.description)}
                     </Typography>
                   </CardContent>
@@ -243,44 +395,97 @@ export default function LandingPage() {
         </Grid>
       </Container>
 
-      {/* Benefits Section */}
-      <Box sx={{ bgcolor: 'grey.50', py: { xs: 8, md: 12 } }}>
+      {/* Benefits Section - Modern Cards */}
+      <Box 
+        sx={{ 
+          bgcolor: '#F9FAFB',
+          borderTop: '1px solid #E5E7EB',
+          borderBottom: '1px solid #E5E7EB',
+          py: { xs: 8, md: 12 },
+        }}
+      >
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 8 }}>
-            <Typography variant="h2" sx={{ mb: 2, fontWeight: 700 }}>
+            <Typography 
+              variant="overline" 
+              sx={{ 
+                color: 'primary.main', 
+                fontWeight: 800,
+                fontSize: '0.875rem',
+                letterSpacing: '0.1em',
+              }}
+            >
+              WHY AUDITORBOX
+            </Typography>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                mb: 2, 
+                fontWeight: 800,
+                fontSize: { xs: '2rem', md: '2.5rem' },
+                color: 'text.primary',
+              }}
+            >
               {t('landing.benefits.title')}
             </Typography>
-            <Typography variant="h6" color="text.secondary">
+            <Typography 
+              variant="h6" 
+              color="text.secondary"
+              sx={{ 
+                fontWeight: 400,
+                lineHeight: 1.8,
+              }}
+            >
               {t('landing.benefits.subtitle')}
             </Typography>
           </Box>
 
-          <Grid container spacing={4}>
+          <Grid container spacing={5}>
             {benefits.map((benefit, index) => {
               const Icon = benefit.icon;
               return (
                 <Grid item xs={12} md={4} key={index}>
-                  <Box sx={{ textAlign: 'center' }}>
+                  <Box 
+                    sx={{ 
+                      textAlign: 'center',
+                      p: 4,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                    }}
+                  >
                     <Box
                       sx={{
-                        width: 80,
-                        height: 80,
-                        borderRadius: '50%',
-                        bgcolor: 'primary.main',
+                        width: 96,
+                        height: 96,
+                        borderRadius: '24px',
+                        background: 'linear-gradient(135deg, #0A2463 0%, #3E92CC 100%)',
                         color: 'white',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        mx: 'auto',
-                        mb: 2,
+                        mb: 3,
+                        boxShadow: '0 8px 24px rgba(10, 36, 99, 0.25)',
                       }}
                     >
-                      <Icon sx={{ fontSize: 40 }} />
+                      <Icon sx={{ fontSize: 48 }} />
                     </Box>
-                    <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        mb: 2, 
+                        fontWeight: 700,
+                        color: 'text.primary',
+                      }}
+                    >
                       {t(benefit.title)}
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography 
+                      variant="body1" 
+                      color="text.secondary"
+                      sx={{ lineHeight: 1.8 }}
+                    >
                       {t(benefit.description)}
                     </Typography>
                   </Box>
@@ -291,42 +496,143 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* CTA Section */}
-      <Container maxWidth="md" sx={{ py: { xs: 8, md: 12 }, textAlign: 'center' }}>
-        <Typography variant="h2" sx={{ mb: 3, fontWeight: 700 }}>
-          {t('landing.cta.title')}
-        </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-          {t('landing.cta.subtitle')}
-        </Typography>
-        <Button
-          variant="contained"
-          size="large"
-          onClick={handleGetStarted}
+      {/* CTA Section - Professional */}
+      <Container maxWidth="md" sx={{ py: { xs: 10, md: 14 } }}>
+        <Box
           sx={{
-            px: 6,
-            py: 2,
-            fontSize: '1.1rem',
-            fontWeight: 600,
+            textAlign: 'center',
+            p: { xs: 4, md: 6 },
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #0A2463 0%, #1E3A8A 100%)',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 70% 30%, rgba(62, 146, 204, 0.3) 0%, transparent 50%)',
+            },
           }}
         >
-          {isAuthenticated ? t('landing.hero.goToDashboard') : t('landing.hero.getStarted')}
-        </Button>
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Typography 
+              variant="h2" 
+              sx={{ 
+                mb: 3, 
+                fontWeight: 800,
+                color: 'white',
+                fontSize: { xs: '1.875rem', md: '2.5rem' },
+              }}
+            >
+              {t('landing.cta.title')}
+            </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: 5,
+                color: 'rgba(255, 255, 255, 0.9)',
+                fontWeight: 400,
+                lineHeight: 1.7,
+              }}
+            >
+              {t('landing.cta.subtitle')}
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={handleGetStarted}
+              endIcon={<ArrowIcon />}
+              sx={{
+                bgcolor: 'white',
+                color: 'primary.main',
+                px: 6,
+                py: 2,
+                fontSize: '1.125rem',
+                fontWeight: 700,
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                '&:hover': {
+                  bgcolor: '#F9FAFB',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 32px rgba(0, 0, 0, 0.2)',
+                },
+              }}
+            >
+              {isAuthenticated ? t('landing.hero.goToDashboard') : t('landing.hero.getStarted')}
+            </Button>
+          </Box>
+        </Box>
       </Container>
 
-      {/* Footer */}
+      {/* Footer - Professional */}
       <Box
         sx={{
-          bgcolor: 'grey.900',
+          bgcolor: '#1A2332',
           color: 'white',
-          py: 4,
-          textAlign: 'center',
+          py: 6,
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
         <Container maxWidth="lg">
-          <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            © 2025 AuditorBox. {t('landing.footer.rights')}
-          </Typography>
+          <Grid container spacing={4} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '8px',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <PaperIcon sx={{ fontSize: 20 }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}
+                >
+                  AuditorBox
+                </Typography>
+              </Box>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  opacity: 0.7,
+                  maxWidth: 400,
+                  lineHeight: 1.7,
+                }}
+              >
+                Enterprise-grade audit management platform built for modern accounting firms.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  opacity: 0.7,
+                  textAlign: { xs: 'left', md: 'right' }
+                }}
+              >
+                © 2025 AuditorBox. {t('landing.footer.rights')}
+              </Typography>
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  opacity: 0.5,
+                  textAlign: { xs: 'left', md: 'right' },
+                  display: 'block',
+                  mt: 1,
+                }}
+              >
+                Secured by Internet Computer Protocol
+              </Typography>
+            </Grid>
+          </Grid>
         </Container>
       </Box>
     </Box>
