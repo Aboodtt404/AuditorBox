@@ -5,7 +5,6 @@ import {
   AccountBalance as EntityIcon,
   Assignment as EngagementIcon,
   CloudUpload as UploadIcon,
-  Description as PaperIcon,
   Security as SecurityIcon,
   Speed as SpeedIcon,
   Language as LanguageIcon,
@@ -18,6 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
+import Logo from '../components/Logo';
 
 const features = [
   {
@@ -39,11 +39,6 @@ const features = [
     icon: UploadIcon,
     title: 'landing.features.dataImport.title',
     description: 'landing.features.dataImport.description',
-  },
-  {
-    icon: PaperIcon,
-    title: 'landing.features.workingPapers.title',
-    description: 'landing.features.workingPapers.description',
   },
   {
     icon: SecurityIcon,
@@ -277,13 +272,21 @@ export default function LandingPage() {
                     justifyContent: 'center',
                     boxShadow: '0 24px 48px rgba(0, 0, 0, 0.2)',
                     animation: 'float 6s ease-in-out infinite',
+                    p: 6,
                     '@keyframes float': {
                       '0%, 100%': { transform: 'translateY(0px)' },
                       '50%': { transform: 'translateY(-20px)' },
                     },
                   }}
                 >
-                  <PaperIcon sx={{ fontSize: 180, color: 'rgba(255, 255, 255, 0.3)' }} />
+                  <Logo 
+                    variant="white" 
+                    height="auto" 
+                    sx={{ 
+                      width: '100%', 
+                      opacity: 0.5 
+                    }} 
+                  />
                 </Box>
               </Box>
             </Grid>
@@ -579,25 +582,7 @@ export default function LandingPage() {
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '8px',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <PaperIcon sx={{ fontSize: 20 }} />
-                </Box>
-                <Typography 
-                  variant="h6" 
-                  sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}
-                >
-                  AuditorBox
-                </Typography>
+                <Logo variant="white" height={40} />
               </Box>
               <Typography 
                 variant="body2" 

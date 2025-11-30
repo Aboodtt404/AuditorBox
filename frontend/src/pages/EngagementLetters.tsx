@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
 import { useTranslation } from 'react-i18next';
+import { useNotification } from '../components/NotificationSystem';
 
 interface Client {
   id: bigint;
@@ -63,6 +64,7 @@ interface EngagementLetter {
 export default function EngagementLetters() {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [clients, setClients] = useState<Client[]>([]);
   const [letters, setLetters] = useState<EngagementLetter[]>([]);
   const [selectedClient, setSelectedClient] = useState<bigint | null>(null);
@@ -86,8 +88,9 @@ export default function EngagementLetters() {
     try {
       const clientList = await call<Client[]>('list_clients');
       setClients(clientList);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load clients:', error);
+      showError(error.message || 'Failed to load clients', 'Load Error');
     }
   };
 
@@ -101,11 +104,13 @@ export default function EngagementLetters() {
         setLetters(result.Ok);
       } else if ('Err' in result) {
         console.error('Error from backend:', result.Err);
+        showError(result.Err, 'Load Error');
       } else if (Array.isArray(result)) {
         setLetters(result as EngagementLetter[]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load letters:', error);
+      showError(error.message || 'Failed to load engagement letters', 'Load Error');
     }
   };
 
@@ -122,27 +127,27 @@ export default function EngagementLetters() {
       };
 
       await call('create_engagement_letter', [request]);
+      showSuccess('Engagement letter created successfully!', 'Success');
       setDialogOpen(false);
       setSelectedClient(clientId);
       await loadLetters(clientId);
-      alert('Engagement letter created successfully!');
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create engagement letter:', error);
-      alert('Failed to create engagement letter. Please try again.');
+      showError(error.message || 'Failed to create engagement letter. Please try again.', 'Create Error');
     }
   };
 
   const handleSend = async (letterId: bigint) => {
     try {
       await call('send_engagement_letter', [letterId]);
+      showSuccess('Engagement letter sent to client!', 'Success');
       if (selectedClient) {
         loadLetters(selectedClient);
       }
-      alert('Engagement letter sent to client!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to send letter:', error);
-      alert('Failed to send letter. Please try again.');
+      showError(error.message || 'Failed to send letter. Please try again.', 'Send Error');
     }
   };
 
@@ -338,7 +343,7 @@ export default function EngagementLetters() {
               required
               value={formData.fee_structure}
               onChange={(e) => setFormData({ ...formData, fee_structure: e.target.value })}
-              placeholder="e.g., Fixed fee of $10,000 or Hourly rate of $150/hour"
+              placeholder="e.g., Fixed fee of 10,000 EGP or Hourly rate of 150 EGP/hour"
             />
 
             <TextField

@@ -22,7 +22,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Alert,
   CircularProgress,
   Stack,
   Chip,
@@ -30,6 +29,7 @@ import {
 import { Add, GetApp } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
 import { useAuth } from '../hooks/useAuth';
+import { useNotification } from '../components/NotificationSystem';
 
 interface FSCategory {
   Asset?: null;
@@ -91,6 +91,7 @@ interface TrialBalance {
 const FinancialStatements = () => {
   const { call } = useBackend();
   const { isAuthenticated, user } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [loading, setLoading] = useState(true);
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [trialBalances, setTrialBalances] = useState<TrialBalance[]>([]);
@@ -103,7 +104,6 @@ const FinancialStatements = () => {
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [noteTitle, setNoteTitle] = useState('');
   const [noteContent, setNoteContent] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -118,7 +118,7 @@ const FinancialStatements = () => {
       setEngagements(engs);
     } catch (err: any) {
       console.error('Failed to load engagements:', err);
-      setError(err.message || 'Failed to load data');
+      showError(err.message || 'Failed to load data', 'Load Error');
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,7 @@ const FinancialStatements = () => {
       setTrialBalances(tbs);
     } catch (err: any) {
       console.error('Failed to load trial balances:', err);
-      setError(err.message || 'Failed to load trial balances');
+      showError(err.message || 'Failed to load trial balances', 'Load Error');
     }
   };
 
@@ -140,7 +140,7 @@ const FinancialStatements = () => {
       setFinancialStatements(fss);
     } catch (err: any) {
       console.error('Failed to load financial statements:', err);
-      setError(err.message || 'Failed to load financial statements');
+      showError(err.message || 'Failed to load financial statements', 'Load Error');
     }
   };
 
@@ -154,7 +154,7 @@ const FinancialStatements = () => {
 
   const handleGenerate = async () => {
     if (!selectedTrialBalance) {
-      setError('Please select a trial balance');
+      showError('Please select a trial balance', 'Validation Error');
       return;
     }
 
@@ -168,12 +168,12 @@ const FinancialStatements = () => {
         },
       ]);
       
+      showSuccess('Financial statements generated successfully!', 'Success');
       setSelectedFS(fs);
       setFinancialStatements([...financialStatements, fs]);
-      setError(null);
     } catch (err: any) {
       console.error('Failed to generate financial statements:', err);
-      setError(err.message || 'Failed to generate financial statements');
+      showError(err.message || 'Failed to generate financial statements', 'Generation Error');
     } finally {
       setLoading(false);
     }
@@ -181,7 +181,7 @@ const FinancialStatements = () => {
 
   const handleAddNote = async () => {
     if (!selectedFS || !noteTitle || !noteContent) {
-      setError('Please provide note title and content');
+      showError('Please provide note title and content', 'Validation Error');
       return;
     }
 
@@ -194,6 +194,7 @@ const FinancialStatements = () => {
         },
       ]);
 
+      showSuccess('Note added successfully', 'Success');
       // Refresh the financial statement
       const updated = await call<FinancialStatement>('get_financial_statement', [selectedFS.id]);
       setSelectedFS(updated);
@@ -201,19 +202,18 @@ const FinancialStatements = () => {
       setNoteDialogOpen(false);
       setNoteTitle('');
       setNoteContent('');
-      setError(null);
     } catch (err: any) {
       console.error('Failed to add note:', err);
-      setError(err.message || 'Failed to add note');
+      showError(err.message || 'Failed to add note', 'Add Note Error');
     }
   };
 
   const formatAmount = (amount: bigint): string => {
-    const dollars = Number(amount) / 100;
-    return new Intl.NumberFormat('en-US', {
+    const egpAmount = Number(amount) / 100;
+    return new Intl.NumberFormat('en-EG', {
       style: 'currency',
-      currency: 'USD',
-    }).format(dollars);
+      currency: 'EGP',
+    }).format(egpAmount);
   };
 
   const getCategoryName = (category: FSCategory): string => {
@@ -255,11 +255,6 @@ const FinancialStatements = () => {
         <Typography variant="h4">Financial Statements</Typography>
       </Box>
 
-      {error && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
 
       {/* Selection Controls */}
       <Paper sx={{ p: 3, mb: 3 }}>

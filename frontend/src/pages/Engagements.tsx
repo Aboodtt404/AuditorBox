@@ -30,6 +30,7 @@ import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../components/NotificationSystem';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { Engagement, Organization, Entity } from '../types';
 import { formatDate } from '../utils/dateFormatter';
 
@@ -45,6 +46,8 @@ const Engagements = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [engagementToDelete, setEngagementToDelete] = useState<{ id: bigint; name: string } | null>(null);
   const [selectedEngagement, setSelectedEngagement] = useState<Engagement | null>(null);
   const [invitations, setInvitations] = useState<any[]>([]);
   const [inviteFormData, setInviteFormData] = useState({
@@ -81,8 +84,9 @@ const Engagements = () => {
       setOrganizations(orgs);
       setEntities(ents);
       setClients(clnts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load data:', error);
+      showError(error.message || 'Failed to load engagements', 'Load Error');
     } finally {
       setLoading(false);
     }
@@ -114,10 +118,12 @@ const Engagements = () => {
         end_date: BigInt(new Date(formData.end_date).getTime() * 1000000),
         status: formData.status,
       }]);
+      showSuccess('Engagement created successfully', 'Success');
       setDialogOpen(false);
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save engagement:', error);
+      showError(error.message || 'Failed to save engagement', 'Save Error');
     }
   };
 
@@ -199,6 +205,28 @@ const Engagements = () => {
     return 'Unknown';
   };
 
+  const handleDeleteClick = (id: bigint, name: string) => {
+    setEngagementToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!engagementToDelete) return;
+
+    try {
+      await call('delete_engagement', [engagementToDelete.id]);
+      showSuccess(`Engagement "${engagementToDelete.name}" deleted successfully`, 'Delete Success');
+      setDeleteDialogOpen(false);
+      setEngagementToDelete(null);
+      loadData();
+    } catch (error: any) {
+      console.error('Failed to delete engagement:', error);
+      showError(error.message || 'Failed to delete engagement', 'Delete Error');
+      setDeleteDialogOpen(false);
+      setEngagementToDelete(null);
+    }
+  };
+
   // Show loading while data is being fetched
   if (loading) {
     return (
@@ -267,7 +295,14 @@ const Engagements = () => {
                       <PersonAdd />
                     </IconButton>
                     <IconButton size="small" color="primary"><Edit /></IconButton>
-                    <IconButton size="small" color="error"><Delete /></IconButton>
+                    <IconButton 
+                      size="small" 
+                      color="error"
+                      onClick={() => handleDeleteClick(eng.id, eng.name)}
+                      title={t('engagements.delete') || 'Delete Engagement'}
+                    >
+                      <Delete />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               );
@@ -510,6 +545,24 @@ const Engagements = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setEngagementToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title={t('engagements.deleteTitle') || 'Delete Engagement'}
+        message={engagementToDelete 
+          ? t('engagements.deleteConfirm', { name: engagementToDelete.name }) || `Are you sure you want to delete "${engagementToDelete.name}"? This action cannot be undone and may affect associated invitations and documents.`
+          : ''}
+        confirmText={t('engagements.delete') || 'Delete'}
+        cancelText={t('common.cancel') || 'Cancel'}
+        severity="error"
+        confirmColor="error"
+      />
     </Container>
   );
 };

@@ -246,3 +246,87 @@ export interface VerificationResult {
   message: string;
 }
 
+// Audit Templates and Checklists
+export type TemplateType = 
+  | { Audit: null }
+  | { Review: null }
+  | { Compilation: null }
+  | { TaxPreparation: null }
+  | { Custom: null };
+
+export type ChecklistItemStatus =
+  | { NotStarted: null }
+  | { InProgress: null }
+  | { Completed: null }
+  | { NotApplicable: null };
+
+export type ComplianceStatus =
+  | { NotStarted: null }
+  | { InProgress: null }
+  | { Compliant: null }
+  | { NonCompliant: null }
+  | { PartiallyCompliant: null };
+
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  description: string;
+  section: string;
+  order: number;
+  is_required: boolean;
+  reference?: string;
+  estimated_hours?: number;
+  compliance_requirements?: string[];
+  documentation_required?: string[];
+  evidence_types?: string[];
+}
+
+export interface AuditTemplate {
+  id: bigint;
+  name: string;
+  description: string;
+  template_type: TemplateType;
+  checklist_items: ChecklistItem[];
+  is_default: boolean;
+  is_public: boolean;
+  created_by: string;
+  created_at: bigint;
+  updated_at: bigint;
+  firm_id?: bigint;
+  jurisdiction?: string;
+}
+
+export interface ChecklistItemInstance {
+  item_id: string;
+  title: string;
+  description: string;
+  section: string;
+  order: number;
+  status: ChecklistItemStatus;
+  assigned_to?: string;
+  completed_by?: string;
+  completed_at?: bigint;
+  notes: string;
+  actual_hours?: number;
+}
+
+export interface EngagementChecklist {
+  id: bigint;
+  engagement_id: bigint;
+  template_id: bigint;
+  name: string;
+  items: ChecklistItemInstance[];
+  created_at: bigint;
+  created_by: string;
+}
+
+export interface StandardCompliance {
+  standard_code: string;
+  standard_name: string;
+  checklist_item_ids: string[];
+  compliance_status: ComplianceStatus;
+  last_reviewed?: bigint;
+  reviewed_by?: string;
+  notes: string;
+}
+

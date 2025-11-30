@@ -219,6 +219,33 @@ const DocumentRequests = () => {
     }
   };
 
+  const handleViewDocument = async (request: DocumentRequest) => {
+    if (!request.fulfilled_document_id) {
+      showWarning('No document available to view');
+      return;
+    }
+
+    try {
+      // First, get the document metadata to get the name
+      const document = await call<any>('get_document', [request.fulfilled_document_id]);
+      const documentName = document?.name || request.title;
+
+      // Download the document
+      const data = await call<number[]>('download_document', [request.fulfilled_document_id]);
+      const blob = new Blob([new Uint8Array(data)]);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = documentName;
+      a.click();
+      URL.revokeObjectURL(url);
+      showSuccess('Document downloaded successfully', 'Download Success');
+    } catch (error: any) {
+      console.error('Failed to view document:', error);
+      showError(error.message || 'Failed to download document', 'Download Error');
+    }
+  };
+
   const getStatusChip = (status: DocumentRequest['status']) => {
     if ('Pending' in status) {
       return <Chip label="Pending" color="warning" size="small" />;
@@ -407,6 +434,7 @@ const DocumentRequests = () => {
                           size="small"
                           color="primary"
                           disabled={!req.fulfilled_document_id}
+                          onClick={() => handleViewDocument(req)}
                           title={req.fulfilled_document_id ? "View Document (ID: " + req.fulfilled_document_id.toString() + ")" : "No document uploaded"}
                         >
                           <DocumentIcon />

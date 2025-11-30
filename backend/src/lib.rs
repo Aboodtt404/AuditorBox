@@ -554,6 +554,32 @@ fn apply_template_to_engagement(
 }
 
 #[query]
+fn get_standard_compliance(
+    checklist_id: u64,
+    standard_code: String,
+) -> Result<templates::StandardCompliance> {
+    let caller = ic_cdk::caller();
+    templates::get_standard_compliance(caller, checklist_id, standard_code)
+}
+
+#[update]
+fn update_standard_compliance(
+    checklist_id: u64,
+    standard_code: String,
+    status: templates::ComplianceStatus,
+    notes: Option<String>,
+) -> Result<templates::StandardCompliance> {
+    let caller = ic_cdk::caller();
+    templates::update_standard_compliance(caller, checklist_id, standard_code, status, notes)
+}
+
+#[query]
+fn get_compliance_report(engagement_id: u64) -> Result<Vec<templates::StandardCompliance>> {
+    let caller = ic_cdk::caller();
+    templates::get_compliance_report(caller, engagement_id)
+}
+
+#[query]
 fn get_engagement_checklists(engagement_id: u64) -> Result<Vec<templates::EngagementChecklist>> {
     let caller = ic_cdk::caller();
     templates::get_engagement_checklists(caller, engagement_id)

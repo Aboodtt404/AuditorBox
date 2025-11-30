@@ -26,10 +26,12 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { ImportedDataset, Engagement, WorkingPaper, ColumnMapping } from '../types';
+import { useNotification } from '../components/NotificationSystem';
 
 const WorkingPapers = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [activeStep, setActiveStep] = useState(0);
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [datasets, setDatasets] = useState<ImportedDataset[]>([]);
@@ -39,6 +41,7 @@ const WorkingPapers = () => {
   const [workingPaperName, setWorkingPaperName] = useState('');
   const [columnMapping, setColumnMapping] = useState<ColumnMapping>({});
   const [availableColumns, setAvailableColumns] = useState<string[]>([]);
+  const [standardFilter, setStandardFilter] = useState<string>('all');
 
   useEffect(() => {
     loadData();
@@ -52,8 +55,9 @@ const WorkingPapers = () => {
       ]);
       setEngagements(engs);
       setDatasets(dsets);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load data:', error);
+      showError(error.message || 'Failed to load data', 'Load Error');
     }
   };
 
@@ -63,8 +67,9 @@ const WorkingPapers = () => {
         BigInt(engagementId),
       ]);
       setWorkingPapers(wps);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load working papers:', error);
+      showError(error.message || 'Failed to load working papers', 'Load Error');
     }
   };
 
@@ -78,20 +83,53 @@ const WorkingPapers = () => {
   };
 
   const handleCreateWorkingPaper = async () => {
+    if (!workingPaperName.trim()) {
+      showError('Working paper name is required', 'Validation Error');
+      return;
+    }
+    if (!columnMapping.account_number || !columnMapping.account_name) {
+      showError('Account number and account name mappings are required', 'Validation Error');
+      return;
+    }
+
+    // Ensure all required fields are present in the column mapping
+    // The backend expects all keys to be present in the Candid record structure
+    // Candid opt text representation: None = [], Some(text) = [text]
+    // Convert empty strings to [] (None) and non-empty strings to [value] (Some)
+    const normalizeOptText = (value: string | undefined): [] | [string] => {
+      return value && value.trim() !== '' ? [value] : [];
+    };
+
+    const completeColumnMapping: any = {
+      account_number: normalizeOptText(columnMapping.account_number),
+      account_name: normalizeOptText(columnMapping.account_name),
+      currency: normalizeOptText(columnMapping.currency),
+      opening_debit: normalizeOptText(columnMapping.opening_debit),
+      opening_credit: normalizeOptText(columnMapping.opening_credit),
+      period_debit: normalizeOptText(columnMapping.period_debit),
+      period_credit: normalizeOptText(columnMapping.period_credit),
+      ytd_debit: normalizeOptText(columnMapping.ytd_debit),
+      ytd_credit: normalizeOptText(columnMapping.ytd_credit),
+      entity: normalizeOptText(columnMapping.entity),
+      department: normalizeOptText(columnMapping.department),
+      project: normalizeOptText(columnMapping.project),
+      notes: normalizeOptText(columnMapping.notes),
+    };
+
     try {
       await call('create_working_paper', [{
         engagement_id: BigInt(selectedEngagement),
         dataset_id: BigInt(selectedDataset),
         name: workingPaperName,
-        column_mapping: columnMapping,
+        column_mapping: completeColumnMapping,
         selected_accounts: [],
       }]);
-      alert('Working paper created successfully!');
+      showSuccess('Working paper created successfully!', 'Success');
       setActiveStep(0);
       loadWorkingPapers(selectedEngagement);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create working paper:', error);
-      alert('Failed to create working paper');
+      showError(error.message || 'Failed to create working paper', 'Create Error');
     }
   };
 
@@ -175,6 +213,10 @@ const WorkingPapers = () => {
               { field: 'period_credit', label: 'periodCredit', required: false },
               { field: 'ytd_debit', label: 'ytdDebit', required: false },
               { field: 'ytd_credit', label: 'ytdCredit', required: false },
+              { field: 'entity', label: 'entity', required: false },
+              { field: 'department', label: 'department', required: false },
+              { field: 'project', label: 'project', required: false },
+              { field: 'notes', label: 'notes', required: false },
             ].map(({ field, label, required }) => (
               <Grid item xs={12} sm={6} key={field}>
                 <FormControl fullWidth required={required}>
@@ -278,30 +320,82 @@ const WorkingPapers = () => {
 
       {selectedEngagement && workingPapers.length > 0 && (
         <Paper sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Existing Working Papers
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">
+              Existing Working Papers
+            </Typography>
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel>Filter by ISA Standard</InputLabel>
+              <Select
+                value={standardFilter}
+                onChange={(e) => setStandardFilter(e.target.value)}
+                label="Filter by ISA Standard"
+              >
+                <MenuItem value="all">All Standards</MenuItem>
+                <MenuItem value="ISA 200">ISA 200</MenuItem>
+                <MenuItem value="ISA 210">ISA 210</MenuItem>
+                <MenuItem value="ISA 220">ISA 220</MenuItem>
+                <MenuItem value="ISA 230">ISA 230</MenuItem>
+                <MenuItem value="ISA 240">ISA 240</MenuItem>
+                <MenuItem value="ISA 250">ISA 250</MenuItem>
+                <MenuItem value="ISA 260">ISA 260</MenuItem>
+                <MenuItem value="ISA 265">ISA 265</MenuItem>
+                <MenuItem value="ISA 300">ISA 300</MenuItem>
+                <MenuItem value="ISA 315">ISA 315</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>Name</TableCell>
                   <TableCell>Created</TableCell>
+                  <TableCell>Relevant Standards</TableCell>
                   <TableCell>Ratios</TableCell>
                   <TableCell>Linked Docs</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {workingPapers.map((wp) => (
-                  <TableRow key={wp.id.toString()}>
-                    <TableCell>{wp.name}</TableCell>
-                    <TableCell>
-                      {new Date(Number(wp.created_at) / 1000000).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{wp.ratios.length}</TableCell>
-                    <TableCell>{wp.linked_document_ids.length}</TableCell>
-                  </TableRow>
-                ))}
+                {workingPapers
+                  .filter((wp) => {
+                    if (standardFilter === 'all') return true;
+                    // In a full implementation, this would check wp.standard_codes or similar
+                    // For now, we'll show all working papers
+                    return true;
+                  })
+                  .map((wp) => {
+                    // Determine relevant standards based on working paper type
+                    // This is a simplified mapping - in production, this would come from backend
+                    const relevantStandards = ['ISA 230', 'ISA 315']; // Default for trial balance working papers
+                    const displayStandards = standardFilter === 'all' 
+                      ? relevantStandards 
+                      : relevantStandards.filter(s => s === standardFilter);
+
+                    return (
+                      <TableRow key={wp.id.toString()}>
+                        <TableCell>{wp.name}</TableCell>
+                        <TableCell>
+                          {new Date(Number(wp.created_at) / 1000000).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          {displayStandards.length > 0 ? (
+                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                              {displayStandards.map((std) => (
+                                <Chip key={std} label={std} size="small" variant="outlined" />
+                              ))}
+                            </Box>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              N/A
+                            </Typography>
+                          )}
+                        </TableCell>
+                        <TableCell>{wp.ratios.length}</TableCell>
+                        <TableCell>{wp.linked_document_ids.length}</TableCell>
+                      </TableRow>
+                    );
+                  })}
               </TableBody>
             </Table>
           </TableContainer>

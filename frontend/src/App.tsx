@@ -216,7 +216,7 @@ function App() {
             <Route
               path="/mock-data"
               element={
-                <ProtectedRoute requireAdmin>
+                <ProtectedRoute requireFirmUser>
                   <PageLayout>
                     <MockDataGenerator />
                   </PageLayout>

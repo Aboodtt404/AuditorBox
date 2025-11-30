@@ -33,6 +33,7 @@ import { useBackend } from '../hooks/useBackend';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useNotification } from '../components/NotificationSystem';
 
 interface DocumentRequest {
   id: bigint;
@@ -54,6 +55,7 @@ const ClientPortal = () => {
   const { call } = useBackend();
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
   const [requests, setRequests] = useState<DocumentRequest[]>([]);
   const [invitations, setInvitations] = useState<any[]>([]);
   const [engagements, setEngagements] = useState<any[]>([]);
@@ -61,7 +63,6 @@ const ClientPortal = () => {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -99,10 +100,11 @@ const ClientPortal = () => {
       setRequests(reqs);
       setInvitations(invites);
       setEngagements(engs);
-      setError(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      if (showLoading) {
+        showError(err.message || 'Failed to load data', 'Load Error');
+      }
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -111,26 +113,25 @@ const ClientPortal = () => {
   const handleAcceptInvitation = async (invitationId: bigint) => {
     try {
       await call('accept_invitation', [{ invitation_id: invitationId }]);
-      console.log('Invitation accepted successfully');
+      showSuccess('Invitation accepted successfully!', 'Success');
       // Auto-refresh will update the UI
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to accept invitation:', err);
-      setError('Failed to accept invitation: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      showError(err.message || 'Failed to accept invitation', 'Accept Failed');
     }
   };
 
   const handleRejectInvitation = async (invitationId: bigint) => {
-    // Silent reject - auto-refresh will show the change
     try {
       await call('reject_invitation', [{
         invitation_id: invitationId,
         reason: [],
       }]);
-      console.log('Invitation rejected');
+      showSuccess('Invitation declined', 'Success');
       // Auto-refresh will update the UI
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to reject invitation:', err);
-      setError('Failed to reject invitation: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      showError(err.message || 'Failed to reject invitation', 'Reject Failed');
     }
   };
 
@@ -151,7 +152,6 @@ const ClientPortal = () => {
 
     try {
       setUploading(true);
-      setError(null);
 
       // Convert file to bytes
       const arrayBuffer = await uploadFile.arrayBuffer();
@@ -167,13 +167,14 @@ const ClientPortal = () => {
 
       await call('fulfill_document_request', [input]);
       
+      showSuccess('Document uploaded successfully!', 'Upload Success');
       setUploadDialogOpen(false);
       setUploadFile(null);
       setSelectedRequest(null);
       await loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to upload document:', err);
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      showError(err.message || 'Upload failed', 'Upload Error');
     } finally {
       setUploading(false);
     }
@@ -259,11 +260,6 @@ const ClientPortal = () => {
         and upload the required documents securely.
       </Typography>
 
-      {error && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
 
       {/* Pending Invitations */}
       {invitations.length > 0 && (

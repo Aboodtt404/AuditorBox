@@ -31,7 +31,9 @@ export default function ProtectedRoute({
 
     // Check if admin access required
     if (requireAdmin && user.role && !('Admin' in user.role)) {
-      navigate('/client-portal');
+      // Redirect firm users to engagements, client users to client portal
+      const isClientUser = 'ClientUser' in user.role;
+      navigate(isClientUser ? '/client-portal' : '/engagements');
       return;
     }
 

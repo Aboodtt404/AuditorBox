@@ -27,15 +27,20 @@ import { Add, Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { Client, Engagement, Organization, Entity } from '../types';
+import { useNotification } from '../components/NotificationSystem';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const Clients = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [clients, setClients] = useState<Client[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [engagementCounts, setEngagementCounts] = useState<Record<string, number>>({});
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<{ id: bigint; name: string } | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     name_ar: '',
@@ -77,8 +82,9 @@ const Clients = () => {
         })
       );
       setEngagementCounts(counts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load clients:', error);
+      showError(error.message || 'Failed to load clients', 'Load Error');
     }
   };
 
@@ -86,6 +92,27 @@ const Clients = () => {
     value.trim() === '' ? [] : [value];
 
   const handleSave = async () => {
+    if (!formData.name.trim()) {
+      showError('Client name is required', 'Validation Error');
+      return;
+    }
+    if (!formData.contact_email.trim()) {
+      showError('Contact email is required', 'Validation Error');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contact_email)) {
+      showError('Please enter a valid email address', 'Validation Error');
+      return;
+    }
+    if (!formData.contact_phone.trim()) {
+      showError('Contact phone is required', 'Validation Error');
+      return;
+    }
+    if (!formData.address.trim()) {
+      showError('Address is required', 'Validation Error');
+      return;
+    }
+
     try {
       const payload = {
         name: formData.name,
@@ -101,6 +128,7 @@ const Clients = () => {
       };
 
       await call('create_client', [payload]);
+      showSuccess('Client created successfully', 'Success');
       setDialogOpen(false);
       setFormData({
         name: '',
@@ -115,21 +143,31 @@ const Clients = () => {
         entity_id: '',
       });
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save client:', error);
+      showError(error.message || 'Failed to save client', 'Save Error');
     }
   };
 
-  const handleDelete = async (id: bigint, name: string) => {
-    if (!window.confirm(t('clients.deleteConfirm', { name }))) {
-      return;
-    }
+  const handleDeleteClick = (id: bigint, name: string) => {
+    setClientToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!clientToDelete) return;
+
     try {
-      await call('delete_client', [id]);
+      await call('delete_client', [clientToDelete.id]);
+      showSuccess(`Client "${clientToDelete.name}" deleted successfully`, 'Delete Success');
+      setDeleteDialogOpen(false);
+      setClientToDelete(null);
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete client:', error);
-      alert(t('clients.deleteFailed'));
+      showError(error.message || t('clients.deleteFailed'), 'Delete Error');
+      setDeleteDialogOpen(false);
+      setClientToDelete(null);
     }
   };
 
@@ -171,7 +209,8 @@ const Clients = () => {
                   <IconButton 
                     size="small" 
                     color="error"
-                    onClick={() => handleDelete(client.id, client.name)}
+                    onClick={() => handleDeleteClick(client.id, client.name)}
+                    title={t('clients.delete') || 'Delete Client'}
                   >
                     <Delete />
                   </IconButton>
@@ -277,6 +316,24 @@ const Clients = () => {
           <Button onClick={handleSave} variant="contained">{t('common.save')}</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setClientToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title={t('clients.deleteTitle') || 'Delete Client'}
+        message={clientToDelete 
+          ? t('clients.deleteConfirm', { name: clientToDelete.name }) || `Are you sure you want to delete "${clientToDelete.name}"? This action cannot be undone.`
+          : ''}
+        confirmText={t('clients.delete') || 'Delete'}
+        cancelText={t('common.cancel') || 'Cancel'}
+        severity="error"
+        confirmColor="error"
+      />
     </Container>
   );
 };

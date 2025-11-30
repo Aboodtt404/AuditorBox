@@ -40,34 +40,173 @@ import {
   Dashboard as PlanningIcon,
   KeyboardArrowDown as ArrowDownIcon,
   Notifications as NotificationsIcon,
-  Search as SearchIcon,
+  Assessment as StandardsIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import LanguageSwitcher from './LanguageSwitcher';
+import Logo from './Logo';
 
 const drawerWidth = 280;
 
+// Organized by audit workflow phases
 const menuItems = [
-  { path: '/organizations', icon: BusinessIcon, label: 'nav.organizations', firmOnly: true },
-  { path: '/entities', icon: EntityIcon, label: 'nav.entities', firmOnly: true },
-  { path: '/clients', icon: ClientIcon, label: 'nav.clients', firmOnly: true },
-  { path: '/client-acceptance', icon: AcceptanceIcon, label: 'nav.clientAcceptance', firmOnly: true },
-  { path: '/conflict-check', icon: ConflictIcon, label: 'nav.conflictCheck', firmOnly: true },
-  { path: '/engagement-letters', icon: LetterIcon, label: 'nav.engagementLetters', firmOnly: true },
-  { path: '/engagements', icon: EngagementIcon, label: 'nav.engagements', firmOnly: true },
-  { path: '/engagement-planning', icon: PlanningIcon, label: 'nav.engagementPlanning', firmOnly: true },
-  { path: '/data-import', icon: UploadIcon, label: 'nav.dataImport', firmOnly: true },
-  { path: '/trial-balance', icon: TrialBalanceIcon, label: 'nav.trialBalance', firmOnly: true },
-  { path: '/financial-statements', icon: TrialBalanceIcon, label: 'nav.financialStatements', firmOnly: true },
-  { path: '/working-papers', icon: PaperIcon, label: 'nav.workingPapers', firmOnly: true },
-  { path: '/documents', icon: DocumentIcon, label: 'nav.documents', firmOnly: true },
-  { path: '/document-requests', icon: DocumentIcon, label: 'nav.documentRequests', firmOnly: true },
-  { path: '/client-portal', icon: PortalIcon, label: 'nav.clientPortal', clientOnly: true },
-  { path: '/users', icon: UserIcon, label: 'nav.users', adminOnly: true },
-  { path: '/activity-log', icon: LogIcon, label: 'nav.activityLog', firmOnly: true },
-  { path: '/mock-data', icon: LogIcon, label: 'nav.mockData', firmOnly: true },
+  // AUDIT WORKFLOW - Pre-Engagement
+  { 
+    path: '/client-acceptance', 
+    icon: AcceptanceIcon, 
+    label: 'nav.clientAcceptance', 
+    firmOnly: true,
+    section: 'Pre-Engagement',
+    sectionKey: 'nav.sectionPreEngagement'
+  },
+  { 
+    path: '/conflict-check', 
+    icon: ConflictIcon, 
+    label: 'nav.conflictCheck', 
+    firmOnly: true,
+    section: 'Pre-Engagement',
+    sectionKey: 'nav.sectionPreEngagement'
+  },
+  { 
+    path: '/engagement-letters', 
+    icon: LetterIcon, 
+    label: 'nav.engagementLetters', 
+    firmOnly: true,
+    section: 'Pre-Engagement',
+    sectionKey: 'nav.sectionPreEngagement'
+  },
+  
+  // AUDIT WORKFLOW - Engagement Planning
+  { 
+    path: '/engagements', 
+    icon: EngagementIcon, 
+    label: 'nav.engagements', 
+    firmOnly: true,
+    section: 'Planning',
+    sectionKey: 'nav.sectionPlanning'
+  },
+  { 
+    path: '/engagement-planning', 
+    icon: PlanningIcon, 
+    label: 'nav.engagementPlanning', 
+    firmOnly: true,
+    section: 'Planning',
+    sectionKey: 'nav.sectionPlanning'
+  },
+  { 
+    path: '/audit-standards', 
+    icon: StandardsIcon, 
+    label: 'nav.auditStandards', 
+    firmOnly: true,
+    section: 'Planning',
+    sectionKey: 'nav.sectionPlanning'
+  },
+  
+  // AUDIT WORKFLOW - Audit Execution
+  { 
+    path: '/working-papers', 
+    icon: PaperIcon, 
+    label: 'nav.workingPapers', 
+    firmOnly: true,
+    section: 'Execution',
+    sectionKey: 'nav.sectionExecution'
+  },
+  { 
+    path: '/documents', 
+    icon: DocumentIcon, 
+    label: 'nav.documents', 
+    firmOnly: true,
+    section: 'Execution',
+    sectionKey: 'nav.sectionExecution'
+  },
+  { 
+    path: '/document-requests', 
+    icon: DocumentIcon, 
+    label: 'nav.documentRequests', 
+    firmOnly: true,
+    section: 'Execution',
+    sectionKey: 'nav.sectionExecution'
+  },
+  
+  // ACCOUNTING DATA (Supporting)
+  { 
+    path: '/data-import', 
+    icon: UploadIcon, 
+    label: 'nav.dataImport', 
+    firmOnly: true,
+    section: 'Data',
+    sectionKey: 'nav.sectionData'
+  },
+  { 
+    path: '/trial-balance', 
+    icon: TrialBalanceIcon, 
+    label: 'nav.trialBalance', 
+    firmOnly: true,
+    section: 'Data',
+    sectionKey: 'nav.sectionData'
+  },
+  { 
+    path: '/financial-statements', 
+    icon: TrialBalanceIcon, 
+    label: 'nav.financialStatements', 
+    firmOnly: true,
+    section: 'Data',
+    sectionKey: 'nav.sectionData'
+  },
+  
+  // ADMINISTRATION (Secondary)
+  { 
+    path: '/organizations', 
+    icon: BusinessIcon, 
+    label: 'nav.organizations', 
+    firmOnly: true,
+    section: 'Admin',
+    sectionKey: 'nav.sectionAdmin'
+  },
+  { 
+    path: '/entities', 
+    icon: EntityIcon, 
+    label: 'nav.entities', 
+    firmOnly: true,
+    section: 'Admin',
+    sectionKey: 'nav.sectionAdmin'
+  },
+  { 
+    path: '/clients', 
+    icon: ClientIcon, 
+    label: 'nav.clients', 
+    firmOnly: true,
+    section: 'Admin',
+    sectionKey: 'nav.sectionAdmin'
+  },
+  { 
+    path: '/users', 
+    icon: UserIcon, 
+    label: 'nav.users', 
+    adminOnly: true,
+    section: 'Admin',
+    sectionKey: 'nav.sectionAdmin'
+  },
+  { 
+    path: '/activity-log', 
+    icon: LogIcon, 
+    label: 'nav.activityLog', 
+    firmOnly: true,
+    section: 'Admin',
+    sectionKey: 'nav.sectionAdmin'
+  },
+  
+  // CLIENT ACCESS
+  { 
+    path: '/client-portal', 
+    icon: PortalIcon, 
+    label: 'nav.clientPortal', 
+    clientOnly: true,
+    section: null,
+    sectionKey: null
+  },
 ];
 
 export default function Navigation() {
@@ -122,7 +261,6 @@ export default function Navigation() {
 
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF' }}>
-      {/* Enhanced Header */}
       <Box
         sx={{
           px: 3,
@@ -131,122 +269,123 @@ export default function Navigation() {
           background: 'linear-gradient(135deg, #0A2463 0%, #1E3A8A 100%)',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '10px',
-              bgcolor: 'rgba(255, 255, 255, 0.15)',
-              border: '2px solid rgba(255, 255, 255, 0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            <PaperIcon sx={{ color: 'white', fontSize: 24 }} />
-          </Box>
-          <Box>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                fontWeight: 800, 
-                color: 'white',
-                fontSize: '1.25rem',
-                letterSpacing: '-0.02em',
-                lineHeight: 1.2,
-              }}
-            >
-              AuditorBox
-            </Typography>
-            <Typography 
-              variant="caption" 
-              sx={{ 
-                color: 'rgba(255, 255, 255, 0.75)',
-                fontSize: '0.6875rem',
-                fontWeight: 600,
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-              }}
-            >
-              Professional Suite
-            </Typography>
-          </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: 'center' }}>
+          <Logo variant="white" height={90} />
         </Box>
       </Box>
 
       {/* Navigation Menu */}
-      <Box sx={{ overflow: 'auto', flex: 1, py: 3 }}>
+      <Box sx={{ overflow: 'auto', flex: 1, py: 2 }}>
         <List sx={{ px: 2.5 }}>
-          {menuItems
-            .filter((item) => {
-              const isClient = user?.role && 'ClientUser' in user.role;
-              const isAdmin = user?.role && 'Admin' in user.role;
-              
+          {(() => {
+            const isClient = user?.role && 'ClientUser' in user.role;
+            const isAdmin = user?.role && 'Admin' in user.role;
+            
+            // Filter items by permissions
+            const filteredItems = menuItems.filter((item) => {
               if (item.adminOnly && !isAdmin) return false;
               if (item.firmOnly && isClient) return false;
               if (item.clientOnly && !isClient) return false;
               return true;
-            })
-            .map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
+            });
+
+            // Group by section
+            const sections = filteredItems.reduce((acc, item) => {
+              const section = item.section || 'Other';
+              if (!acc[section]) acc[section] = [];
+              acc[section].push(item);
+              return acc;
+            }, {} as Record<string, typeof menuItems>);
+
+            // Define section order (audit-first)
+            const sectionOrder = ['Pre-Engagement', 'Planning', 'Execution', 'Data', 'Admin', 'Other'];
+
+            return sectionOrder.map((sectionKey) => {
+              const items = sections[sectionKey];
+              if (!items || items.length === 0) return null;
 
               return (
-                <ListItemButton
-                  key={item.path}
-                  onClick={() => {
-                    navigate(item.path);
-                    if (isMobile) setMobileOpen(false);
-                  }}
-                  sx={{
-                    mb: 0.75,
-                    borderRadius: '8px',
-                    px: 2,
-                    py: 1.25,
-                    bgcolor: isActive ? 'rgba(10, 36, 99, 0.08)' : 'transparent',
-                    border: isActive ? '1px solid rgba(10, 36, 99, 0.12)' : '1px solid transparent',
-                    color: isActive ? 'primary.main' : 'text.secondary',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    '&::before': isActive ? {
-                      content: '""',
-                      position: 'absolute',
-                      left: 0,
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      width: '4px',
-                      height: '60%',
-                      bgcolor: 'primary.main',
-                      borderRadius: '0 2px 2px 0',
-                    } : {},
-                    '&:hover': {
-                      bgcolor: isActive ? 'rgba(10, 36, 99, 0.12)' : 'rgba(0, 0, 0, 0.04)',
-                      border: '1px solid rgba(10, 36, 99, 0.08)',
-                    },
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{
-                      color: 'inherit',
-                      minWidth: 36,
-                    }}
-                  >
-                    <Icon sx={{ fontSize: 20 }} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={t(item.label)}
-                    primaryTypographyProps={{
-                      fontSize: '0.875rem',
-                      fontWeight: isActive ? 700 : 500,
-                      letterSpacing: '0.01em',
-                    }}
-                  />
-                </ListItemButton>
+                <Box key={sectionKey} sx={{ mb: 3 }}>
+                  {sectionKey !== 'Other' && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        px: 2,
+                        py: 1,
+                        mb: 1,
+                        display: 'block',
+                        color: 'text.secondary',
+                        fontWeight: 700,
+                        fontSize: '0.6875rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      {items[0].sectionKey ? t(items[0].sectionKey) : sectionKey}
+                    </Typography>
+                  )}
+                  {items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+
+                    return (
+                      <ListItemButton
+                        key={item.path}
+                        onClick={() => {
+                          navigate(item.path);
+                          if (isMobile) setMobileOpen(false);
+                        }}
+                        sx={{
+                          mb: 0.75,
+                          borderRadius: '8px',
+                          px: 2,
+                          py: 1.25,
+                          bgcolor: isActive ? 'rgba(10, 36, 99, 0.08)' : 'transparent',
+                          border: isActive ? '1px solid rgba(10, 36, 99, 0.12)' : '1px solid transparent',
+                          color: isActive ? 'primary.main' : 'text.secondary',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          '&::before': isActive ? {
+                            content: '""',
+                            position: 'absolute',
+                            left: 0,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: '4px',
+                            height: '60%',
+                            bgcolor: 'primary.main',
+                            borderRadius: '0 2px 2px 0',
+                          } : {},
+                          '&:hover': {
+                            bgcolor: isActive ? 'rgba(10, 36, 99, 0.12)' : 'rgba(0, 0, 0, 0.04)',
+                            border: '1px solid rgba(10, 36, 99, 0.08)',
+                          },
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            color: 'inherit',
+                            minWidth: 36,
+                          }}
+                        >
+                          <Icon sx={{ fontSize: 20 }} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={t(item.label)}
+                          primaryTypographyProps={{
+                            fontSize: '0.875rem',
+                            fontWeight: isActive ? 700 : 500,
+                            letterSpacing: '0.01em',
+                          }}
+                        />
+                      </ListItemButton>
+                    );
+                  })}
+                </Box>
               );
-            })}
+            });
+          })()}
         </List>
       </Box>
 
@@ -327,7 +466,10 @@ export default function Navigation() {
     </Box>
   );
 
-  if (!isAuthenticated) {
+  // Don't show sidebar on profile-setup page
+  const isProfileSetup = location.pathname === '/profile-setup';
+  
+  if (!isAuthenticated || isProfileSetup) {
     return (
       <AppBar
         position="static"
@@ -341,30 +483,7 @@ export default function Navigation() {
       >
         <Toolbar sx={{ justifyContent: 'space-between', py: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #0A2463 0%, #1E3A8A 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <PaperIcon sx={{ color: 'white', fontSize: 20 }} />
-            </Box>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                fontWeight: 800, 
-                color: 'primary.main',
-                fontSize: '1.25rem',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              AuditorBox
-            </Typography>
+            <Logo height={40} />
           </Box>
           <LanguageSwitcher />
         </Toolbar>

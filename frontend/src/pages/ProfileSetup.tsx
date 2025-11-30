@@ -12,6 +12,8 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
+import Logo from '../components/Logo';
+import { useNotification } from '../components/NotificationSystem';
 
 interface UserRole {
   Admin?: null;
@@ -25,12 +27,12 @@ interface UserRole {
 const ProfileSetup: React.FC = () => {
   const { t } = useTranslation();
   const backend = useBackend();
+  const { showSuccess, showError } = useNotification();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [requestedRole, setRequestedRole] = useState<string>('Staff');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Available roles for selection
   const roles = [
@@ -43,21 +45,20 @@ const ProfileSetup: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     // Validation
     if (!name.trim()) {
-      setError('Name is required');
+      showError('Name is required', 'Validation Error');
       return;
     }
 
     if (!email.trim()) {
-      setError('Email is required');
+      showError('Email is required', 'Validation Error');
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Please enter a valid email address');
+      showError('Please enter a valid email address', 'Validation Error');
       return;
     }
 
@@ -75,13 +76,17 @@ const ProfileSetup: React.FC = () => {
         },
       ]);
 
+      showSuccess('Profile completed successfully! Redirecting...', 'Success');
+      
       // Profile completed successfully - redirect based on role
       // Client users go to client portal, firm users go to engagements
       const redirectUrl = requestedRole === 'ClientUser' ? '/client-portal' : '/engagements';
-      window.location.href = redirectUrl;
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 1000);
     } catch (err: any) {
       console.error('Failed to complete profile:', err);
-      setError(err.message || 'Failed to complete profile');
+      showError(err.message || 'Failed to complete profile', 'Profile Setup Error');
       setLoading(false);
     }
   };
@@ -90,18 +95,15 @@ const ProfileSetup: React.FC = () => {
     <Container maxWidth="sm">
       <Box sx={{ mt: 8, mb: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <Logo height={60} />
+          </Box>
           <Typography variant="h4" component="h1" gutterBottom align="center">
             Welcome to AuditorBox
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph align="center">
             Let's set up your profile to get started
           </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
 
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <TextField

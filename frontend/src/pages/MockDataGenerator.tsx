@@ -20,6 +20,7 @@ import {
   Refresh,
 } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
+import { useNotification } from '../components/NotificationSystem';
 
 interface GenerationLog {
   step: string;
@@ -29,6 +30,7 @@ interface GenerationLog {
 
 const MockDataGenerator = () => {
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState<GenerationLog[]>([]);
   const [completed, setCompleted] = useState(false);
@@ -283,9 +285,11 @@ const MockDataGenerator = () => {
       // Success
       addLog('complete', 'success', 'Mock data generation completed successfully! Ready for financial statement generation.');
       setCompleted(true);
+      showSuccess('Mock data generation completed successfully!', 'Generation Complete');
 
     } catch (error: any) {
       addLog('error', 'error', `Failed: ${error.message || error}`);
+      showError(error.message || 'Failed to generate mock data', 'Generation Error');
     } finally {
       setLoading(false);
     }

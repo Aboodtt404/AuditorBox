@@ -27,10 +27,12 @@ import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { User, UserRole } from '../types';
 import { Principal } from '@dfinity/principal';
+import { useNotification } from '../components/NotificationSystem';
 
 const UserManagement = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [users, setUsers] = useState<User[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -44,8 +46,9 @@ const UserManagement = () => {
     try {
       const data = await call<User[]>('list_users');
       setUsers(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load users:', error);
+      showError(error.message || 'Failed to load users', 'Load Error');
     }
   };
 
@@ -75,12 +78,12 @@ const UserManagement = () => {
       const principal = Principal.fromText(principalStr);
       
       await call('update_user_role', [principal, createRoleVariant(newRole)]);
+      showSuccess('User role updated successfully!', 'Success');
       setDialogOpen(false);
       loadUsers();
-      alert('User role updated successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update user role:', error);
-      alert('Failed to update user role');
+      showError(error.message || 'Failed to update user role', 'Update Error');
     }
   };
 

@@ -140,8 +140,9 @@ export default function TrialBalance() {
       setClients(clnts);
       setOrganizations(orgs);
       setEntities(ents);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load engagements:', error);
+      showError(error.message || 'Failed to load engagements', 'Load Error');
     }
   };
 
@@ -167,8 +168,9 @@ export default function TrialBalance() {
       if (data.length > 0) {
         setSelectedTB(data[0].id);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load trial balances:', error);
+      showError(error.message || 'Failed to load trial balances', 'Load Error');
     }
   };
 
@@ -176,8 +178,9 @@ export default function TrialBalance() {
     try {
       const data = await call<TBAccount[]>('get_trial_balance_accounts', [tbId]);
       setAccounts(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load accounts:', error);
+      showError(error.message || 'Failed to load accounts', 'Load Error');
     }
   };
 
@@ -185,8 +188,14 @@ export default function TrialBalance() {
     try {
       const result = await call<Validation>('validate_trial_balance', [tbId]);
       setValidation(result);
-    } catch (error) {
+      if (result.is_balanced) {
+        showSuccess('Trial balance is balanced!', 'Validation Success');
+      } else {
+        showWarning(`Trial balance is not balanced. Difference: ${formatAmount(result.difference)}`, 'Validation Warning');
+      }
+    } catch (error: any) {
       console.error('Failed to validate trial balance:', error);
+      showError(error.message || 'Failed to validate trial balance', 'Validation Error');
     }
   };
 
@@ -209,10 +218,10 @@ export default function TrialBalance() {
       setSelectedAccount(null);
       setSelectedFSLine('');
       loadAccounts(selectedTB);
-      showSuccess(`Account mapped successfully to ${accountField}`, 'Mapping Updated');
+      showSuccess(`Account mapped successfully to ${selectedFSLine || 'FS line'}`, 'Mapping Updated');
     } catch (error: any) {
       console.error('Failed to map account:', error);
-      showError(error.message || error, 'Failed to Map Account');
+      showError(error.message || 'Failed to map account', 'Mapping Error');
     }
   };
 
@@ -269,11 +278,11 @@ export default function TrialBalance() {
   };
 
   const formatAmount = (amount: bigint) => {
-    const dollars = Number(amount) / 100;
-    return new Intl.NumberFormat('en-US', {
+    const egpAmount = Number(amount) / 100;
+    return new Intl.NumberFormat('en-EG', {
       style: 'currency',
-      currency: 'USD',
-    }).format(dollars);
+      currency: 'EGP',
+    }).format(egpAmount);
   };
 
   const getAccountType = (type: any): string => {

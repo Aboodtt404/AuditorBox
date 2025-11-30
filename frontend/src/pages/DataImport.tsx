@@ -20,10 +20,12 @@ import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { ImportedDataset, ColumnMetadata } from '../types';
+import { useNotification } from '../components/NotificationSystem';
 
 const DataImport = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [dataset, setDataset] = useState<ImportedDataset | null>(null);
   const [selectedSheet, setSelectedSheet] = useState(0);
   const [uploading, setUploading] = useState(false);
@@ -55,9 +57,13 @@ const DataImport = () => {
       }]);
 
       setDataset(result);
-    } catch (error) {
+      showSuccess(
+        `Successfully imported: ${result.file_name} (${result.sheets.length} sheets, ${result.sheets.reduce((sum, s) => sum + Number(s.row_count), 0)} total rows)`,
+        'Import Success'
+      );
+    } catch (error: any) {
       console.error('Failed to import file:', error);
-      alert('Failed to import file. Please try again.');
+      showError(error.message || 'Failed to import file. Please try again.', 'Import Error');
     } finally {
       setUploading(false);
     }
@@ -188,12 +194,6 @@ const DataImport = () => {
         </Typography>
       </Paper>
 
-      {dataset && (
-        <Alert severity="success" sx={{ mt: 2 }}>
-          Successfully imported: {dataset.file_name} ({dataset.sheets.length} sheets,{' '}
-          {dataset.sheets.reduce((sum, s) => sum + Number(s.row_count), 0)} total rows)
-        </Alert>
-      )}
 
       {renderDataPreview()}
     </Container>

@@ -28,10 +28,12 @@ import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { Document, Organization, Entity } from '../types';
+import { useNotification } from '../components/NotificationSystem';
 
 const DocumentSubmission = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
@@ -58,8 +60,9 @@ const DocumentSubmission = () => {
       setDocuments(docs);
       setOrganizations(orgs);
       setEntities(ents);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load data:', error);
+      showError(error.message || 'Failed to load documents', 'Load Error');
     }
   };
 
@@ -92,13 +95,13 @@ const DocumentSubmission = () => {
         file_data: Array.from(bytes),
       }]);
 
+      showSuccess('Document uploaded successfully!', 'Upload Success');
       setDialogOpen(false);
       setUploadFile(null);
       loadData();
-      alert('Document uploaded successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to upload document:', error);
-      alert('Failed to upload document');
+      showError(error.message || 'Failed to upload document', 'Upload Error');
     }
   };
 
@@ -112,9 +115,10 @@ const DocumentSubmission = () => {
       a.download = name;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (error) {
+      showSuccess('Document downloaded successfully', 'Download Success');
+    } catch (error: any) {
       console.error('Failed to download document:', error);
-      alert('Failed to download document');
+      showError(error.message || 'Failed to download document', 'Download Error');
     }
   };
 
@@ -122,10 +126,11 @@ const DocumentSubmission = () => {
     if (window.confirm('Are you sure you want to delete this document?')) {
       try {
         await call('delete_document', [id]);
+        showSuccess('Document deleted successfully', 'Delete Success');
         loadData();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to delete document:', error);
-        alert('Failed to delete document');
+        showError(error.message || 'Failed to delete document', 'Delete Error');
       }
     }
   };

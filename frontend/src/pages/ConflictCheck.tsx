@@ -26,6 +26,7 @@ import {
 import { Add as AddIcon, Warning, CheckCircle, Block } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
 import { useTranslation } from 'react-i18next';
+import { useNotification } from '../components/NotificationSystem';
 
 interface Client {
   id: bigint;
@@ -50,6 +51,7 @@ interface ConflictCheck {
 export default function ConflictCheck() {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [clients, setClients] = useState<Client[]>([]);
   const [conflicts, setConflicts] = useState<ConflictCheck[]>([]);
   const [selectedClient, setSelectedClient] = useState<bigint | null>(null);
@@ -69,8 +71,9 @@ export default function ConflictCheck() {
     try {
       const clientList = await call<Client[]>('list_clients');
       setClients(clientList);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load clients:', error);
+      showError(error.message || 'Failed to load clients', 'Load Error');
     }
   };
 
@@ -84,11 +87,13 @@ export default function ConflictCheck() {
         setConflicts(result.Ok);
       } else if ('Err' in result) {
         console.error('Error from backend:', result.Err);
+        showError(result.Err, 'Load Error');
       } else if (Array.isArray(result)) {
         setConflicts(result as ConflictCheck[]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load conflict checks:', error);
+      showError(error.message || 'Failed to load conflict checks', 'Load Error');
     }
   };
 
@@ -109,14 +114,14 @@ export default function ConflictCheck() {
       };
 
       await call('create_conflict_check', [request]);
+      showSuccess('Conflict check created successfully!', 'Success');
       setDialogOpen(false);
       setSelectedClient(clientId);
       await loadConflicts(clientId);
-      alert('Conflict check created successfully!');
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create conflict check:', error);
-      alert('Failed to create conflict check. Please try again.');
+      showError(error.message || 'Failed to create conflict check. Please try again.', 'Create Error');
     }
   };
 

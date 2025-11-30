@@ -18,8 +18,8 @@ export const formatFileSize = (bytes: bigint | number): string => {
   return `${gb.toFixed(2)} GB`;
 };
 
-export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
-  return new Intl.NumberFormat('en-US', {
+export const formatCurrency = (amount: number, currency: string = 'EGP'): string => {
+  return new Intl.NumberFormat('en-EG', {
     style: 'currency',
     currency,
   }).format(amount);

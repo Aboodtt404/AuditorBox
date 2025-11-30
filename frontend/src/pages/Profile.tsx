@@ -27,16 +27,16 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useBackend } from '../hooks/useBackend';
+import { useNotification } from '../components/NotificationSystem';
 
 export default function Profile() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [language, setLanguage] = useState('en');
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -47,10 +47,20 @@ export default function Profile() {
   }, [user]);
 
   const handleSave = async () => {
-    try {
-      setError('');
-      setSuccess(false);
+    if (!name.trim()) {
+      showError('Name is required', 'Validation Error');
+      return;
+    }
+    if (!email.trim()) {
+      showError('Email is required', 'Validation Error');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('Please enter a valid email address', 'Validation Error');
+      return;
+    }
 
+    try {
       // Update name if changed
       if (name !== user?.name) {
         await call('update_user_name', [name]);
@@ -67,13 +77,12 @@ export default function Profile() {
         i18n.changeLanguage(language);
       }
 
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      showSuccess('Profile updated successfully!', 'Success');
 
       // Reload the page to fetch updated user data
-      setTimeout(() => window.location.reload(), 1000);
+      setTimeout(() => window.location.reload(), 1500);
     } catch (err: any) {
-      setError(err.message || 'Failed to update profile');
+      showError(err.message || 'Failed to update profile', 'Update Error');
     }
   };
 
@@ -121,17 +130,6 @@ export default function Profile() {
         </Typography>
       </Box>
 
-      {success && (
-        <Alert severity="success" sx={{ mb: 3 }}>
-          Profile updated successfully!
-        </Alert>
-      )}
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
 
       {/* Profile Overview Card */}
       <Card sx={{ mb: 3 }}>

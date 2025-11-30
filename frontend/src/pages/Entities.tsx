@@ -26,13 +26,18 @@ import { Add, Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { Entity, Organization } from '../types';
+import { useNotification } from '../components/NotificationSystem';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const Entities = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [entities, setEntities] = useState<Entity[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entityToDelete, setEntityToDelete] = useState<{ id: bigint; name: string } | null>(null);
   const [formData, setFormData] = useState({
     organization_id: '',
     name: '',
@@ -69,12 +74,22 @@ const Entities = () => {
       ]);
       setEntities(ents);
       setOrganizations(orgs);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load data:', error);
+      showError(error.message || 'Failed to load entities', 'Load Error');
     }
   };
 
   const handleSave = async () => {
+    if (!formData.organization_id) {
+      showError('Organization is required', 'Validation Error');
+      return;
+    }
+    if (!formData.name.trim()) {
+      showError('Entity name is required', 'Validation Error');
+      return;
+    }
+
     try {
       // Properly handle optional taxonomy field - Candid expects [] for None or [value] for Some
       let taxonomy: any[] = [];
@@ -90,6 +105,7 @@ const Entities = () => {
         taxonomy_config: formData.taxonomy_config,
       }]);
       
+      showSuccess('Entity created successfully', 'Success');
       setDialogOpen(false);
       setFormData({
         organization_id: '',
@@ -99,8 +115,31 @@ const Entities = () => {
         taxonomy_config: '{}',
       });
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save entity:', error);
+      showError(error.message || 'Failed to save entity', 'Save Error');
+    }
+  };
+
+  const handleDeleteClick = (id: bigint, name: string) => {
+    setEntityToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!entityToDelete) return;
+
+    try {
+      await call('delete_entity', [entityToDelete.id]);
+      showSuccess(`Entity "${entityToDelete.name}" deleted successfully`, 'Delete Success');
+      setDeleteDialogOpen(false);
+      setEntityToDelete(null);
+      loadData();
+    } catch (error: any) {
+      console.error('Failed to delete entity:', error);
+      showError(error.message || 'Failed to delete entity', 'Delete Error');
+      setDeleteDialogOpen(false);
+      setEntityToDelete(null);
     }
   };
 
@@ -135,7 +174,14 @@ const Entities = () => {
                 </TableCell>
                 <TableCell align="right">
                   <IconButton size="small" color="primary"><Edit /></IconButton>
-                  <IconButton size="small" color="error"><Delete /></IconButton>
+                  <IconButton 
+                    size="small" 
+                    color="error"
+                    onClick={() => handleDeleteClick(entity.id, entity.name)}
+                    title={t('entities.delete') || 'Delete Entity'}
+                  >
+                    <Delete />
+                  </IconButton>
                 </TableCell>
               </TableRow>
             ))}
@@ -193,6 +239,24 @@ const Entities = () => {
           <Button onClick={handleSave} variant="contained">{t('common.save')}</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setEntityToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title={t('entities.deleteTitle') || 'Delete Entity'}
+        message={entityToDelete 
+          ? t('entities.deleteConfirm', { name: entityToDelete.name }) || `Are you sure you want to delete "${entityToDelete.name}"? This action cannot be undone.`
+          : ''}
+        confirmText={t('entities.delete') || 'Delete'}
+        cancelText={t('common.cancel') || 'Cancel'}
+        severity="error"
+        confirmColor="error"
+      />
     </Container>
   );
 };

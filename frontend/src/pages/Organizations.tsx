@@ -23,12 +23,17 @@ import { Add, Edit, Delete } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useBackend } from '../hooks/useBackend';
 import { Organization } from '../types';
+import { useNotification } from '../components/NotificationSystem';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const Organizations = () => {
   const { t } = useTranslation();
   const { call, loading } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [organizationToDelete, setOrganizationToDelete] = useState<{ id: bigint; name: string } | null>(null);
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
 
@@ -40,8 +45,9 @@ const Organizations = () => {
     try {
       const orgs = await call<Organization[]>('list_organizations');
       setOrganizations(orgs);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load organizations:', error);
+      showError(error.message || 'Failed to load organizations', 'Load Error');
     }
   };
 
@@ -58,6 +64,11 @@ const Organizations = () => {
   };
 
   const handleSave = async () => {
+    if (!formData.name.trim()) {
+      showError('Organization name is required', 'Validation Error');
+      return;
+    }
+
     try {
       if (editingOrg) {
         await call('update_organization', [
@@ -67,24 +78,38 @@ const Organizations = () => {
             description: formData.description,
           },
         ]);
+        showSuccess('Organization updated successfully', 'Success');
       } else {
         await call('create_organization', [formData]);
+        showSuccess('Organization created successfully', 'Success');
       }
       setDialogOpen(false);
       loadOrganizations();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save organization:', error);
+      showError(error.message || 'Failed to save organization', 'Save Error');
     }
   };
 
-  const handleDelete = async (id: bigint) => {
-    if (window.confirm('Are you sure you want to delete this organization?')) {
-      try {
-        await call('delete_organization', [id]);
-        loadOrganizations();
-      } catch (error) {
-        console.error('Failed to delete organization:', error);
-      }
+  const handleDeleteClick = (id: bigint, name: string) => {
+    setOrganizationToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!organizationToDelete) return;
+
+    try {
+      await call('delete_organization', [organizationToDelete.id]);
+      showSuccess(`Organization "${organizationToDelete.name}" deleted successfully`, 'Delete Success');
+      setDeleteDialogOpen(false);
+      setOrganizationToDelete(null);
+      loadOrganizations();
+    } catch (error: any) {
+      console.error('Failed to delete organization:', error);
+      showError(error.message || 'Failed to delete organization', 'Delete Error');
+      setDeleteDialogOpen(false);
+      setOrganizationToDelete(null);
     }
   };
 
@@ -133,8 +158,9 @@ const Organizations = () => {
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => handleDelete(org.id)}
+                    onClick={() => handleDeleteClick(org.id, org.name)}
                     color="error"
+                    title={t('organizations.delete') || 'Delete Organization'}
                   >
                     <Delete />
                   </IconButton>
@@ -174,6 +200,24 @@ const Organizations = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setOrganizationToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title={t('organizations.deleteTitle') || 'Delete Organization'}
+        message={organizationToDelete 
+          ? t('organizations.deleteConfirm', { name: organizationToDelete.name }) || `Are you sure you want to delete "${organizationToDelete.name}"? This action cannot be undone and may affect associated entities and clients.`
+          : ''}
+        confirmText={t('organizations.delete') || 'Delete'}
+        cancelText={t('common.cancel') || 'Cancel'}
+        severity="error"
+        confirmColor="error"
+      />
     </Container>
   );
 };

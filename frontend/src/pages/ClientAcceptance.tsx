@@ -28,6 +28,7 @@ import {
 import { Add as AddIcon, CheckCircle, Cancel, HourglassEmpty } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
 import { useTranslation } from 'react-i18next';
+import { useNotification } from '../components/NotificationSystem';
 
 interface Client {
   id: bigint;
@@ -64,6 +65,7 @@ interface ClientAcceptance {
 export default function ClientAcceptance() {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [clients, setClients] = useState<Client[]>([]);
   const [acceptances, setAcceptances] = useState<ClientAcceptance[]>([]);
   const [selectedClient, setSelectedClient] = useState<bigint | null>(null);
@@ -91,8 +93,9 @@ export default function ClientAcceptance() {
     try {
       const clientList = await call<Client[]>('list_clients');
       setClients(clientList);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load clients:', error);
+      showError(error.message || 'Failed to load clients', 'Load Error');
     }
   };
 
@@ -106,11 +109,13 @@ export default function ClientAcceptance() {
         setAcceptances(result.Ok);
       } else if ('Err' in result) {
         console.error('Error from backend:', result.Err);
+        showError(result.Err, 'Load Error');
       } else if (Array.isArray(result)) {
         setAcceptances(result as ClientAcceptance[]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load acceptances:', error);
+      showError(error.message || 'Failed to load acceptances', 'Load Error');
     }
   };
 
@@ -135,14 +140,14 @@ export default function ClientAcceptance() {
       };
 
       await call('create_client_acceptance', [request]);
+      showSuccess('Client acceptance created successfully!', 'Success');
       setDialogOpen(false);
       setSelectedClient(clientId);
       await loadAcceptances(clientId);
-      alert('Client acceptance created successfully!');
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create client acceptance:', error);
-      alert('Failed to create client acceptance. Please try again.');
+      showError(error.message || 'Failed to create client acceptance. Please try again.', 'Create Error');
     }
   };
 

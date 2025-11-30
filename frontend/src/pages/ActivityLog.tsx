@@ -35,10 +35,12 @@ import { useBackend } from '../hooks/useBackend';
 import { ActivityLogEntry } from '../types';
 import { format } from 'date-fns';
 import { BlockchainVerification, ChainVerification } from '../components/BlockchainVerification';
+import { useNotification } from '../components/NotificationSystem';
 
 const ActivityLog = () => {
   const { t } = useTranslation();
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
   const [logs, setLogs] = useState<ActivityLogEntry[]>([]);
   const [users, setUsers] = useState<Map<string, string>>(new Map());
   const [filterAction, setFilterAction] = useState('');
@@ -73,8 +75,9 @@ const ActivityLog = () => {
       } catch (err) {
         console.log('Could not load users for name mapping');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load activity logs:', error);
+      showError(error.message || 'Failed to load activity logs', 'Load Error');
     } finally {
       setLoading(false);
     }
@@ -119,7 +122,7 @@ const ActivityLog = () => {
 
   const handleRevert = async (entry: ActivityLogEntry) => {
     if (!hasSnapshot(entry)) {
-      alert(t('activityLog.revertUnavailable'));
+      showError(t('activityLog.revertUnavailable'), 'Revert Unavailable');
       return;
     }
 
@@ -130,11 +133,11 @@ const ActivityLog = () => {
     try {
       setRevertingEntryId(Number(entry.id));
       await call('revert_activity_entry', [entry.id]);
+      showSuccess(t('activityLog.revertSuccess'), 'Entry Reverted');
       await loadLogs();
-      alert(t('activityLog.revertSuccess'));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to revert entry:', error);
-      alert(t('activityLog.revertFailure'));
+      showError(error.message || t('activityLog.revertFailure'), 'Revert Failed');
     } finally {
       setRevertingEntryId(null);
     }

@@ -107,6 +107,7 @@ type AuditTemplate = record {
   template_type : TemplateType;
   is_default : bool;
   firm_id : opt nat64;
+  jurisdiction : opt text;
 };
 type BlockchainProof = record {
   signature : text;
@@ -125,6 +126,9 @@ type ChecklistItem = record {
   reference : opt text;
   section : text;
   description : text;
+  compliance_requirements : opt vec text;
+  documentation_required : opt vec text;
+  evidence_types : opt vec text;
 };
 type ChecklistItemInstance = record {
   status : ChecklistItemStatus;
@@ -144,6 +148,22 @@ type ChecklistItemStatus = variant {
   InProgress;
   Completed;
   NotStarted;
+};
+type ComplianceStatus = variant {
+  NotStarted;
+  InProgress;
+  Compliant;
+  NonCompliant;
+  PartiallyCompliant;
+};
+type StandardCompliance = record {
+  standard_code : text;
+  standard_name : text;
+  checklist_item_ids : vec text;
+  compliance_status : ComplianceStatus;
+  last_reviewed : opt nat64;
+  reviewed_by : opt principal;
+  notes : text;
 };
 type Client = record {
   id : nat64;
@@ -739,6 +759,8 @@ type Result_6 = variant { Ok : DocumentRequest; Err : text };
 type Result_7 = variant { Ok : User; Err : text };
 type Result_8 = variant { Ok : EngagementBudget; Err : text };
 type Result_9 = variant { Ok : Client; Err : text };
+type Result_59 = variant { Ok : StandardCompliance; Err : text };
+type Result_60 = variant { Ok : vec StandardCompliance; Err : text };
 type RiskLevel = variant { Low; High; Medium; Unacceptable };
 type SheetData = record {
   data : vec vec text;
@@ -1030,6 +1052,9 @@ service : () -> {
   sign_engagement_letter : (SignEngagementLetterRequest) -> (Result_13);
   submit_aje : (nat64) -> (Result_4);
   update_checklist_item : (UpdateChecklistItemRequest) -> (Result_3);
+  get_standard_compliance : (nat64, text) -> (Result_59) query;
+  update_standard_compliance : (nat64, text, ComplianceStatus, opt text) -> (Result_59);
+  get_compliance_report : (nat64) -> (Result_60) query;
   update_client : (UpdateClientRequest) -> (Result_9);
   update_engagement : (UpdateEngagementRequest) -> (Result_11);
   update_entity : (UpdateEntityRequest) -> (Result_15);

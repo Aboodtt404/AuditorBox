@@ -29,6 +29,8 @@ import {
   Alert,
   FormControlLabel,
   Switch,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -38,8 +40,13 @@ import {
   TrendingUp,
   AttachMoney,
   Warning,
+  Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
+import { useNotification } from '../components/NotificationSystem';
+import ComplianceDashboard from '../components/ComplianceDashboard';
+import { ImportedDataset, AuditTemplate, EngagementChecklist } from '../types';
+import { useTranslation } from 'react-i18next';
 
 interface Engagement {
   id: bigint;
@@ -101,12 +108,23 @@ interface Dashboard {
 
 export default function EngagementPlanning() {
   const { call } = useBackend();
+  const { showSuccess, showError } = useNotification();
+  const { t } = useTranslation();
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [selectedEngagement, setSelectedEngagement] = useState<bigint | null>(null);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [milestoneDialogOpen, setMilestoneDialogOpen] = useState(false);
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
   const [timeEntryDialogOpen, setTimeEntryDialogOpen] = useState(false);
+  const [datasets, setDatasets] = useState<ImportedDataset[]>([]);
+  const [viewDatasetDialogOpen, setViewDatasetDialogOpen] = useState(false);
+  const [selectedDataset, setSelectedDataset] = useState<ImportedDataset | null>(null);
+  const [selectedSheetIndex, setSelectedSheetIndex] = useState(0);
+  const [templates, setTemplates] = useState<AuditTemplate[]>([]);
+  const [checklists, setChecklists] = useState<EngagementChecklist[]>([]);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [complianceReport, setComplianceReport] = useState<any[]>([]);
+  const [complianceDialogOpen, setComplianceDialogOpen] = useState(false);
   const [milestoneFormData, setMilestoneFormData] = useState({
     name: '',
     description: '',
@@ -134,14 +152,105 @@ export default function EngagementPlanning() {
 
   useEffect(() => {
     loadEngagements();
+    loadTemplates();
   }, []);
+
+  useEffect(() => {
+    if (selectedEngagement) {
+      loadChecklists(selectedEngagement);
+      loadComplianceReport(selectedEngagement);
+    }
+  }, [selectedEngagement]);
 
   const loadEngagements = async () => {
     try {
       const result = await call<Engagement[]>('list_engagements');
       setEngagements(result);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load engagements:', error);
+      showError(error.message || 'Failed to load engagements', 'Load Error');
+    }
+  };
+
+  const checkEASEntity = async (engagementId: bigint) => {
+    try {
+      const engagement = await call<Engagement>('get_engagement', [engagementId]);
+      // Check if engagement is linked to an entity with EAS taxonomy
+      // This would require getting the entity from the engagement link
+      // For now, we'll suggest the template if it's an audit engagement
+      return true; // Simplified - would check entity taxonomy in full implementation
+    } catch (error: any) {
+      return false;
+    }
+  };
+
+  const loadTemplates = async () => {
+    try {
+      const result = await call<AuditTemplate[]>('list_templates');
+      setTemplates(result);
+    } catch (error: any) {
+      console.error('Failed to load templates:', error);
+      showError(error.message || 'Failed to load templates', 'Load Error');
+    }
+  };
+
+  const loadChecklists = async (engagementId: bigint) => {
+    try {
+      const result = await call<EngagementChecklist[]>('get_engagement_checklists', [engagementId]);
+      setChecklists(result);
+    } catch (error: any) {
+      console.error('Failed to load checklists:', error);
+      // Don't show error if no checklists exist yet
+    }
+  };
+
+  const loadComplianceReport = async (engagementId: bigint) => {
+    try {
+      const result = await call<any[]>('get_compliance_report', [engagementId]);
+      setComplianceReport(result);
+    } catch (error: any) {
+      console.error('Failed to load compliance report:', error);
+      // Don't show error if no compliance data exists yet
+    }
+  };
+
+  // Helper function to safely extract hours from Candid optional type
+  const getEstimatedHours = (estimatedHours: any): number => {
+    if (estimatedHours === undefined || estimatedHours === null) {
+      return 0;
+    }
+    if (Array.isArray(estimatedHours)) {
+      // Candid optional format: [] for None, [number] for Some
+      return estimatedHours.length > 0 ? (Number(estimatedHours[0]) || 0) : 0;
+    }
+    if (typeof estimatedHours === 'number') {
+      return estimatedHours;
+    }
+    const parsed = parseFloat(String(estimatedHours));
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  const handleApplyTemplate = async (templateId: bigint) => {
+    if (!selectedEngagement) {
+      showError('Please select an engagement first', 'Validation Error');
+      return;
+    }
+
+    try {
+      await call<EngagementChecklist>('apply_template_to_engagement', [{
+        engagement_id: selectedEngagement,
+        template_id: templateId,
+        name: [],
+      }]);
+      showSuccess('Template applied successfully!', 'Success');
+      setTemplateDialogOpen(false);
+      if (selectedEngagement) {
+        loadChecklists(selectedEngagement);
+        loadComplianceReport(selectedEngagement);
+      }
+    } catch (error: any) {
+      console.error('Failed to apply template:', error);
+      showError(error.message || 'Failed to apply template', 'Apply Error');
     }
   };
 
@@ -155,13 +264,31 @@ export default function EngagementPlanning() {
         setDashboard(result.Ok);
       } else if ('Err' in result) {
         console.error('Error from backend:', result.Err);
+        showError(result.Err, 'Load Error');
       } else {
         // Direct dashboard object (fallback)
         setDashboard(result as Dashboard);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load dashboard:', error);
+      showError(error.message || 'Failed to load dashboard', 'Load Error');
     }
+  };
+
+  const loadDatasets = async (engagementId: bigint) => {
+    try {
+      const result = await call<ImportedDataset[]>('list_datasets_by_engagement', [engagementId]);
+      setDatasets(result);
+    } catch (error: any) {
+      console.error('Failed to load datasets:', error);
+      // Don't show error notification for datasets, just log it
+    }
+  };
+
+  const handleViewDataset = (dataset: ImportedDataset) => {
+    setSelectedDataset(dataset);
+    setSelectedSheetIndex(0);
+    setViewDatasetDialogOpen(true);
   };
 
   const handleCreateMilestone = async () => {
@@ -178,13 +305,13 @@ export default function EngagementPlanning() {
       };
 
       await call('create_milestone', [request]);
+      showSuccess('Milestone created successfully!', 'Success');
       setMilestoneDialogOpen(false);
       loadDashboard(selectedEngagement);
-      alert('Milestone created successfully!');
       resetMilestoneForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create milestone:', error);
-      alert('Failed to create milestone. Please try again.');
+      showError(error.message || 'Failed to create milestone. Please try again.', 'Create Error');
     }
   };
 
@@ -206,13 +333,13 @@ export default function EngagementPlanning() {
       };
 
       await call('create_budget', [request]);
+      showSuccess('Budget created successfully!', 'Success');
       setBudgetDialogOpen(false);
       loadDashboard(selectedEngagement);
-      alert('Budget created successfully!');
       resetBudgetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create budget:', error);
-      alert('Failed to create budget. Please try again.');
+      showError(error.message || 'Failed to create budget. Please try again.', 'Create Error');
     }
   };
 
@@ -232,13 +359,13 @@ export default function EngagementPlanning() {
       };
 
       await call('create_time_entry', [request]);
+      showSuccess('Time entry recorded successfully!', 'Success');
       setTimeEntryDialogOpen(false);
       loadDashboard(selectedEngagement);
-      alert('Time entry recorded successfully!');
       resetTimeEntryForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create time entry:', error);
-      alert('Failed to record time entry. Please try again.');
+      showError(error.message || 'Failed to record time entry. Please try again.', 'Create Error');
     }
   };
 
@@ -302,24 +429,62 @@ export default function EngagementPlanning() {
           Engagement Planning Dashboard
         </Typography>
 
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <InputLabel>Select Engagement</InputLabel>
-          <Select
-            value={selectedEngagement?.toString() || ''}
-            onChange={(e) => {
-              const engId = BigInt(e.target.value);
-              setSelectedEngagement(engId);
-              loadDashboard(engId);
-            }}
-            label="Select Engagement"
-          >
-            {engagements.map((eng) => (
-              <MenuItem key={eng.id.toString()} value={eng.id.toString()}>
-                {eng.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <FormControl fullWidth>
+            <InputLabel>Select Engagement</InputLabel>
+            <Select
+              value={selectedEngagement?.toString() || ''}
+              onChange={async (e) => {
+                const engId = BigInt(e.target.value);
+                setSelectedEngagement(engId);
+                loadDashboard(engId);
+                loadDatasets(engId);
+                // Check if EAS entity and suggest Egyptian Standards template
+                const isEAS = await checkEASEntity(engId);
+                if (isEAS && checklists.length === 0) {
+                  // Show suggestion to apply Egyptian Standards template
+                  setTimeout(() => {
+                    const egyptianTemplate = templates.find(
+                      (t) => t.jurisdiction === 'Egypt' || t.name.includes('Egyptian')
+                    );
+                    if (egyptianTemplate) {
+                      showSuccess(
+                        'This engagement appears to be for an Egyptian entity. Consider applying the Egyptian Audit Standards template.',
+                        'Template Suggestion'
+                      );
+                    }
+                  }, 1000);
+                }
+              }}
+              label="Select Engagement"
+            >
+              {engagements.map((eng) => (
+                <MenuItem key={eng.id.toString()} value={eng.id.toString()}>
+                  {eng.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          {selectedEngagement && (
+            <>
+              <Button
+                variant="outlined"
+                onClick={() => setTemplateDialogOpen(true)}
+                sx={{ minWidth: 200 }}
+              >
+                Apply Template
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setComplianceDialogOpen(true)}
+                sx={{ minWidth: 200 }}
+                disabled={checklists.length === 0}
+              >
+                {t('egyptianStandards.compliance')}
+              </Button>
+            </>
+          )}
+        </Box>
 
         {dashboard && (
           <>
@@ -484,7 +649,7 @@ export default function EngagementPlanning() {
                       Total Budgeted Fee:
                     </Typography>
                     <Typography variant="h6">
-                      ${dashboard.budget[0].total_budgeted_fee.toLocaleString()}
+                      {dashboard.budget[0].total_budgeted_fee.toLocaleString('en-EG', { style: 'currency', currency: 'EGP' })}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -503,6 +668,54 @@ export default function EngagementPlanning() {
                 >
                   Create Budget
                 </Button>
+              </Paper>
+            )}
+
+            {/* Datasets Section */}
+            {datasets.length > 0 && (
+              <Paper sx={{ p: 3, mb: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Imported Excel Datasets ({datasets.length})
+                </Typography>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Dataset Name</TableCell>
+                        <TableCell>File Name</TableCell>
+                        <TableCell>Sheets</TableCell>
+                        <TableCell>Total Rows</TableCell>
+                        <TableCell>Created</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {datasets.map((dataset) => (
+                        <TableRow key={dataset.id.toString()}>
+                          <TableCell>{dataset.name}</TableCell>
+                          <TableCell>{dataset.file_name}</TableCell>
+                          <TableCell>{dataset.sheets.length}</TableCell>
+                          <TableCell>
+                            {dataset.sheets.reduce((sum, s) => sum + Number(s.row_count), 0)}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(Number(dataset.created_at) / 1000000).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<ViewIcon />}
+                              onClick={() => handleViewDataset(dataset)}
+                            >
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </Paper>
             )}
 
@@ -796,6 +1009,153 @@ export default function EngagementPlanning() {
           >
             Log Time
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* View Dataset Dialog */}
+      <Dialog
+        open={viewDatasetDialogOpen}
+        onClose={() => setViewDatasetDialogOpen(false)}
+        maxWidth="xl"
+        fullWidth
+      >
+        <DialogTitle>
+          {selectedDataset?.name || 'Excel Dataset'}
+          {selectedDataset && (
+            <Typography variant="caption" color="text.secondary" display="block">
+              {selectedDataset.file_name}
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent>
+          {selectedDataset && selectedDataset.sheets.length > 0 && (
+            <Box>
+              <Tabs
+                value={selectedSheetIndex}
+                onChange={(_, v) => setSelectedSheetIndex(v)}
+                sx={{ mb: 2 }}
+              >
+                {selectedDataset.sheets.map((sheet, idx) => (
+                  <Tab
+                    key={idx}
+                    label={`${sheet.name} (${sheet.row_count} rows)`}
+                  />
+                ))}
+              </Tabs>
+
+              {selectedDataset.sheets[selectedSheetIndex] && (
+                <Box>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Sheet: {selectedDataset.sheets[selectedSheetIndex].name}
+                  </Typography>
+                  <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
+                    <Table size="small" stickyHeader>
+                      <TableHead>
+                        <TableRow>
+                          {selectedDataset.sheets[selectedSheetIndex].columns.map((col, idx) => (
+                            <TableCell key={idx}>
+                              <strong>{col.name}</strong>
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selectedDataset.sheets[selectedSheetIndex].data.map((row, ridx) => (
+                          <TableRow key={ridx} hover>
+                            {row.map((cell, cidx) => (
+                              <TableCell key={cidx}>{cell || '-'}</TableCell>
+                            ))}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              )}
+            </Box>
+          )}
+          {selectedDataset && selectedDataset.sheets.length === 0 && (
+            <Typography color="text.secondary" sx={{ p: 2 }}>
+              No sheets found in this dataset.
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewDatasetDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Template Selection Dialog */}
+      <Dialog open={templateDialogOpen} onClose={() => setTemplateDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>{t('egyptianStandards.applyTemplate')}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            {templates.map((template) => (
+              <Card key={template.id.toString()} sx={{ mb: 2 }}>
+                <CardContent>
+                  <Typography variant="h6">{template.name}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {template.description}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Chip
+                      label={`${template.checklist_items.length} items`}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                    <Chip
+                      label={`${template.checklist_items.reduce((sum, item) => {
+                        return sum + getEstimatedHours(item.estimated_hours);
+                      }, 0).toFixed(1)} hours`}
+                      size="small"
+                      color="secondary"
+                      variant="outlined"
+                    />
+                    {template.jurisdiction && (
+                      <Chip
+                        label={template.jurisdiction}
+                        size="small"
+                        color="info"
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleApplyTemplate(template.id)}
+                    fullWidth
+                  >
+                    Apply Template
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setTemplateDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Compliance Dashboard Dialog */}
+      <Dialog
+        open={complianceDialogOpen}
+        onClose={() => setComplianceDialogOpen(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>{t('egyptianStandards.compliance')}</DialogTitle>
+        <DialogContent>
+          {selectedEngagement && (
+            <ComplianceDashboard
+              engagementId={selectedEngagement}
+              checklist={checklists[0]}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setComplianceDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
     </Container>
