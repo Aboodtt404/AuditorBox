@@ -197,6 +197,14 @@ const menuItems = [
     section: 'Admin',
     sectionKey: 'nav.sectionAdmin'
   },
+  { 
+    path: '/mock-data', 
+    icon: LogIcon, 
+    label: 'nav.mockData', 
+    firmOnly: true,
+    section: 'Admin',
+    sectionKey: 'nav.sectionAdmin'
+  },
   
   // CLIENT ACCESS
   { 

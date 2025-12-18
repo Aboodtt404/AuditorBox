@@ -25,6 +25,7 @@ import ClientAcceptance from './pages/ClientAcceptance';
 import EngagementLetters from './pages/EngagementLetters';
 import ConflictCheck from './pages/ConflictCheck';
 import EngagementPlanning from './pages/EngagementPlanning';
+import AuditStandards from './pages/AuditStandards';
 import MockDataGenerator from './pages/MockDataGenerator';
 
 function App() {
@@ -209,6 +210,16 @@ function App() {
                 <ProtectedRoute requireFirmUser>
                   <PageLayout>
                     <EngagementPlanning />
+                  </PageLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/audit-standards"
+              element={
+                <ProtectedRoute requireFirmUser>
+                  <PageLayout>
+                    <AuditStandards />
                   </PageLayout>
                 </ProtectedRoute>
               }

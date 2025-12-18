@@ -43,7 +43,9 @@ interface ComplianceDashboardProps {
 export default function ComplianceDashboard({ engagementId, checklist }: ComplianceDashboardProps) {
   const { call } = useBackend();
   const { showSuccess, showError } = useNotification();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  
+  const isArabic = i18n.language === 'ar';
   const [complianceReport, setComplianceReport] = useState<StandardCompliance[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedStandard, setExpandedStandard] = useState<string | false>(false);
@@ -61,7 +63,7 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
     } catch (error: any) {
       console.error('Failed to load compliance report:', error);
       if (error.message && !error.message.includes('No checklist found')) {
-        showError(error.message || 'Failed to load compliance report', 'Load Error');
+        showError(error.message || t('egyptianStandards.loadingCompliance'), t('common.error'));
       }
     } finally {
       setLoading(false);
@@ -125,7 +127,7 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
   };
 
   const exportToCSV = () => {
-    const headers = ['Standard Code', 'Standard Name', 'Status', 'Progress %', 'Last Reviewed', 'Notes'];
+    const headers = [t('egyptianStandards.standardCode'), t('egyptianStandards.standardName'), t('egyptianStandards.complianceStatus'), t('egyptianStandards.progress') + ' %', t('egyptianStandards.lastReviewed'), t('egyptianStandards.notes')];
     const rows = complianceReport.map((c) => {
       const statusKey = Object.keys(c.compliance_status || {})[0] || 'NotStarted';
       const progress = calculateProgress(c);
@@ -160,22 +162,24 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
   const exportToPDF = () => {
     // For PDF export, we would use a library like jsPDF
     // For now, we'll create a text version
-    let reportText = 'EGYPTIAN AUDIT STANDARDS COMPLIANCE REPORT\n';
+    let reportText = t('egyptianStandards.complianceReport').toUpperCase() + '\n';
     reportText += '==========================================\n\n';
-    reportText += `Engagement ID: ${engagementId.toString()}\n`;
-    reportText += `Report Date: ${new Date().toLocaleDateString()}\n\n`;
+    reportText += `${t('engagements.engagement')} ID: ${engagementId.toString()}\n`;
+    reportText += `${t('common.date')}: ${new Date().toLocaleDateString()}\n\n`;
 
     complianceReport.forEach((c) => {
       const statusKey = Object.keys(c.compliance_status || {})[0] || 'NotStarted';
       const progress = calculateProgress(c);
-      reportText += `${c.standard_code} - ${c.standard_name}\n`;
-      reportText += `Status: ${statusKey}\n`;
-      reportText += `Progress: ${progress.toFixed(1)}%\n`;
+      const standardMeta = getStandardByCode(c.standard_code);
+    const standardName = standardMeta ? (isArabic ? standardMeta.nameAr : standardMeta.name) : c.standard_name;
+    reportText += `${c.standard_code} - ${standardName}\n`;
+      reportText += `${t('egyptianStandards.complianceStatus')}: ${getStatusLabel(c.compliance_status)}\n`;
+      reportText += `${t('egyptianStandards.progress')}: ${progress.toFixed(1)}%\n`;
       if (c.last_reviewed) {
-        reportText += `Last Reviewed: ${new Date(Number(c.last_reviewed) / 1000000).toLocaleDateString()}\n`;
+        reportText += `${t('egyptianStandards.lastReviewed')}: ${new Date(Number(c.last_reviewed) / 1000000).toLocaleDateString()}\n`;
       }
       if (c.notes) {
-        reportText += `Notes: ${c.notes}\n`;
+        reportText += `${t('egyptianStandards.notes')}: ${c.notes}\n`;
       }
       reportText += '\n';
     });
@@ -195,7 +199,7 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
   if (loading) {
     return (
       <Paper sx={{ p: 3 }}>
-        <Typography>Loading compliance data...</Typography>
+        <Typography>{t('egyptianStandards.loadingCompliance')}</Typography>
       </Paper>
     );
   }
@@ -204,7 +208,7 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
     return (
       <Paper sx={{ p: 3 }}>
         <Alert severity="info">
-          {t('egyptianStandards.complianceReport')} - No compliance data available. Please apply a template first.
+          {t('egyptianStandards.complianceReport')} - {t('egyptianStandards.noComplianceData')}
         </Alert>
       </Paper>
     );
@@ -244,8 +248,8 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
             open={Boolean(exportMenuAnchor)}
             onClose={() => setExportMenuAnchor(null)}
           >
-            <MenuItem onClick={exportToCSV}>Export as CSV</MenuItem>
-            <MenuItem onClick={exportToPDF}>Export as Text</MenuItem>
+            <MenuItem onClick={exportToCSV}>{t('egyptianStandards.exportAsCSV')}</MenuItem>
+            <MenuItem onClick={exportToPDF}>{t('egyptianStandards.exportAsText')}</MenuItem>
           </Menu>
         </Box>
       </Box>
@@ -305,7 +309,7 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
                   {getStatusIcon(compliance.compliance_status)}
                   <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="h6">
-                      {compliance.standard_code} - {compliance.standard_name}
+                      {compliance.standard_code} - {standardMeta ? (isArabic ? standardMeta.nameAr : standardMeta.name) : compliance.standard_name}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
                       <Chip
@@ -334,7 +338,7 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
                       {t('egyptianStandards.keyRequirements')}:
                     </Typography>
                     <ul>
-                      {standardMeta.keyRequirements.map((req, idx) => (
+                      {(isArabic ? standardMeta.keyRequirementsAr : standardMeta.keyRequirements).map((req, idx) => (
                         <li key={idx}>
                           <Typography variant="body2">{req}</Typography>
                         </li>
@@ -344,7 +348,7 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
                       {t('egyptianStandards.documentationNeeds')}:
                     </Typography>
                     <ul>
-                      {standardMeta.documentationNeeds.map((doc, idx) => (
+                      {(isArabic ? standardMeta.documentationNeedsAr : standardMeta.documentationNeeds).map((doc, idx) => (
                         <li key={idx}>
                           <Typography variant="body2">{doc}</Typography>
                         </li>
@@ -353,7 +357,7 @@ export default function ComplianceDashboard({ engagementId, checklist }: Complia
                     {compliance.notes && (
                       <Box sx={{ mt: 2 }}>
                         <Typography variant="subtitle2" gutterBottom>
-                          Notes:
+                          {t('egyptianStandards.notes')}:
                         </Typography>
                         <Typography variant="body2">{compliance.notes}</Typography>
                       </Box>

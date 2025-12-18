@@ -21,6 +21,7 @@ import {
 } from '@mui/icons-material';
 import { useBackend } from '../hooks/useBackend';
 import { useNotification } from '../components/NotificationSystem';
+import { useTranslation } from 'react-i18next';
 
 interface GenerationLog {
   step: string;
@@ -29,6 +30,7 @@ interface GenerationLog {
 }
 
 const MockDataGenerator = () => {
+  const { t } = useTranslation();
   const { call } = useBackend();
   const { showSuccess, showError } = useNotification();
   const [loading, setLoading] = useState(false);
@@ -56,7 +58,7 @@ const MockDataGenerator = () => {
 
     try {
       // Step 1: Create Organizations
-      addLog('organizations', 'pending', 'Creating organizations...');
+      addLog('organizations', 'pending', t('mockData.creatingOrganizations'));
       
       const orgs = [
         {
@@ -79,10 +81,10 @@ const MockDataGenerator = () => {
         createdOrgs.push(result);
       }
       
-      addLog('organizations', 'success', `Created ${createdOrgs.length} organizations`);
+      addLog('organizations', 'success', t('mockData.createdOrganizations', { count: createdOrgs.length }));
 
       // Step 2: Create Entities
-      addLog('entities', 'pending', 'Creating entities...');
+      addLog('entities', 'pending', t('mockData.creatingEntities'));
       
       const entities = [
         {
@@ -128,10 +130,10 @@ const MockDataGenerator = () => {
         createdEntities.push(result);
       }
       
-      addLog('entities', 'success', `Created ${createdEntities.length} entities`);
+      addLog('entities', 'success', t('mockData.createdEntities', { count: createdEntities.length }));
 
       // Step 3: Create Clients
-      addLog('clients', 'pending', 'Creating clients...');
+      addLog('clients', 'pending', t('mockData.creatingClients'));
       
       const clients = [
         {
@@ -202,10 +204,10 @@ const MockDataGenerator = () => {
         createdClients.push(result);
       }
       
-      addLog('clients', 'success', `Created ${createdClients.length} clients`);
+      addLog('clients', 'success', t('mockData.createdClients', { count: createdClients.length }));
 
       // Step 4: Create Engagements
-      addLog('engagements', 'pending', 'Creating engagements...');
+      addLog('engagements', 'pending', t('mockData.creatingEngagements'));
       
       const engagements = [
         {
@@ -232,10 +234,10 @@ const MockDataGenerator = () => {
         createdEngagements.push(result);
       }
       
-      addLog('engagements', 'success', `Created ${createdEngagements.length} engagements`);
+      addLog('engagements', 'success', t('mockData.createdEngagements', { count: createdEngagements.length }));
 
       // Step 5: Create Trial Balance with accounts
-      addLog('trial_balance', 'pending', 'Creating trial balance with accounts...');
+      addLog('trial_balance', 'pending', t('mockData.creatingTrialBalance'));
       
       const trialBalanceReq = {
         engagement_id: createdEngagements[0].id,
@@ -280,16 +282,16 @@ const MockDataGenerator = () => {
         createdAccounts.push(account);
       }
       
-      addLog('trial_balance', 'success', `Created trial balance with ${createdAccounts.length} pre-mapped accounts`);
+      addLog('trial_balance', 'success', t('mockData.createdTrialBalance', { count: createdAccounts.length }));
 
       // Success
-      addLog('complete', 'success', 'Mock data generation completed successfully! Ready for financial statement generation.');
+      addLog('complete', 'success', t('mockData.generationComplete'));
       setCompleted(true);
-      showSuccess('Mock data generation completed successfully!', 'Generation Complete');
+      showSuccess(t('mockData.generationComplete'), t('common.success'));
 
     } catch (error: any) {
-      addLog('error', 'error', `Failed: ${error.message || error}`);
-      showError(error.message || 'Failed to generate mock data', 'Generation Error');
+      addLog('error', 'error', `${t('common.error')}: ${error.message || error}`);
+      showError(error.message || t('mockData.generationError'), t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -304,46 +306,46 @@ const MockDataGenerator = () => {
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Mock Data Generator
+          {t('mockData.title')}
         </Typography>
         
         <Alert severity="info" sx={{ mb: 3 }}>
-          This will automatically create complete mock data for testing financial statement generation and all audit workflows.
+          {t('mockData.description')}
         </Alert>
 
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" gutterBottom>
-            What will be created:
+            {t('mockData.whatWillBeCreated')}
           </Typography>
           <List dense>
             <ListItem>
               <ListItemText 
-                primary="3 Organizations"
-                secondary="Nile Renewables, Delta Industries, Pyramids Real Estate"
+                primary={t('mockData.organizations')}
+                secondary={t('mockData.organizationsDesc')}
               />
             </ListItem>
             <ListItem>
               <ListItemText 
-                primary="5 Entities"
-                secondary="Solar, Wind, Textiles, Chemicals, Commercial Properties"
+                primary={t('mockData.entities')}
+                secondary={t('mockData.entitiesDesc')}
               />
             </ListItem>
             <ListItem>
               <ListItemText 
-                primary="5 Clients"
-                secondary="With Egyptian company details, Arabic names, tax IDs, linked to orgs/entities"
+                primary={t('mockData.clients')}
+                secondary={t('mockData.clientsDesc')}
               />
             </ListItem>
             <ListItem>
               <ListItemText 
-                primary="2 Engagements"
-                secondary="FY2024 Audit and Q1 Review engagements"
+                primary={t('mockData.engagements')}
+                secondary={t('mockData.engagementsDesc')}
               />
             </ListItem>
             <ListItem>
               <ListItemText 
-                primary="Trial Balance with 15 Pre-Mapped Accounts"
-                secondary="Complete trial balance for Nile Solar with accounts mapped to financial statement lines (EGP 59.4M balanced)"
+                primary={t('mockData.trialBalance')}
+                secondary={t('mockData.trialBalanceDesc')}
               />
             </ListItem>
           </List>
@@ -360,7 +362,7 @@ const MockDataGenerator = () => {
             disabled={loading || completed}
             fullWidth
           >
-            {loading ? 'Generating...' : 'Generate Mock Data'}
+            {loading ? t('mockData.generating') : t('mockData.generateMockData')}
           </Button>
           
           {completed && (
@@ -371,7 +373,7 @@ const MockDataGenerator = () => {
               onClick={resetData}
               fullWidth
             >
-              Reset & Generate Again
+              {t('mockData.resetAndGenerate')}
             </Button>
           )}
         </Box>
@@ -379,7 +381,7 @@ const MockDataGenerator = () => {
         {logs.length > 0 && (
           <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
             <Typography variant="subtitle2" gutterBottom>
-              Generation Log:
+              {t('mockData.generationLog')}:
             </Typography>
             <List dense>
               {logs.map((log, index) => (
@@ -404,28 +406,28 @@ const MockDataGenerator = () => {
         {completed && (
           <Alert severity="success" sx={{ mt: 3 }}>
             <Typography variant="body1" gutterBottom>
-              <strong>Mock data created successfully!</strong>
+              <strong>{t('mockData.successTitle')}</strong>
             </Typography>
             <Typography variant="body2" gutterBottom>
-              All data has been generated and is ready for use. You can now:
+              {t('mockData.successDescription')}
             </Typography>
             <List dense>
               <ListItem>
                 <ListItemText 
-                  primary="Navigate to Trial Balance"
-                  secondary="Select 'Nile Solar Technologies - FY2024 Audit' engagement to view the pre-mapped trial balance"
+                  primary={t('mockData.navigateToTrialBalance')}
+                  secondary={t('mockData.navigateToTrialBalanceDesc')}
                 />
               </ListItem>
               <ListItem>
                 <ListItemText 
-                  primary="Generate Financial Statements"
-                  secondary="Go to Financial Statements page, select the engagement, and click 'Generate' to create EAS-compliant statements"
+                  primary={t('mockData.generateFinancialStatements')}
+                  secondary={t('mockData.generateFinancialStatementsDesc')}
                 />
               </ListItem>
               <ListItem>
                 <ListItemText 
-                  primary="Explore All Features"
-                  secondary="Visit Organizations, Entities, Clients, and Engagements to see the complete data structure"
+                  primary={t('mockData.exploreAllFeatures')}
+                  secondary={t('mockData.exploreAllFeaturesDesc')}
                 />
               </ListItem>
             </List>

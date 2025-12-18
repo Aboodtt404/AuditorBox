@@ -31,9 +31,11 @@ interface DocumentationTemplatesProps {
 }
 
 export default function DocumentationTemplates({ standardCode, onClose }: DocumentationTemplatesProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  
+  const isArabic = i18n.language === 'ar';
 
   const standards = standardCode
     ? [getStandardByCode(standardCode)].filter(Boolean)
@@ -288,62 +290,62 @@ Date: [Date]`;
 
     if (standard.code === 'ISA 200') {
       templates.push(
-        { id: 'materiality-memo', name: 'Materiality Memorandum', description: 'Document materiality calculations and thresholds' },
-        { id: 'engagement-letter', name: 'Engagement Letter', description: 'Standard engagement letter template' }
+        { id: 'materiality-memo', name: t('egyptianStandards.templateNames.materialityMemo'), description: t('egyptianStandards.templateDescriptions.materialityMemo') },
+        { id: 'engagement-letter', name: t('egyptianStandards.templateNames.engagementLetter'), description: t('egyptianStandards.templateDescriptions.engagementLetter') }
       );
     }
     if (standard.code === 'ISA 210') {
       templates.push(
-        { id: 'engagement-letter', name: 'Engagement Letter', description: 'Engagement terms and conditions' },
-        { id: 'acceptance-form', name: 'Acceptance Form', description: 'Client acceptance checklist' }
+        { id: 'engagement-letter', name: t('egyptianStandards.templateNames.engagementLetter'), description: t('egyptianStandards.templateDescriptions.engagementLetter') },
+        { id: 'acceptance-form', name: t('egyptianStandards.templateNames.acceptanceForm'), description: t('egyptianStandards.templateDescriptions.acceptanceForm') }
       );
     }
     if (standard.code === 'ISA 220') {
       templates.push(
-        { id: 'quality-control', name: 'Quality Control Review', description: 'Quality control documentation' },
-        { id: 'supervision-plan', name: 'Supervision Plan', description: 'Team supervision and review plan' }
+        { id: 'quality-control', name: t('egyptianStandards.templateNames.qualityControlReview'), description: t('egyptianStandards.templateDescriptions.qualityControlReview') },
+        { id: 'supervision-plan', name: t('egyptianStandards.templateNames.supervisionPlan'), description: t('egyptianStandards.templateDescriptions.supervisionPlan') }
       );
     }
     if (standard.code === 'ISA 230') {
       templates.push(
-        { id: 'file-completion', name: 'File Completion Checklist', description: 'Audit file assembly checklist' },
-        { id: 'documentation-guide', name: 'Documentation Guide', description: 'Working paper documentation requirements' }
+        { id: 'file-completion', name: t('egyptianStandards.templateNames.fileCompletion'), description: t('egyptianStandards.templateDescriptions.fileCompletion') },
+        { id: 'documentation-guide', name: t('egyptianStandards.templateNames.documentationGuide'), description: t('egyptianStandards.templateDescriptions.documentationGuide') }
       );
     }
     if (standard.code === 'ISA 240') {
       templates.push(
-        { id: 'fraud-assessment', name: 'Fraud Risk Assessment', description: 'Fraud risk identification and assessment' },
-        { id: 'journal-testing', name: 'Journal Entry Testing', description: 'Journal entry testing program' }
+        { id: 'fraud-assessment', name: t('egyptianStandards.templateNames.fraudAssessment'), description: t('egyptianStandards.templateDescriptions.fraudAssessment') },
+        { id: 'journal-testing', name: t('egyptianStandards.templateNames.journalTesting'), description: t('egyptianStandards.templateDescriptions.journalTesting') }
       );
     }
     if (standard.code === 'ISA 250') {
       templates.push(
-        { id: 'compliance-checklist', name: 'Legal Compliance Checklist', description: 'Laws and regulations compliance' },
-        { id: 'noncompliance-memo', name: 'Non-Compliance Memo', description: 'Document non-compliance issues' }
+        { id: 'compliance-checklist', name: t('egyptianStandards.templateNames.complianceChecklist'), description: t('egyptianStandards.templateDescriptions.complianceChecklist') },
+        { id: 'noncompliance-memo', name: t('egyptianStandards.templateNames.noncomplianceMemo'), description: t('egyptianStandards.templateDescriptions.noncomplianceMemo') }
       );
     }
     if (standard.code === 'ISA 260') {
       templates.push(
-        { id: 'governance-letter', name: 'Governance Communication Letter', description: 'Communication to those charged with governance' },
-        { id: 'significant-findings', name: 'Significant Findings Report', description: 'Report of significant audit findings' }
+        { id: 'governance-letter', name: t('egyptianStandards.templateNames.governanceLetter'), description: t('egyptianStandards.templateDescriptions.governanceLetter') },
+        { id: 'significant-findings', name: t('egyptianStandards.templateNames.significantFindings'), description: t('egyptianStandards.templateDescriptions.significantFindings') }
       );
     }
     if (standard.code === 'ISA 265') {
       templates.push(
-        { id: 'deficiency-matrix', name: 'Control Deficiency Matrix', description: 'Internal control deficiencies register' },
-        { id: 'management-letter', name: 'Management Letter', description: 'Communication of control deficiencies' }
+        { id: 'deficiency-matrix', name: t('egyptianStandards.templateNames.deficiencyMatrix'), description: t('egyptianStandards.templateDescriptions.deficiencyMatrix') },
+        { id: 'management-letter', name: t('egyptianStandards.templateNames.managementLetter'), description: t('egyptianStandards.templateDescriptions.managementLetter') }
       );
     }
     if (standard.code === 'ISA 300') {
       templates.push(
-        { id: 'audit-strategy', name: 'Audit Strategy Document', description: 'Overall audit strategy' },
-        { id: 'audit-plan', name: 'Detailed Audit Plan', description: 'Detailed audit procedures plan' }
+        { id: 'audit-strategy', name: t('egyptianStandards.templateNames.auditStrategy'), description: t('egyptianStandards.templateDescriptions.auditStrategy') },
+        { id: 'audit-plan', name: t('egyptianStandards.templateNames.auditPlan'), description: t('egyptianStandards.templateDescriptions.auditPlan') }
       );
     }
     if (standard.code === 'ISA 315') {
       templates.push(
-        { id: 'risk-assessment', name: 'Risk Assessment Worksheet', description: 'Risk identification and assessment' },
-        { id: 'entity-understanding', name: 'Entity Understanding Memo', description: 'Understanding of entity and environment' }
+        { id: 'risk-assessment', name: t('egyptianStandards.templateNames.riskAssessment'), description: t('egyptianStandards.templateDescriptions.riskAssessment') },
+        { id: 'entity-understanding', name: t('egyptianStandards.templateNames.entityUnderstanding'), description: t('egyptianStandards.templateDescriptions.entityUnderstanding') }
       );
     }
 
@@ -359,7 +361,7 @@ Date: [Date]`;
         return (
           <Paper key={standard.code} sx={{ p: 2, mb: 2 }}>
             <Typography variant="h6" gutterBottom>
-              {standard.code} - {standard.name}
+              {standard.code} - {isArabic ? standard.nameAr : standard.name}
             </Typography>
             <List>
               {templates.map((template) => (

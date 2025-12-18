@@ -322,8 +322,8 @@ const WorkingPapers = () => {
         <Paper sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h6">
-              Existing Working Papers
-            </Typography>
+            Existing Working Papers
+          </Typography>
             <FormControl size="small" sx={{ minWidth: 200 }}>
               <InputLabel>Filter by ISA Standard</InputLabel>
               <Select
@@ -373,11 +373,11 @@ const WorkingPapers = () => {
                       : relevantStandards.filter(s => s === standardFilter);
 
                     return (
-                      <TableRow key={wp.id.toString()}>
-                        <TableCell>{wp.name}</TableCell>
-                        <TableCell>
-                          {new Date(Number(wp.created_at) / 1000000).toLocaleDateString()}
-                        </TableCell>
+                  <TableRow key={wp.id.toString()}>
+                    <TableCell>{wp.name}</TableCell>
+                    <TableCell>
+                      {new Date(Number(wp.created_at) / 1000000).toLocaleDateString()}
+                    </TableCell>
                         <TableCell>
                           {displayStandards.length > 0 ? (
                             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
@@ -391,9 +391,9 @@ const WorkingPapers = () => {
                             </Typography>
                           )}
                         </TableCell>
-                        <TableCell>{wp.ratios.length}</TableCell>
-                        <TableCell>{wp.linked_document_ids.length}</TableCell>
-                      </TableRow>
+                    <TableCell>{wp.ratios.length}</TableCell>
+                    <TableCell>{wp.linked_document_ids.length}</TableCell>
+                  </TableRow>
                     );
                   })}
               </TableBody>
