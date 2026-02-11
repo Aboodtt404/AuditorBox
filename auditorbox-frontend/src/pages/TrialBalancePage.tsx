@@ -1,11 +1,4 @@
 // TrialBalance page
-import React from 'react';
-import * as api from '../api/api-functions';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import TrialBalanceView from '../components/financials/TrialBalanceView';
-import { SAMPLE_TB } from '../data/tbSchema';
-
-// TrialBalancePage
 import React, { useState, useEffect } from 'react';
 import * as api from '../api/api-functions';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -77,7 +70,7 @@ export const TrialBalancePage: React.FC = () => {
     const backendAccounts = importedAccounts.map(acc => {
       // Simple client-side inference for MVP
       const code = parseInt(acc.account_code);
-      let type = { 'Asset': null };
+      let type: any = { 'Asset': null };
       if (code >= 2000 && code < 3000) type = { 'Liability': null };
       else if (code >= 3000 && code < 4000) type = { 'Equity': null };
       else if (code >= 4000 && code < 5000) type = { 'Revenue': null };

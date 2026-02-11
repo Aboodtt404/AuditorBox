@@ -35,3 +35,4 @@ deploy-mainnet.sh
 backend.did.test
 Cargo.lock
 canister_ids.json
+frontend/
