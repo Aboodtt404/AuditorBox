@@ -1,0 +1,248 @@
+{
+  "source": "auditorbox_backend/.dfx/local/canisters/auditorbox_backend/auditorbox_backend.did",
+  "generated_at": "2026-02-08T19:19:52.953689",
+  "types": {
+    "XBRLTaxonomy": {
+      "kind": "variant",
+      "field_count": 4
+    },
+    "UserRole": {
+      "kind": "variant",
+      "field_count": 6
+    },
+    "User": {
+      "kind": "record",
+      "field_count": 7
+    },
+    "TrialBalanceAccount": {
+      "kind": "record",
+      "field_count": 8
+    },
+    "TrialBalance": {
+      "kind": "record",
+      "field_count": 8
+    },
+    "Organization": {
+      "kind": "record",
+      "field_count": 6
+    },
+    "FinancialStatement": {
+      "kind": "record",
+      "field_count": 8
+    },
+    "FSLineItem": {
+      "kind": "record",
+      "field_count": 5
+    },
+    "EngagementStatus": {
+      "kind": "variant",
+      "field_count": 5
+    },
+    "EngagementLink": {
+      "kind": "variant",
+      "field_count": 3
+    },
+    "Engagement": {
+      "kind": "record",
+      "field_count": 9
+    },
+    "CreateTrialBalanceRequest": {
+      "kind": "record",
+      "field_count": 4
+    },
+    "CreateEngagementRequest": {
+      "kind": "record",
+      "field_count": 5
+    },
+    "CreateAjeRequest": {
+      "kind": "record",
+      "field_count": 4
+    },
+    "CompleteProfileRequest": {
+      "kind": "record",
+      "field_count": 3
+    },
+    "AuditTrailEntry": {
+      "kind": "record",
+      "field_count": 9
+    },
+    "ApiResult_6": {
+      "kind": "variant",
+      "field_count": 2
+    },
+    "ApiResult_5": {
+      "kind": "variant",
+      "field_count": 2
+    },
+    "ApiResult_4": {
+      "kind": "variant",
+      "field_count": 2
+    },
+    "ApiResult_3": {
+      "kind": "variant",
+      "field_count": 2
+    },
+    "ApiResult_2": {
+      "kind": "variant",
+      "field_count": 2
+    },
+    "ApiResult_1": {
+      "kind": "variant",
+      "field_count": 2
+    },
+    "ApiResult": {
+      "kind": "variant",
+      "field_count": 2
+    },
+    "AjeStatus": {
+      "kind": "variant",
+      "field_count": 6
+    },
+    "AjeLineItem": {
+      "kind": "record",
+      "field_count": 5
+    },
+    "Adjustment": {
+      "kind": "record",
+      "field_count": 11
+    },
+    "AccountType": {
+      "kind": "variant",
+      "field_count": 6
+    }
+  },
+  "methods": [
+    {
+      "name": "completeProfile",
+      "crud_type": "action",
+      "is_query": false,
+      "param_count": 1
+    },
+    {
+      "name": "createAdjustment",
+      "crud_type": "create",
+      "is_query": false,
+      "param_count": 1
+    },
+    {
+      "name": "createEngagement",
+      "crud_type": "create",
+      "is_query": false,
+      "param_count": 1
+    },
+    {
+      "name": "createFinancialStatement",
+      "crud_type": "create",
+      "is_query": false,
+      "param_count": 4
+    },
+    {
+      "name": "createOrganization",
+      "crud_type": "create",
+      "is_query": false,
+      "param_count": 2
+    },
+    {
+      "name": "createTrialBalance",
+      "crud_type": "create",
+      "is_query": false,
+      "param_count": 1
+    },
+    {
+      "name": "getAdjustment",
+      "crud_type": "read",
+      "is_query": true,
+      "param_count": 1
+    },
+    {
+      "name": "getAuditTrail",
+      "crud_type": "read",
+      "is_query": true,
+      "param_count": 0
+    },
+    {
+      "name": "getCurrentUser",
+      "crud_type": "read",
+      "is_query": false,
+      "param_count": 0
+    },
+    {
+      "name": "getEngagement",
+      "crud_type": "read",
+      "is_query": true,
+      "param_count": 1
+    },
+    {
+      "name": "getFinancialStatement",
+      "crud_type": "read",
+      "is_query": true,
+      "param_count": 1
+    },
+    {
+      "name": "getOrganization",
+      "crud_type": "read",
+      "is_query": true,
+      "param_count": 1
+    },
+    {
+      "name": "getTrialBalance",
+      "crud_type": "read",
+      "is_query": true,
+      "param_count": 1
+    },
+    {
+      "name": "listAdjustments",
+      "crud_type": "list",
+      "is_query": true,
+      "param_count": 0
+    },
+    {
+      "name": "listEngagements",
+      "crud_type": "list",
+      "is_query": true,
+      "param_count": 0
+    },
+    {
+      "name": "listFinancialStatements",
+      "crud_type": "list",
+      "is_query": true,
+      "param_count": 0
+    },
+    {
+      "name": "listOrganizations",
+      "crud_type": "list",
+      "is_query": true,
+      "param_count": 0
+    },
+    {
+      "name": "listTrialBalances",
+      "crud_type": "list",
+      "is_query": true,
+      "param_count": 0
+    },
+    {
+      "name": "listUsers",
+      "crud_type": "list",
+      "is_query": true,
+      "param_count": 0
+    },
+    {
+      "name": "updateAdjustmentStatus",
+      "crud_type": "update",
+      "is_query": false,
+      "param_count": 2
+    },
+    {
+      "name": "updateUserRole",
+      "crud_type": "update",
+      "is_query": false,
+      "param_count": 2
+    },
+    {
+      "name": "verifyAuditTrailIntegrity",
+      "crud_type": "query",
+      "is_query": true,
+      "param_count": 0
+    }
+  ]
+}

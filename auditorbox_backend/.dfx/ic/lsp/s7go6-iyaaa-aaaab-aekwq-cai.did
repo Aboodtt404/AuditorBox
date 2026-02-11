@@ -1,0 +1,260 @@
+type XBRLTaxonomy = 
+ variant {
+   Custom: text;
+   EAS;
+   GCC;
+   IFRS;
+ };
+type UserRole = 
+ variant {
+   Admin;
+   ClientUser;
+   Manager;
+   Partner;
+   Senior;
+   Staff;
+ };
+type User = 
+ record {
+   createdAt: int;
+   email: text;
+   languagePreference: text;
+   name: text;
+   "principal": principal;
+   profileCompleted: bool;
+   role: UserRole;
+ };
+type TrialBalanceAccount = 
+ record {
+   accountName: text;
+   accountNumber: text;
+   accountType: AccountType;
+   beginningBalance: float64;
+   credit: float64;
+   debit: float64;
+   endingBalance: float64;
+   fsLineItem: text;
+ };
+type TrialBalance = 
+ record {
+   accounts: vec TrialBalanceAccount;
+   createdAt: int;
+   createdBy: principal;
+   currency: text;
+   description: text;
+   engagementId: nat;
+   id: nat;
+   periodEndDate: text;
+ };
+type Organization = 
+ record {
+   createdAt: int;
+   createdBy: principal;
+   description: text;
+   entityIds: vec nat;
+   id: nat;
+   name: text;
+ };
+type FinancialStatement = 
+ record {
+   engagementId: nat;
+   generatedAt: int;
+   generatedBy: principal;
+   id: nat;
+   lineItems: vec FSLineItem;
+   taxonomy: XBRLTaxonomy;
+   title: text;
+   trialBalanceId: nat;
+ };
+type FSLineItem = 
+ record {
+   amount: float64;
+   category: text;
+   code: text;
+   name: text;
+   nameAr: opt text;
+ };
+type EngagementStatus = 
+ variant {
+   Archived;
+   Completed;
+   InProgress;
+   Planning;
+   Review;
+ };
+type EngagementLink = 
+ variant {
+   Client: nat;
+   Entity: nat;
+   Organization: nat;
+ };
+type Engagement = 
+ record {
+   createdAt: int;
+   createdBy: principal;
+   description: text;
+   endDate: int;
+   id: nat;
+   link: EngagementLink;
+   name: text;
+   startDate: int;
+   status: EngagementStatus;
+ };
+type CreateTrialBalanceRequest = 
+ record {
+   currency: text;
+   description: text;
+   engagementId: nat;
+   periodEndDate: text;
+ };
+type CreateEngagementRequest = 
+ record {
+   description: text;
+   endDate: int;
+   link: EngagementLink;
+   name: text;
+   startDate: int;
+ };
+type CreateAjeRequest = 
+ record {
+   description: text;
+   engagementId: nat;
+   lineItems: vec AjeLineItem;
+   trialBalanceId: nat;
+ };
+type CompleteProfileRequest = 
+ record {
+   email: text;
+   name: text;
+   requestedRole: UserRole;
+ };
+type AuditTrailEntry = 
+ record {
+   action: text;
+   details: text;
+   hash: text;
+   id: nat;
+   previousHash: text;
+   "principal": principal;
+   resourceId: nat;
+   resourceType: text;
+   timestamp: int;
+ };
+type ApiResult_6 = 
+ variant {
+   err: text;
+   ok: User;
+ };
+type ApiResult_5 = 
+ variant {
+   err: text;
+   ok: Engagement;
+ };
+type ApiResult_4 = 
+ variant {
+   err: text;
+   ok: FinancialStatement;
+ };
+type ApiResult_3 = 
+ variant {
+   err: text;
+   ok: Organization;
+ };
+type ApiResult_2 = 
+ variant {
+   err: text;
+   ok: TrialBalance;
+ };
+type ApiResult_1 = 
+ variant {
+   err: text;
+   ok: Adjustment;
+ };
+type ApiResult = 
+ variant {
+   err: text;
+   ok;
+ };
+type AjeStatus = 
+ variant {
+   Approved;
+   Draft;
+   Posted;
+   Proposed;
+   Rejected;
+   Reviewed;
+ };
+type AjeLineItem = 
+ record {
+   accountName: text;
+   accountNumber: text;
+   credit: float64;
+   debit: float64;
+   description: text;
+ };
+type Adjustment = 
+ record {
+   approvedBy: opt principal;
+   blockchainHash: text;
+   createdAt: int;
+   createdBy: principal;
+   description: text;
+   engagementId: nat;
+   id: nat;
+   lineItems: vec AjeLineItem;
+   reviewedBy: opt principal;
+   status: AjeStatus;
+   trialBalanceId: nat;
+ };
+type AccountType = 
+ variant {
+   Asset;
+   Equity;
+   Expense;
+   Liability;
+   Other;
+   Revenue;
+ };
+service : {
+  completeProfile: (req: CompleteProfileRequest) -> (ApiResult_6);
+  createAdjustment: (req: CreateAjeRequest) -> (ApiResult_1);
+  createEngagement: (req: CreateEngagementRequest) -> (ApiResult_5);
+  createFinancialStatement: (engagementId: nat, trialBalanceId: nat,
+   taxonomy: XBRLTaxonomy, title: text) -> (ApiResult_4);
+  createOrganization: (name: text, description: text) -> (ApiResult_3);
+  createTrialBalance: (req: CreateTrialBalanceRequest) -> (ApiResult_2);
+  getAdjustment: (id: nat) -> (opt Adjustment) query;
+  getAuditTrail: () -> (vec AuditTrailEntry) query;
+  getCurrentUser: () -> (opt User);
+  getEngagement: (id: nat) -> (opt Engagement) query;
+  getFinancialStatement: (id: nat) -> (opt FinancialStatement) query;
+  getOrganization: (id: nat) -> (opt Organization) query;
+  getTrialBalance: (id: nat) -> (opt TrialBalance) query;
+  listAdjustments: () -> (vec record {
+                                nat;
+                                Adjustment;
+                              }) query;
+  listEngagements: () -> (vec record {
+                                nat;
+                                Engagement;
+                              }) query;
+  listFinancialStatements: () -> (vec record {
+                                        nat;
+                                        FinancialStatement;
+                                      }) query;
+  listOrganizations: () -> (vec record {
+                                  nat;
+                                  Organization;
+                                }) query;
+  listTrialBalances: () -> (vec record {
+                                  nat;
+                                  TrialBalance;
+                                }) query;
+  listUsers: () -> (vec record {
+                          principal;
+                          User;
+                        }) query;
+  updateAdjustmentStatus: (adjId: nat, newStatus: AjeStatus) -> (ApiResult_1);
+  updateUserRole: (target: principal, newRole: UserRole) -> (ApiResult);
+  verifyAuditTrailIntegrity: () -> (bool) query;
+}

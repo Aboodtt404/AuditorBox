@@ -1,0 +1,27 @@
+[
+  {
+    "match": "**/*",
+    "disable_security_policy_warning": true,
+    "headers": {
+      "X-Content-Type-Options": "nosniff"
+    }
+  },
+  {
+    "match": "assets/**/*.js",
+    "headers": {
+      "Cache-Control": "public, max-age=31536000, immutable"
+    }
+  },
+  {
+    "match": "assets/**/*.css",
+    "headers": {
+      "Cache-Control": "public, max-age=31536000, immutable"
+    }
+  },
+  {
+    "match": "index.html",
+    "headers": {
+      "Cache-Control": "no-cache"
+    }
+  }
+]

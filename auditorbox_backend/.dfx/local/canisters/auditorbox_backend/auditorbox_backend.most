@@ -1,0 +1,192 @@
+// Version: 1.0.0
+type AccountType__912156754 =
+  {#Asset; #Equity; #Expense; #Liability; #Other; #Revenue};
+type Adjustment__177693863 =
+  {
+    approvedBy : ?Principal;
+    blockchainHash : Text;
+    createdAt : Int;
+    createdBy : Principal;
+    description : Text;
+    engagementId : Nat;
+    id : Nat;
+    lineItems : [AjeLineItem__698313219];
+    reviewedBy : ?Principal;
+    status : AjeStatus__968057916;
+    trialBalanceId : Nat
+  };
+type AjeLineItem__698313219 =
+  {
+    accountName : Text;
+    accountNumber : Text;
+    credit : Float;
+    debit : Float;
+    description : Text
+  };
+type AjeStatus__968057916 =
+  {#Approved; #Draft; #Posted; #Proposed; #Rejected; #Reviewed};
+type AuditTrailEntry__284853771 =
+  {
+    action : Text;
+    details : Text;
+    hash : Text;
+    id : Nat;
+    previousHash : Text;
+    principal : Principal;
+    resourceId : Nat;
+    resourceType : Text;
+    timestamp : Int
+  };
+type Client__810785474 =
+  {
+    address : Text;
+    commercialRegistration : ?Text;
+    contactEmail : Text;
+    contactPhone : Text;
+    createdAt : Int;
+    createdBy : Principal;
+    entityId : ?Nat;
+    id : Nat;
+    industryCode : ?Text;
+    name : Text;
+    nameAr : ?Text;
+    organizationId : ?Nat;
+    taxRegistrationNumber : ?Text
+  };
+type EngagementLink__703895968 =
+  {#Client : Nat; #Entity : Nat; #Organization : Nat};
+type EngagementStatus__594789110 =
+  {#Archived; #Completed; #InProgress; #Planning; #Review};
+type Engagement__524416189 =
+  {
+    clientName : Text;
+    createdAt : Int;
+    createdBy : Principal;
+    currency : Text;
+    description : Text;
+    endDate : Int;
+    entityType : Text;
+    id : Nat;
+    industrySector : Text;
+    isFirstYear : Bool;
+    isGroupAudit : Bool;
+    link : EngagementLink__703895968;
+    materialityOverall : Float;
+    materialityPerformance : Float;
+    materialityTrivial : Float;
+    name : Text;
+    reportingFramework : Text;
+    riskProfile : Text;
+    startDate : Int;
+    status : EngagementStatus__594789110;
+    yearEnd : Text
+  };
+type Entity__240758578 =
+  {
+    createdAt : Int;
+    createdBy : Principal;
+    description : Text;
+    id : Nat;
+    name : Text;
+    organizationId : Nat;
+    taxonomy : ?XBRLTaxonomy__337372843;
+    taxonomyConfig : Text
+  };
+type FSLineItem__539517784 =
+  {amount : Float; category : Text; code : Text; name : Text; nameAr : ?Text};
+type FinancialStatement__260147334 =
+  {
+    engagementId : Nat;
+    generatedAt : Int;
+    generatedBy : Principal;
+    id : Nat;
+    lineItems : [FSLineItem__539517784];
+    taxonomy : XBRLTaxonomy__337372843;
+    title : Text;
+    trialBalanceId : Nat
+  };
+type FormData__710603183 =
+  {
+    engagementId : Nat;
+    formId : Text;
+    lastUpdated : Int;
+    preparedBy : ?Principal;
+    reviewedBy : ?Principal;
+    status : FormStatus__926803790;
+    updatedBy : Principal;
+    values : Text
+  };
+type FormStatus__926803790 =
+  {#InProgress; #NotStarted; #Prepared; #Reviewed; #SignedOff};
+type Organization__128052886 =
+  {
+    createdAt : Int;
+    createdBy : Principal;
+    description : Text;
+    entityIds : [Nat];
+    id : Nat;
+    name : Text
+  };
+type TrialBalanceAccount__397411792 =
+  {
+    accountName : Text;
+    accountNumber : Text;
+    accountType : AccountType__912156754;
+    beginningBalance : Float;
+    credit : Float;
+    debit : Float;
+    endingBalance : Float;
+    fsLineItem : Text
+  };
+type TrialBalance__480888988 =
+  {
+    accounts : [TrialBalanceAccount__397411792];
+    createdAt : Int;
+    createdBy : Principal;
+    currency : Text;
+    description : Text;
+    engagementId : Nat;
+    id : Nat;
+    periodEndDate : Text
+  };
+type UserPreferences__539400921 =
+  {
+    dismissedTooltips : [Text];
+    lastEngagementId : ?Nat;
+    seenPhaseIntros : [Text]
+  };
+type UserRole__791976337 =
+  {#Admin; #ClientUser; #Manager; #Partner; #Senior; #Staff};
+type User__456433480 =
+  {
+    createdAt : Int;
+    email : Text;
+    languagePreference : Text;
+    name : Text;
+    principal : Principal;
+    profileCompleted : Bool;
+    role : UserRole__791976337
+  };
+type XBRLTaxonomy__337372843 = {#Custom : Text; #EAS; #GCC; #IFRS};
+actor {
+  stable var _nextClientId : Nat;
+  stable var _nextEntityId : Nat;
+  stable var adjustmentsStable : [(Nat, Adjustment__177693863)];
+  stable var auditTrailStable : [AuditTrailEntry__284853771];
+  stable var clientsStable : [(Nat, Client__810785474)];
+  stable var engagementsStable : [(Nat, Engagement__524416189)];
+  stable var entitiesStable : [(Nat, Entity__240758578)];
+  stable var financialStatementsStable :
+    [(Nat, FinancialStatement__260147334)];
+  stable var formDataStable : [(Text, FormData__710603183)];
+  stable var nextAdjId : Nat;
+  stable var nextAuditTrailId : Nat;
+  stable var nextEngagementId : Nat;
+  stable var nextFSId : Nat;
+  stable var nextOrgId : Nat;
+  stable var nextTBId : Nat;
+  stable var orgsStable : [(Nat, Organization__128052886)];
+  stable var trialBalancesStable : [(Nat, TrialBalance__480888988)];
+  stable var userPrefsStable : [(Principal, UserPreferences__539400921)];
+  stable var usersStable : [(Principal, User__456433480)]
+};

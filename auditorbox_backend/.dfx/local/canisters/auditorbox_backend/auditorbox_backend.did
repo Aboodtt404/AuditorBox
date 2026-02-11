@@ -1,0 +1,376 @@
+type XBRLTaxonomy = 
+ variant {
+   Custom: text;
+   EAS;
+   GCC;
+   IFRS;
+ };
+type ValidationResult = 
+ record {
+   accountCount: nat;
+   difference: float64;
+   isBalanced: bool;
+   totalCredits: float64;
+   totalDebits: float64;
+ };
+type UserRole = 
+ variant {
+   Admin;
+   ClientUser;
+   Manager;
+   Partner;
+   Senior;
+   Staff;
+ };
+type UserPreferences = 
+ record {
+   dismissedTooltips: vec text;
+   lastEngagementId: opt nat;
+   seenPhaseIntros: vec text;
+ };
+type User = 
+ record {
+   createdAt: int;
+   email: text;
+   languagePreference: text;
+   name: text;
+   "principal": principal;
+   profileCompleted: bool;
+   role: UserRole;
+ };
+type UpdateEngagementRequest = 
+ record {
+   clientName: opt text;
+   currency: opt text;
+   description: opt text;
+   endDate: opt int;
+   entityType: opt text;
+   industrySector: opt text;
+   isFirstYear: opt bool;
+   isGroupAudit: opt bool;
+   materialityOverall: opt float64;
+   materialityPerformance: opt float64;
+   materialityTrivial: opt float64;
+   name: opt text;
+   reportingFramework: opt text;
+   riskProfile: opt text;
+   status: opt EngagementStatus;
+   yearEnd: opt text;
+ };
+type TrialBalanceAccount = 
+ record {
+   accountName: text;
+   accountNumber: text;
+   accountType: AccountType;
+   beginningBalance: float64;
+   credit: float64;
+   debit: float64;
+   endingBalance: float64;
+   fsLineItem: text;
+ };
+type TrialBalance = 
+ record {
+   accounts: vec TrialBalanceAccount;
+   createdAt: int;
+   createdBy: principal;
+   currency: text;
+   description: text;
+   engagementId: nat;
+   id: nat;
+   periodEndDate: text;
+ };
+type SaveFormDataRequest = 
+ record {
+   formId: text;
+   status: FormStatus;
+   values: text;
+ };
+type Organization = 
+ record {
+   createdAt: int;
+   createdBy: principal;
+   description: text;
+   entityIds: vec nat;
+   id: nat;
+   name: text;
+ };
+type FormStatus = 
+ variant {
+   InProgress;
+   NotStarted;
+   Prepared;
+   Reviewed;
+   SignedOff;
+ };
+type FormData = 
+ record {
+   engagementId: nat;
+   formId: text;
+   lastUpdated: int;
+   preparedBy: opt principal;
+   reviewedBy: opt principal;
+   status: FormStatus;
+   updatedBy: principal;
+   values: text;
+ };
+type FinancialStatement = 
+ record {
+   engagementId: nat;
+   generatedAt: int;
+   generatedBy: principal;
+   id: nat;
+   lineItems: vec FSLineItem;
+   taxonomy: XBRLTaxonomy;
+   title: text;
+   trialBalanceId: nat;
+ };
+type FSLineItem = 
+ record {
+   amount: float64;
+   category: text;
+   code: text;
+   name: text;
+   nameAr: opt text;
+ };
+type EngagementStatus = 
+ variant {
+   Archived;
+   Completed;
+   InProgress;
+   Planning;
+   Review;
+ };
+type EngagementLink = 
+ variant {
+   Client: nat;
+   Entity: nat;
+   Organization: nat;
+ };
+type Engagement = 
+ record {
+   clientName: text;
+   createdAt: int;
+   createdBy: principal;
+   currency: text;
+   description: text;
+   endDate: int;
+   entityType: text;
+   id: nat;
+   industrySector: text;
+   isFirstYear: bool;
+   isGroupAudit: bool;
+   link: EngagementLink;
+   materialityOverall: float64;
+   materialityPerformance: float64;
+   materialityTrivial: float64;
+   name: text;
+   reportingFramework: text;
+   riskProfile: text;
+   startDate: int;
+   status: EngagementStatus;
+   yearEnd: text;
+ };
+type CreateTrialBalanceRequest = 
+ record {
+   currency: text;
+   description: text;
+   engagementId: nat;
+   periodEndDate: text;
+ };
+type CreateEngagementRequest = 
+ record {
+   clientName: text;
+   currency: text;
+   description: text;
+   endDate: int;
+   entityType: text;
+   industrySector: text;
+   isFirstYear: bool;
+   isGroupAudit: bool;
+   link: EngagementLink;
+   materialityOverall: float64;
+   materialityPerformance: float64;
+   materialityTrivial: float64;
+   name: text;
+   reportingFramework: text;
+   riskProfile: text;
+   startDate: int;
+   yearEnd: text;
+ };
+type CreateAjeRequest = 
+ record {
+   description: text;
+   engagementId: nat;
+   lineItems: vec AjeLineItem;
+   trialBalanceId: nat;
+ };
+type CompleteProfileRequest = 
+ record {
+   email: text;
+   name: text;
+   requestedRole: UserRole;
+ };
+type AuditTrailEntry = 
+ record {
+   action: text;
+   details: text;
+   hash: text;
+   id: nat;
+   previousHash: text;
+   "principal": principal;
+   resourceId: nat;
+   resourceType: text;
+   timestamp: int;
+ };
+type ApiResult_9 = 
+ variant {
+   err: text;
+   ok: User;
+ };
+type ApiResult_8 = 
+ variant {
+   err: text;
+   ok: FinancialStatement;
+ };
+type ApiResult_7 = 
+ variant {
+   err: text;
+   ok: Organization;
+ };
+type ApiResult_6 = 
+ variant {
+   err: text;
+   ok: Adjustment;
+ };
+type ApiResult_5 = 
+ variant {
+   err: text;
+   ok: Engagement;
+ };
+type ApiResult_4 = 
+ variant {
+   err: text;
+   ok: FormData;
+ };
+type ApiResult_3 = 
+ variant {
+   err: text;
+   ok: TrialBalance;
+ };
+type ApiResult_2 = 
+ variant {
+   err: text;
+   ok: UserPreferences;
+ };
+type ApiResult_10 = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type ApiResult_1 = 
+ variant {
+   err: text;
+   ok;
+ };
+type ApiResult = 
+ variant {
+   err: text;
+   ok: ValidationResult;
+ };
+type AjeStatus = 
+ variant {
+   Approved;
+   Draft;
+   Posted;
+   Proposed;
+   Rejected;
+   Reviewed;
+ };
+type AjeLineItem = 
+ record {
+   accountName: text;
+   accountNumber: text;
+   credit: float64;
+   debit: float64;
+   description: text;
+ };
+type Adjustment = 
+ record {
+   approvedBy: opt principal;
+   blockchainHash: text;
+   createdAt: int;
+   createdBy: principal;
+   description: text;
+   engagementId: nat;
+   id: nat;
+   lineItems: vec AjeLineItem;
+   reviewedBy: opt principal;
+   status: AjeStatus;
+   trialBalanceId: nat;
+ };
+type AccountType = 
+ variant {
+   Asset;
+   Equity;
+   Expense;
+   Liability;
+   Other;
+   Revenue;
+ };
+service : {
+  batchSaveFormData: (engagementId: nat, entries: vec SaveFormDataRequest) ->
+   (ApiResult_10);
+  completeProfile: (req: CompleteProfileRequest) -> (ApiResult_9);
+  createAdjustment: (req: CreateAjeRequest) -> (ApiResult_6);
+  createEngagement: (req: CreateEngagementRequest) -> (ApiResult_5);
+  createFinancialStatement: (engagementId: nat, trialBalanceId: nat,
+   taxonomy: XBRLTaxonomy, title: text) -> (ApiResult_8);
+  createOrganization: (name: text, description: text) -> (ApiResult_7);
+  createTrialBalance: (req: CreateTrialBalanceRequest) -> (ApiResult_3);
+  getAdjustment: (id: nat) -> (opt Adjustment) query;
+  getAuditTrail: () -> (vec AuditTrailEntry) query;
+  getCurrentUser: () -> (opt User);
+  getEngagement: (id: nat) -> (opt Engagement) query;
+  getFinancialStatement: (id: nat) -> (opt FinancialStatement) query;
+  getFormData: (engagementId: nat, formId: text) -> (opt FormData) query;
+  getOrganization: (id: nat) -> (opt Organization) query;
+  getTrialBalance: (id: nat) -> (opt TrialBalance) query;
+  getUserPreferences: () -> (UserPreferences);
+  listAdjustments: () -> (vec record {
+                                nat;
+                                Adjustment;
+                              }) query;
+  listEngagements: () -> (vec record {
+                                nat;
+                                Engagement;
+                              }) query;
+  listFinancialStatements: () -> (vec record {
+                                        nat;
+                                        FinancialStatement;
+                                      }) query;
+  listFormData: (engagementId: nat) -> (vec FormData) query;
+  listOrganizations: () -> (vec record {
+                                  nat;
+                                  Organization;
+                                }) query;
+  listTrialBalances: () -> (vec record {
+                                  nat;
+                                  TrialBalance;
+                                }) query;
+  listUsers: () -> (vec record {
+                          principal;
+                          User;
+                        }) query;
+  saveFormData: (engagementId: nat, formId: text, values: text, status:
+   FormStatus) -> (ApiResult_4);
+  updateAdjustmentStatus: (adjId: nat, newStatus: AjeStatus) -> (ApiResult_6);
+  updateEngagement: (id: nat, req: UpdateEngagementRequest) -> (ApiResult_5);
+  updateFormStatus: (engagementId: nat, formId: text, status: FormStatus) ->
+   (ApiResult_4);
+  updateTrialBalanceAccounts: (tbId: nat, accounts:
+   vec TrialBalanceAccount) -> (ApiResult_3);
+  updateUserPreferences: (prefs: UserPreferences) -> (ApiResult_2);
+  updateUserRole: (target: principal, newRole: UserRole) -> (ApiResult_1);
+  validateTrialBalance: (id: nat) -> (ApiResult) query;
+  verifyAuditTrailIntegrity: () -> (bool) query;
+}

@@ -1,0 +1,1749 @@
+// Auto-generated from caseware_tree_index.json
+// Do not edit manually
+
+export const PHASES = [
+  {
+    "id": "1_onboarding",
+    "name": "Phase 1: Client Acceptance & Onboarding",
+    "description": "Engagement acceptance, continuance decisions, independence, terms of engagement",
+    "isaStandards": [
+      "ISA 210",
+      "ISA 220"
+    ],
+    "categoryCount": 8,
+    "categories": [
+      {
+        "id": "cash",
+        "name": "Cash & Treasury",
+        "formCount": 4,
+        "forms": [
+          {
+            "formId": "140",
+            "title": "Cash and cash equivalents leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "140.110",
+            "title": "Bank reconciliation procedures",
+            "type": "procedure",
+            "procedureCount": 9
+          },
+          {
+            "formId": "140.115",
+            "title": "Cash count procedures",
+            "type": "procedure",
+            "procedureCount": 8
+          },
+          {
+            "formId": "140.120",
+            "title": "Cash and cash equivalents - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 9
+          }
+        ]
+      },
+      {
+        "id": "general",
+        "name": "General & Cross-Cutting",
+        "formCount": 54,
+        "forms": [
+          {
+            "formId": "10",
+            "title": "Intangible assets and goodwill leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "10.1",
+            "title": "Intangible assets - Cost",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "10.120",
+            "title": "Intangible assets and goodwill - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "10.2",
+            "title": "Intangible assets - Amortisation and impairment",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "10.3",
+            "title": "Goodwill - Cost",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "10.4",
+            "title": "Goodwill - Amortisation and impairment",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "100",
+            "title": "Report approval and transmittal",
+            "type": "procedure",
+            "procedureCount": 5
+          },
+          {
+            "formId": "1000.1",
+            "title": "Analytical review",
+            "type": "procedure",
+            "procedureCount": 1
+          },
+          {
+            "formId": "1000.2",
+            "title": "Financial ratios",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "106",
+            "title": "Simple statements",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "120",
+            "title": "Other financial assets, current leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "120.120",
+            "title": "Other financial assets, current - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 3
+          },
+          {
+            "formId": "135",
+            "title": "Prepayments leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "135.120",
+            "title": "Prepayments - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 3
+          },
+          {
+            "formId": "1600",
+            "title": "Operating expenses leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 3
+          },
+          {
+            "formId": "1600.102",
+            "title": "Cost of sales - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "1600.4",
+            "title": "Other operating expenses, area by nature",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1600.5",
+            "title": "Cost of sales",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1600.6",
+            "title": "Distribution costs",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "1600.7",
+            "title": "Administrative costs",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1600.8",
+            "title": "Other operating expenses, area by function",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1700",
+            "title": "Other income leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1700.1",
+            "title": "Other operating income, area by nature",
+            "type": "worksheet",
+            "procedureCount": 4
+          },
+          {
+            "formId": "1700.3",
+            "title": "Other income",
+            "type": "worksheet",
+            "procedureCount": 3
+          },
+          {
+            "formId": "1800",
+            "title": "Other expenses leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "301",
+            "title": "Engagement quality control review checklist",
+            "type": "checklist",
+            "procedureCount": 36
+          },
+          {
+            "formId": "302",
+            "title": "Worksheet - Engagement quality review checklist",
+            "type": "checklist",
+            "procedureCount": 17
+          },
+          {
+            "formId": "350",
+            "title": "Management representation letter - sample for editing",
+            "type": "letter",
+            "procedureCount": 20
+          },
+          {
+            "formId": "360-1",
+            "title": "Communicating IC Matters - material weaknesses/significant deficiencies - Sample Letter",
+            "type": "letter",
+            "procedureCount": 6
+          },
+          {
+            "formId": "360-2",
+            "title": "Communicating IC Matters - only 'other matters' - Sample Letter",
+            "type": "letter",
+            "procedureCount": 6
+          },
+          {
+            "formId": "360.",
+            "title": "Management letter report",
+            "type": "report",
+            "procedureCount": 0
+          },
+          {
+            "formId": "365",
+            "title": "Management letter - Sample for editing",
+            "type": "letter",
+            "procedureCount": 8
+          },
+          {
+            "formId": "400",
+            "title": "Borrowings leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "400-1",
+            "title": "Optimiser checklist - Profiles 2, 3 and 4",
+            "type": "checklist",
+            "procedureCount": 19
+          },
+          {
+            "formId": "400-2",
+            "title": "Optimiser checklist - Profile 5",
+            "type": "checklist",
+            "procedureCount": 25
+          },
+          {
+            "formId": "400-3",
+            "title": "Optimiser checklist - Profile 1",
+            "type": "checklist",
+            "procedureCount": 8
+          },
+          {
+            "formId": "400-4",
+            "title": "Optimiser checklist - Profiles 2, 3 and 4",
+            "type": "checklist",
+            "procedureCount": 19
+          },
+          {
+            "formId": "400-5",
+            "title": "Optimiser checklist - Profile 5",
+            "type": "checklist",
+            "procedureCount": 25
+          },
+          {
+            "formId": "400-6",
+            "title": "Optimiser checklist - Profile 1",
+            "type": "checklist",
+            "procedureCount": 10
+          },
+          {
+            "formId": "400.",
+            "title": "Optimiser checklist - Profiles 6 and 7",
+            "type": "checklist",
+            "procedureCount": 33
+          },
+          {
+            "formId": "400.1",
+            "title": "Interest-bearing borrowings",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "400.120",
+            "title": "Borrowings - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "400.2",
+            "title": "Non-interest bearing borrowings",
+            "type": "worksheet",
+            "procedureCount": 3
+          },
+          {
+            "formId": "401",
+            "title": "Optimiser checklist - Profiles 6 and 7",
+            "type": "checklist",
+            "procedureCount": 33
+          },
+          {
+            "formId": "442",
+            "title": "Firm deliverables and client information letter - sample for editing",
+            "type": "letter",
+            "procedureCount": 6
+          },
+          {
+            "formId": "590",
+            "title": "Preliminary Engagement Scoping - Single Entity",
+            "type": "worksheet",
+            "procedureCount": 2
+          },
+          {
+            "formId": "645-1",
+            "title": "Checklist for Evaluating Attorney Letter",
+            "type": "checklist",
+            "procedureCount": 13
+          },
+          {
+            "formId": "A1.2",
+            "title": "Letter to a predecessor accounting firm",
+            "type": "letter",
+            "procedureCount": 3
+          },
+          {
+            "formId": "LETTER",
+            "title": "Sample letter",
+            "type": "letter",
+            "procedureCount": 1
+          },
+          {
+            "formId": "MGTLETTER",
+            "title": "Sample management letter",
+            "type": "letter",
+            "procedureCount": 8
+          },
+          {
+            "formId": "NFF1",
+            "title": "Blank flat-form - landscape",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "NFF2",
+            "title": "Blank flat-form - portrait",
+            "type": "procedure",
+            "procedureCount": 0
+          },
+          {
+            "formId": "Q",
+            "title": "CaseWare Q - Key Data for Engagements",
+            "type": "worksheet",
+            "procedureCount": 15
+          },
+          {
+            "formId": "SUP3.110",
+            "title": "Agricultural asset count checklist",
+            "type": "checklist",
+            "procedureCount": 28
+          }
+        ]
+      },
+      {
+        "id": "group_audit",
+        "name": "Group Audit & Consolidation",
+        "formCount": 1,
+        "forms": [
+          {
+            "formId": "590.600",
+            "title": "Group audit program - Engagement scoping components (Core)",
+            "type": "procedure",
+            "procedureCount": 12
+          }
+        ]
+      },
+      {
+        "id": "inventory",
+        "name": "Inventory & Cost of Sales",
+        "formCount": 13,
+        "forms": [
+          {
+            "formId": "110",
+            "title": "Inventories leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "110.1",
+            "title": "Inventories - Raw materials",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "110.110",
+            "title": "Inventory count checklist",
+            "type": "checklist",
+            "procedureCount": 26
+          },
+          {
+            "formId": "110.120",
+            "title": "Inventories - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "110.2",
+            "title": "Inventories - Work in progress",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "110.3",
+            "title": "Inventories - Finished goods",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "110.4",
+            "title": "Inventories - Merchandise",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "110.5",
+            "title": "Inventories - Production supplies",
+            "type": "procedure",
+            "procedureCount": 5
+          },
+          {
+            "formId": "110.6",
+            "title": "Inventories - Other inventories for sale",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "110.7",
+            "title": "Inventories - Other",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1600.1",
+            "title": "Change in inventories and work in progress",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1600.2",
+            "title": "Raw materials and consumables used",
+            "type": "worksheet",
+            "procedureCount": 3
+          },
+          {
+            "formId": "A5.2-2",
+            "title": "Inventory consigned to others confirmation - Sample response letter",
+            "type": "letter",
+            "procedureCount": 2
+          }
+        ]
+      },
+      {
+        "id": "it_controls",
+        "name": "IT Controls & Systems",
+        "formCount": 2,
+        "forms": [
+          {
+            "formId": "367",
+            "title": "Audit findings - Sample letter",
+            "type": "letter",
+            "procedureCount": 15
+          },
+          {
+            "formId": "438",
+            "title": "Audit planning letter (Those charged with governance)",
+            "type": "letter",
+            "procedureCount": 28
+          }
+        ]
+      },
+      {
+        "id": "payroll",
+        "name": "Payroll & Employee Benefits",
+        "formCount": 2,
+        "forms": [
+          {
+            "formId": "1600.106",
+            "title": "Payroll and other expenses - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "1600.3",
+            "title": "Staff costs",
+            "type": "worksheet",
+            "procedureCount": 3
+          }
+        ]
+      },
+      {
+        "id": "ppe",
+        "name": "Property, Plant & Equipment",
+        "formCount": 4,
+        "forms": [
+          {
+            "formId": "1",
+            "title": "Property, plant and equipment leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1.1",
+            "title": "Property, plant and equipment - Cost",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1.120",
+            "title": "Property, plant and equipment - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 2
+          },
+          {
+            "formId": "1.2",
+            "title": "Property, plant and equipment - Depreciation",
+            "type": "worksheet",
+            "procedureCount": 3
+          }
+        ]
+      },
+      {
+        "id": "revenue",
+        "name": "Revenue & Receivables Cycle",
+        "formCount": 8,
+        "forms": [
+          {
+            "formId": "130",
+            "title": "Receivables, current leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "130.1",
+            "title": "Trade receivables",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "130.110",
+            "title": "Accounts receivable confirmation - Supplementary Procedures",
+            "type": "procedure",
+            "procedureCount": 29
+          },
+          {
+            "formId": "130.120",
+            "title": "Receivables, current - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 0
+          },
+          {
+            "formId": "130.2",
+            "title": "Other receivables",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1500",
+            "title": "Revenues leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "1500.120",
+            "title": "Revenues - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 8
+          },
+          {
+            "formId": "1700.2",
+            "title": "Other operating income, area by function",
+            "type": "worksheet",
+            "procedureCount": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2_planning",
+    "name": "Phase 2: Planning & Understanding",
+    "description": "Understanding entity, materiality, audit strategy, business processes",
+    "isaStandards": [
+      "ISA 300",
+      "ISA 315",
+      "ISA 320"
+    ],
+    "categoryCount": 5,
+    "categories": [
+      {
+        "id": "equity",
+        "name": "Equity & Related Parties",
+        "formCount": 1,
+        "forms": [
+          {
+            "formId": "5010",
+            "title": "Goodwill impairment",
+            "type": "procedure",
+            "procedureCount": 3
+          }
+        ]
+      },
+      {
+        "id": "estimates",
+        "name": "Accounting Estimates & Fair Value",
+        "formCount": 3,
+        "forms": [
+          {
+            "formId": "523",
+            "title": "Worksheet - Understanding accounting estimates (Core)",
+            "type": "worksheet",
+            "procedureCount": 5
+          },
+          {
+            "formId": "523-1",
+            "title": "Worksheet - Understanding complex accounting estimates (Core)",
+            "type": "worksheet",
+            "procedureCount": 5
+          },
+          {
+            "formId": "523-2",
+            "title": "Worksheet - Outcome of prior period accounting estimates (Core)",
+            "type": "worksheet",
+            "procedureCount": 1
+          }
+        ]
+      },
+      {
+        "id": "general",
+        "name": "General & Cross-Cutting",
+        "formCount": 18,
+        "forms": [
+          {
+            "formId": "420.",
+            "title": "Materiality",
+            "type": "procedure",
+            "procedureCount": 6
+          },
+          {
+            "formId": "425-1",
+            "title": "Team planning discussion action items",
+            "type": "worksheet",
+            "procedureCount": 2
+          },
+          {
+            "formId": "436-1",
+            "title": "Team planning discussions",
+            "type": "procedure",
+            "procedureCount": 0
+          },
+          {
+            "formId": "501-1",
+            "title": "Analytical review - Balances - Preliminary",
+            "type": "worksheet",
+            "procedureCount": 5
+          },
+          {
+            "formId": "520E",
+            "title": "Risk report",
+            "type": "report",
+            "procedureCount": 3
+          },
+          {
+            "formId": "520E.1",
+            "title": "Risk Report - Risk identification",
+            "type": "report",
+            "procedureCount": 3
+          },
+          {
+            "formId": "520E.2",
+            "title": "Risk Report - Fraud risk",
+            "type": "report",
+            "procedureCount": 2
+          },
+          {
+            "formId": "520E.3",
+            "title": "Risk Report - Business risk",
+            "type": "report",
+            "procedureCount": 3
+          },
+          {
+            "formId": "520E.4",
+            "title": "Risk Report - Risk per cycle",
+            "type": "report",
+            "procedureCount": 24
+          },
+          {
+            "formId": "520E.5",
+            "title": "Risk Report - Summary of control risk assessment",
+            "type": "report",
+            "procedureCount": 3
+          },
+          {
+            "formId": "520E.6",
+            "title": "Risk Report - Risk assessment",
+            "type": "report",
+            "procedureCount": 3
+          },
+          {
+            "formId": "520E.7",
+            "title": "Risk Report - Risk addressed",
+            "type": "report",
+            "procedureCount": 3
+          },
+          {
+            "formId": "520E.8",
+            "title": "Risk Report - Controls not designed / implemented - possible reportable items",
+            "type": "report",
+            "procedureCount": 11
+          },
+          {
+            "formId": "525",
+            "title": "Going concern - Identifying events and conditions",
+            "type": "procedure",
+            "procedureCount": 2
+          },
+          {
+            "formId": "526",
+            "title": "Analytical Procedures - Final",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "566",
+            "title": "Worksheet - Information flow - Business process",
+            "type": "worksheet",
+            "procedureCount": 5
+          },
+          {
+            "formId": "605",
+            "title": "Responding to risk at the financial statement level (Core)",
+            "type": "procedure",
+            "procedureCount": 23
+          },
+          {
+            "formId": "NWPG",
+            "title": "New Work Program",
+            "type": "procedure",
+            "procedureCount": 15
+          }
+        ]
+      },
+      {
+        "id": "group_audit",
+        "name": "Group Audit & Consolidation",
+        "formCount": 8,
+        "forms": [
+          {
+            "formId": "420.600",
+            "title": "Group audit - Component materiality (Core)",
+            "type": "worksheet",
+            "procedureCount": 2
+          },
+          {
+            "formId": "5000",
+            "title": "Consolidation completion",
+            "type": "checklist",
+            "procedureCount": 4
+          },
+          {
+            "formId": "5001",
+            "title": "Worksheet - EQR checklist - Group audits involving component auditors",
+            "type": "worksheet",
+            "procedureCount": 2
+          },
+          {
+            "formId": "5002",
+            "title": "Group audit - Overall strategy",
+            "type": "checklist",
+            "procedureCount": 18
+          },
+          {
+            "formId": "5003",
+            "title": "Group audit - Group audit plan",
+            "type": "checklist",
+            "procedureCount": 9
+          },
+          {
+            "formId": "5007",
+            "title": "Group audit - Preparation of group audit instructions",
+            "type": "checklist",
+            "procedureCount": 1
+          },
+          {
+            "formId": "5009",
+            "title": "Consolidation procedures",
+            "type": "checklist",
+            "procedureCount": 1
+          },
+          {
+            "formId": "590-600",
+            "title": "Group Audit Scoping - Group Financial Statements and Components",
+            "type": "worksheet",
+            "procedureCount": 3
+          }
+        ]
+      },
+      {
+        "id": "it_controls",
+        "name": "IT Controls & Systems",
+        "formCount": 3,
+        "forms": [
+          {
+            "formId": "507",
+            "title": "Minutes of governance meetings - audit plan",
+            "type": "procedure",
+            "procedureCount": 15
+          },
+          {
+            "formId": "507-1",
+            "title": "Minutes of governance meetings - extracts PART C - Extracts from minutes and other matters that have audit implications",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "511-2",
+            "title": "Understanding the IT environment - Listing (Core)",
+            "type": "worksheet",
+            "procedureCount": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3_risk",
+    "name": "Phase 3: Risk Assessment & Response",
+    "description": "Risk identification, fraud risk, controls evaluation, audit response",
+    "isaStandards": [
+      "ISA 315",
+      "ISA 330",
+      "ISA 240"
+    ],
+    "categoryCount": 6,
+    "categories": [
+      {
+        "id": "entity_level",
+        "name": "Entity-Level Controls & Governance",
+        "formCount": 3,
+        "forms": [
+          {
+            "formId": "540",
+            "title": "Entity-level and General IT Controls",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "540.",
+            "title": "Control design/implementation - Entity level and general IT controls",
+            "type": "procedure",
+            "procedureCount": 4
+          },
+          {
+            "formId": "618",
+            "title": "Worksheet - Tests of controls - Entity level controls",
+            "type": "worksheet",
+            "procedureCount": 10
+          }
+        ]
+      },
+      {
+        "id": "expenditure",
+        "name": "Expenditure & Payables Cycle",
+        "formCount": 1,
+        "forms": [
+          {
+            "formId": "550",
+            "title": "Expenditure Cycle Controls Evaluation",
+            "type": "worksheet",
+            "procedureCount": 4
+          }
+        ]
+      },
+      {
+        "id": "general",
+        "name": "General & Cross-Cutting",
+        "formCount": 18,
+        "forms": [
+          {
+            "formId": "330",
+            "title": "Other liabilities, non-current leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "330.120",
+            "title": "Other liabilities, non-current - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "335",
+            "title": "Misstatements Summary",
+            "type": "worksheet",
+            "procedureCount": 5
+          },
+          {
+            "formId": "335.10",
+            "title": "Uncorrected misstatements - all",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "335.11",
+            "title": "Unrecorded misstatements - factual",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "335.12",
+            "title": "Uncorrected missstatments - projected",
+            "type": "worksheet",
+            "procedureCount": 2
+          },
+          {
+            "formId": "335.13",
+            "title": "Uncorrected misstatements - judgmental",
+            "type": "worksheet",
+            "procedureCount": 2
+          },
+          {
+            "formId": "335.14",
+            "title": "Adjusted journal entries - corrected by client",
+            "type": "worksheet",
+            "procedureCount": 4
+          },
+          {
+            "formId": "335.15",
+            "title": "Adjusted journal entries from client",
+            "type": "worksheet",
+            "procedureCount": 3
+          },
+          {
+            "formId": "335.20",
+            "title": "All adjusted journal entries",
+            "type": "worksheet",
+            "procedureCount": 4
+          },
+          {
+            "formId": "546",
+            "title": "Control design/implementation - Conversion Cycle",
+            "type": "report",
+            "procedureCount": 2
+          },
+          {
+            "formId": "547",
+            "title": "Control design/implementation - Financial Management Cycle",
+            "type": "report",
+            "procedureCount": 2
+          },
+          {
+            "formId": "548",
+            "title": "Control design/implementation - Productive Assets (incl Intangibles) Cycle",
+            "type": "report",
+            "procedureCount": 2
+          },
+          {
+            "formId": "549",
+            "title": "Control design/implementation - Prepaids/Accruals Cycle",
+            "type": "report",
+            "procedureCount": 2
+          },
+          {
+            "formId": "560",
+            "title": "Control design/implementation - Financial Reporting Cycle",
+            "type": "procedure",
+            "procedureCount": 2
+          },
+          {
+            "formId": "565",
+            "title": "Walkthrough documentation worksheet - blank",
+            "type": "worksheet",
+            "procedureCount": 15
+          },
+          {
+            "formId": "615",
+            "title": "Sampling Test of Controls",
+            "type": "procedure",
+            "procedureCount": 6
+          },
+          {
+            "formId": "CTRLM.",
+            "title": "Control matrix",
+            "type": "worksheet",
+            "procedureCount": 41
+          }
+        ]
+      },
+      {
+        "id": "it_controls",
+        "name": "IT Controls & Systems",
+        "formCount": 1,
+        "forms": [
+          {
+            "formId": "335-1",
+            "title": "Misstatements - Audit Plan",
+            "type": "procedure",
+            "procedureCount": 18
+          }
+        ]
+      },
+      {
+        "id": "payroll",
+        "name": "Payroll & Employee Benefits",
+        "formCount": 1,
+        "forms": [
+          {
+            "formId": "555",
+            "title": "Control design/implementation - Payroll Cycle",
+            "type": "procedure",
+            "procedureCount": 8
+          }
+        ]
+      },
+      {
+        "id": "revenue",
+        "name": "Revenue & Receivables Cycle",
+        "formCount": 1,
+        "forms": [
+          {
+            "formId": "545",
+            "title": "Control design/implementation - Revenue Cycle",
+            "type": "procedure",
+            "procedureCount": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4_testing",
+    "name": "Phase 4: Substantive Testing",
+    "description": "Test of details, analytical procedures, sampling, substantive audit work",
+    "isaStandards": [
+      "ISA 500",
+      "ISA 501",
+      "ISA 505",
+      "ISA 520",
+      "ISA 530"
+    ],
+    "categoryCount": 10,
+    "categories": [
+      {
+        "id": "cash",
+        "name": "Cash & Treasury",
+        "formCount": 1,
+        "forms": [
+          {
+            "formId": "200.3",
+            "title": "Equity - Treasury",
+            "type": "worksheet",
+            "procedureCount": 0
+          }
+        ]
+      },
+      {
+        "id": "equity",
+        "name": "Equity & Related Parties",
+        "formCount": 10,
+        "forms": [
+          {
+            "formId": "20.1",
+            "title": "Investments in subsidiaries",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "20.2",
+            "title": "Investments in associates",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "20.3",
+            "title": "Investments in joint ventures",
+            "type": "worksheet",
+            "procedureCount": 4
+          },
+          {
+            "formId": "20.4",
+            "title": "Investments in subsidiaries",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "200",
+            "title": "Equity leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "200.1",
+            "title": "Equity - Shares",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "200.120",
+            "title": "Equity - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 9
+          },
+          {
+            "formId": "200.2",
+            "title": "Equity - Reserves",
+            "type": "worksheet",
+            "procedureCount": 6
+          },
+          {
+            "formId": "200.4",
+            "title": "Equity - Retained earnings",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "200.5",
+            "title": "Equity - Other",
+            "type": "worksheet",
+            "procedureCount": 0
+          }
+        ]
+      },
+      {
+        "id": "expenditure",
+        "name": "Expenditure & Payables Cycle",
+        "formCount": 8,
+        "forms": [
+          {
+            "formId": "300.2",
+            "title": "Non-interest-bearing borrowings, non-current",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "425",
+            "title": "Payables leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "425.1",
+            "title": "Trade payables",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "425.110",
+            "title": "Accounts payable confirmation - Supplementary procedures",
+            "type": "procedure",
+            "procedureCount": 17
+          },
+          {
+            "formId": "425.120",
+            "title": "Payables - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "425.2",
+            "title": "Other payables",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "430",
+            "title": "Other current liabilities leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "EXP",
+            "title": "Expenditure Cycle",
+            "type": "leadsheet",
+            "procedureCount": 0
+          }
+        ]
+      },
+      {
+        "id": "general",
+        "name": "General & Cross-Cutting",
+        "formCount": 42,
+        "forms": [
+          {
+            "formId": "2.100",
+            "title": "Issues - All",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "2.105",
+            "title": "Issues - My issues",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "2.110",
+            "title": "Issues - Outstanding",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "2.115",
+            "title": "Issues - Review notes",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "2.25",
+            "title": "Trial balance - By leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 2
+          },
+          {
+            "formId": "2.30",
+            "title": "Trial balance - By map no",
+            "type": "worksheet",
+            "procedureCount": 2
+          },
+          {
+            "formId": "2.35",
+            "title": "Trial balance - By account number",
+            "type": "worksheet",
+            "procedureCount": 2
+          },
+          {
+            "formId": "2.50",
+            "title": "Reclassifying journal entries",
+            "type": "worksheet",
+            "procedureCount": 5
+          },
+          {
+            "formId": "2.55",
+            "title": "Elimination entries",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "2.65",
+            "title": "Tax journal entries",
+            "type": "worksheet",
+            "procedureCount": 3
+          },
+          {
+            "formId": "2.75",
+            "title": "Tickmarks",
+            "type": "checklist",
+            "procedureCount": 12
+          },
+          {
+            "formId": "20",
+            "title": "Investments leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 3
+          },
+          {
+            "formId": "20.120",
+            "title": "Investments - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 9
+          },
+          {
+            "formId": "300",
+            "title": "Borrowings, non-current leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "300.1",
+            "title": "Interest-bearing borrowings, non-current",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "300.120",
+            "title": "Borrowings, non-current - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "325",
+            "title": "Deferred tax liabilities leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "325.120",
+            "title": "Deferred tax liabilities - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "366",
+            "title": "Report for TCWG - Sample for editing",
+            "type": "report",
+            "procedureCount": 8
+          },
+          {
+            "formId": "370",
+            "title": "Matters for future consideration",
+            "type": "worksheet",
+            "procedureCount": 3
+          },
+          {
+            "formId": "4.20",
+            "title": "History - Document creation",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "4.30",
+            "title": "History - Document deletion",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "4.40",
+            "title": "History - Document modification",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "4.50",
+            "title": "History - Post lockdown events",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "428",
+            "title": "Worksheet - Selecting an auditor's expert",
+            "type": "worksheet",
+            "procedureCount": 7
+          },
+          {
+            "formId": "430.120",
+            "title": "Other current liabilities - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 3
+          },
+          {
+            "formId": "440",
+            "title": "Information/analysis requested from management",
+            "type": "worksheet",
+            "procedureCount": 4
+          },
+          {
+            "formId": "441",
+            "title": "Firm deliverables and client information",
+            "type": "procedure",
+            "procedureCount": 7
+          },
+          {
+            "formId": "455",
+            "title": "Notes on meetings with management and others",
+            "type": "worksheet",
+            "procedureCount": 4
+          },
+          {
+            "formId": "610.",
+            "title": "Sampling - Tests of Details",
+            "type": "procedure",
+            "procedureCount": 15
+          },
+          {
+            "formId": "620",
+            "title": "Worksheet - Evaluating the work of an auditor's expert",
+            "type": "worksheet",
+            "procedureCount": 10
+          },
+          {
+            "formId": "630",
+            "title": "Summary of external confirmations",
+            "type": "worksheet",
+            "procedureCount": 10
+          },
+          {
+            "formId": "665",
+            "title": "Analytical review - Ratios - Final",
+            "type": "procedure",
+            "procedureCount": 3
+          },
+          {
+            "formId": "A5.3",
+            "title": "Long-term debt confirmation",
+            "type": "letter",
+            "procedureCount": 10
+          },
+          {
+            "formId": "AO",
+            "title": "General options Profile: Tailor per eng...",
+            "type": "leadsheet",
+            "procedureCount": 7
+          },
+          {
+            "formId": "EP7",
+            "title": "Firm information",
+            "type": "checklist",
+            "procedureCount": 10
+          },
+          {
+            "formId": "FIN",
+            "title": "Financial Management Cycle",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "NCHKLST",
+            "title": "New checklist",
+            "type": "checklist",
+            "procedureCount": 0
+          },
+          {
+            "formId": "PPD",
+            "title": "Prepaids and Accruals Cycle",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "SAP",
+            "title": "Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 3
+          },
+          {
+            "formId": "SPT",
+            "title": "Sampling Tool",
+            "type": "procedure",
+            "procedureCount": 6
+          },
+          {
+            "formId": "UPDATE",
+            "title": "Document UPDATE: UPDATE - CWUpdate",
+            "type": "procedure",
+            "procedureCount": 0
+          }
+        ]
+      },
+      {
+        "id": "group_audit",
+        "name": "Group Audit & Consolidation",
+        "formCount": 7,
+        "forms": [
+          {
+            "formId": "421.600",
+            "title": "Component balances (Core)",
+            "type": "report",
+            "procedureCount": 0
+          },
+          {
+            "formId": "422",
+            "title": "Worksheet - Selecting a component auditor (Core)",
+            "type": "worksheet",
+            "procedureCount": 19
+          },
+          {
+            "formId": "5.10",
+            "title": "Consolidation tree",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "5.20",
+            "title": "Trial balance - By leadsheet (Consolidation)",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "5.30",
+            "title": "Trial balance - By map no (Consolidation)",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "5.40",
+            "title": "Trial balance - By account number (Consolidation)",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "622",
+            "title": "Worksheet - Evaluating the work of a component auditor (Core)",
+            "type": "worksheet",
+            "procedureCount": 26
+          }
+        ]
+      },
+      {
+        "id": "inventory",
+        "name": "Inventory & Cost of Sales",
+        "formCount": 2,
+        "forms": [
+          {
+            "formId": "A5.2-1",
+            "title": "Inventory consigned to others confirmation",
+            "type": "letter",
+            "procedureCount": 5
+          },
+          {
+            "formId": "A6.1",
+            "title": "Inventory held at outside locations inquiry",
+            "type": "letter",
+            "procedureCount": 4
+          }
+        ]
+      },
+      {
+        "id": "it_controls",
+        "name": "IT Controls & Systems",
+        "formCount": 2,
+        "forms": [
+          {
+            "formId": "320",
+            "title": "Notes on significant audit decisions",
+            "type": "worksheet",
+            "procedureCount": 13
+          },
+          {
+            "formId": "670",
+            "title": "Journal Entries audit plan",
+            "type": "procedure",
+            "procedureCount": 8
+          }
+        ]
+      },
+      {
+        "id": "payroll",
+        "name": "Payroll & Employee Benefits",
+        "formCount": 1,
+        "forms": [
+          {
+            "formId": "PAY",
+            "title": "Payroll Cycle",
+            "type": "leadsheet",
+            "procedureCount": 0
+          }
+        ]
+      },
+      {
+        "id": "ppe",
+        "name": "Property, Plant & Equipment",
+        "formCount": 5,
+        "forms": [
+          {
+            "formId": "5",
+            "title": "Investment property leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "5.1",
+            "title": "Investment property - Cost",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "5.120",
+            "title": "Investment property - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 4
+          },
+          {
+            "formId": "5.2",
+            "title": "Investment property - Depreciation and impairment",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "PPE",
+            "title": "Document PPE: Productive Assets Cycle",
+            "type": "worksheet",
+            "procedureCount": 0
+          }
+        ]
+      },
+      {
+        "id": "revenue",
+        "name": "Revenue & Receivables Cycle",
+        "formCount": 5,
+        "forms": [
+          {
+            "formId": "35",
+            "title": "Receivables, non-current leadsheet",
+            "type": "leadsheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "35.120",
+            "title": "Receivables, non-current - Substantive analytical procedures",
+            "type": "procedure",
+            "procedureCount": 10
+          },
+          {
+            "formId": "A5.1",
+            "title": "Accounts receivable confirmation",
+            "type": "letter",
+            "procedureCount": 2
+          },
+          {
+            "formId": "CVN",
+            "title": "Conversion Cycle",
+            "type": "worksheet",
+            "procedureCount": 0
+          },
+          {
+            "formId": "REV",
+            "title": "Revenue Cycle",
+            "type": "leadsheet",
+            "procedureCount": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5_completion",
+    "name": "Phase 5: Completion & Reporting",
+    "description": "Subsequent events, going concern, management representations, opinion",
+    "isaStandards": [
+      "ISA 560",
+      "ISA 570",
+      "ISA 580",
+      "ISA 700"
+    ],
+    "categoryCount": 2,
+    "categories": [
+      {
+        "id": "general",
+        "name": "General & Cross-Cutting",
+        "formCount": 11,
+        "forms": [
+          {
+            "formId": "2.60",
+            "title": "Closing entries",
+            "type": "procedure",
+            "procedureCount": 0
+          },
+          {
+            "formId": "304.",
+            "title": "Optimiser - Reporting checklist",
+            "type": "checklist",
+            "procedureCount": 13
+          },
+          {
+            "formId": "368",
+            "title": "Significant deficiencies in internal control (Those charged with governance)",
+            "type": "letter",
+            "procedureCount": 2
+          },
+          {
+            "formId": "380.",
+            "title": "Worksheet - Withdrawal",
+            "type": "worksheet",
+            "procedureCount": 18
+          },
+          {
+            "formId": "4.10",
+            "title": "History - Role completion",
+            "type": "worksheet",
+            "procedureCount": 1
+          },
+          {
+            "formId": "676",
+            "title": "Worksheet - Documenting consultation (Core)",
+            "type": "worksheet",
+            "procedureCount": 5
+          },
+          {
+            "formId": "DIAGN",
+            "title": "Diagnostics Report",
+            "type": "report",
+            "procedureCount": 0
+          },
+          {
+            "formId": "NPMSD",
+            "title": "Partner and Manager Summary",
+            "type": "report",
+            "procedureCount": 0
+          },
+          {
+            "formId": "PMSD",
+            "title": "Partner and Manager Summary",
+            "type": "report",
+            "procedureCount": 0
+          },
+          {
+            "formId": "PROCALLRP",
+            "title": "Procedure allocation maintenance report",
+            "type": "procedure",
+            "procedureCount": 2
+          },
+          {
+            "formId": "PROGRPT.",
+            "title": "Work Program/checklist progress report",
+            "type": "checklist",
+            "procedureCount": 5
+          }
+        ]
+      },
+      {
+        "id": "it_controls",
+        "name": "IT Controls & Systems",
+        "formCount": 3,
+        "forms": [
+          {
+            "formId": "360-3",
+            "title": "Key Audit Matters (KAM)",
+            "type": "procedure",
+            "procedureCount": 9
+          },
+          {
+            "formId": "AOCR",
+            "title": "Audit Optimiser confirmation report",
+            "type": "report",
+            "procedureCount": 4
+          },
+          {
+            "formId": "AOCS",
+            "title": "Audit Optimiser confirmation report",
+            "type": "report",
+            "procedureCount": 4
+          }
+        ]
+      }
+    ]
+  }
+];
+
+export const PHASE_COUNT = 5;
