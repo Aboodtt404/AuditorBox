@@ -88,10 +88,6 @@ type SetPermissions = record {
   commit : vec principal;
   manage_permissions : vec principal;
 };
-type StateInfo = record {
-  last_state_update_timestamp : nat64;
-  state_hash : opt text;
-};
 type StreamingCallbackHttpResponse = record {
   token : opt StreamingCallbackToken;
   body : blob;
@@ -124,7 +120,6 @@ service : (opt AssetCanisterArgs) -> {
   commit_batch : (CommitBatchArguments) -> ();
   commit_proposed_batch : (CommitProposedBatchArguments) -> ();
   compute_evidence : (ComputeEvidenceArguments) -> (opt blob);
-  compute_state_hash : () -> (opt text);
   configure : (ConfigureArguments) -> ();
   create_asset : (CreateAssetArguments) -> ();
   create_batch : (record {}) -> (record { batch_id : BatchId });
@@ -163,13 +158,12 @@ service : (opt AssetCanisterArgs) -> {
       },
     ) -> (record { content : blob }) query;
   get_configuration : () -> (ConfigurationResponse);
-  get_state_info : () -> (StateInfo) query;
   grant_permission : (GrantPermission) -> ();
   http_request : (HttpRequest) -> (HttpResponse) query;
   http_request_streaming_callback : (StreamingCallbackToken) -> (
       opt StreamingCallbackHttpResponse,
     ) query;
-  list : (record { start : opt nat; length : opt nat }) -> (
+  list : (record {}) -> (
       vec record {
         key : Key;
         encodings : vec record {
@@ -179,10 +173,6 @@ service : (opt AssetCanisterArgs) -> {
           content_encoding : text;
         };
         content_type : text;
-        headers : opt vec HeaderField;
-        is_aliased : opt bool;
-        allow_raw_access : opt bool;
-        max_age : opt nat64;
       },
     ) query;
   list_authorized : () -> (vec principal);

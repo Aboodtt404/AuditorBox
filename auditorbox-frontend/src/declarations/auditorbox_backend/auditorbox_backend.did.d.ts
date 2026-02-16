@@ -34,25 +34,27 @@ export type AjeStatus = { 'Posted' : null } |
   { 'Rejected' : null } |
   { 'Proposed' : null } |
   { 'Reviewed' : null };
-export type ApiResult = { 'ok' : null } |
+export type ApiResult = { 'ok' : ValidationResult } |
   { 'err' : string };
-export type ApiResult_1 = { 'ok' : UserPreferences } |
+export type ApiResult_1 = { 'ok' : null } |
   { 'err' : string };
-export type ApiResult_2 = { 'ok' : TrialBalance } |
+export type ApiResult_10 = { 'ok' : bigint } |
   { 'err' : string };
-export type ApiResult_3 = { 'ok' : FormData } |
+export type ApiResult_2 = { 'ok' : UserPreferences } |
   { 'err' : string };
-export type ApiResult_4 = { 'ok' : Engagement } |
+export type ApiResult_3 = { 'ok' : TrialBalance } |
   { 'err' : string };
-export type ApiResult_5 = { 'ok' : Adjustment } |
+export type ApiResult_4 = { 'ok' : FormData } |
   { 'err' : string };
-export type ApiResult_6 = { 'ok' : Organization } |
+export type ApiResult_5 = { 'ok' : Engagement } |
   { 'err' : string };
-export type ApiResult_7 = { 'ok' : FinancialStatement } |
+export type ApiResult_6 = { 'ok' : Adjustment } |
   { 'err' : string };
-export type ApiResult_8 = { 'ok' : User } |
+export type ApiResult_7 = { 'ok' : Organization } |
   { 'err' : string };
-export type ApiResult_9 = { 'ok' : bigint } |
+export type ApiResult_8 = { 'ok' : FinancialStatement } |
+  { 'err' : string };
+export type ApiResult_9 = { 'ok' : User } |
   { 'err' : string };
 export interface AuditTrailEntry {
   'id' : bigint,
@@ -235,6 +237,13 @@ export type UserRole = { 'Staff' : null } |
   { 'Admin' : null } |
   { 'Partner' : null } |
   { 'Manager' : null };
+export interface ValidationResult {
+  'totalDebits' : number,
+  'difference' : number,
+  'isBalanced' : boolean,
+  'totalCredits' : number,
+  'accountCount' : bigint,
+}
 export type XBRLTaxonomy = { 'EAS' : null } |
   { 'GCC' : null } |
   { 'IFRS' : null } |
@@ -242,17 +251,17 @@ export type XBRLTaxonomy = { 'EAS' : null } |
 export interface _SERVICE {
   'batchSaveFormData' : ActorMethod<
     [bigint, Array<SaveFormDataRequest>],
-    ApiResult_9
+    ApiResult_10
   >,
-  'completeProfile' : ActorMethod<[CompleteProfileRequest], ApiResult_8>,
-  'createAdjustment' : ActorMethod<[CreateAjeRequest], ApiResult_5>,
-  'createEngagement' : ActorMethod<[CreateEngagementRequest], ApiResult_4>,
+  'completeProfile' : ActorMethod<[CompleteProfileRequest], ApiResult_9>,
+  'createAdjustment' : ActorMethod<[CreateAjeRequest], ApiResult_6>,
+  'createEngagement' : ActorMethod<[CreateEngagementRequest], ApiResult_5>,
   'createFinancialStatement' : ActorMethod<
     [bigint, bigint, XBRLTaxonomy, string],
-    ApiResult_7
+    ApiResult_8
   >,
-  'createOrganization' : ActorMethod<[string, string], ApiResult_6>,
-  'createTrialBalance' : ActorMethod<[CreateTrialBalanceRequest], ApiResult_2>,
+  'createOrganization' : ActorMethod<[string, string], ApiResult_7>,
+  'createTrialBalance' : ActorMethod<[CreateTrialBalanceRequest], ApiResult_3>,
   'getAdjustment' : ActorMethod<[bigint], [] | [Adjustment]>,
   'getAuditTrail' : ActorMethod<[], Array<AuditTrailEntry>>,
   'getCurrentUser' : ActorMethod<[], [] | [User]>,
@@ -274,20 +283,21 @@ export interface _SERVICE {
   'listUsers' : ActorMethod<[], Array<[Principal, User]>>,
   'saveFormData' : ActorMethod<
     [bigint, string, string, FormStatus],
-    ApiResult_3
-  >,
-  'updateAdjustmentStatus' : ActorMethod<[bigint, AjeStatus], ApiResult_5>,
-  'updateEngagement' : ActorMethod<
-    [bigint, UpdateEngagementRequest],
     ApiResult_4
   >,
-  'updateFormStatus' : ActorMethod<[bigint, string, FormStatus], ApiResult_3>,
+  'updateAdjustmentStatus' : ActorMethod<[bigint, AjeStatus], ApiResult_6>,
+  'updateEngagement' : ActorMethod<
+    [bigint, UpdateEngagementRequest],
+    ApiResult_5
+  >,
+  'updateFormStatus' : ActorMethod<[bigint, string, FormStatus], ApiResult_4>,
   'updateTrialBalanceAccounts' : ActorMethod<
     [bigint, Array<TrialBalanceAccount>],
-    ApiResult_2
+    ApiResult_3
   >,
-  'updateUserPreferences' : ActorMethod<[UserPreferences], ApiResult_1>,
-  'updateUserRole' : ActorMethod<[Principal, UserRole], ApiResult>,
+  'updateUserPreferences' : ActorMethod<[UserPreferences], ApiResult_2>,
+  'updateUserRole' : ActorMethod<[Principal, UserRole], ApiResult_1>,
+  'validateTrialBalance' : ActorMethod<[bigint], ApiResult>,
   'verifyAuditTrailIntegrity' : ActorMethod<[], boolean>,
 }
 export declare const idlFactory: IDL.InterfaceFactory;

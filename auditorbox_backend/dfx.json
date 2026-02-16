@@ -18,8 +18,12 @@
     },
     "auditorbox_frontend": {
       "type": "assets",
-      "source": ["frontend-dist"],
-      "dependencies": ["auditorbox_backend"]
+      "source": [
+        "frontend-dist"
+      ],
+      "dependencies": [
+        "auditorbox_backend"
+      ]
     }
   },
   "output_env_file": ".env",

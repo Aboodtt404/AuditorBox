@@ -400,6 +400,7 @@ persistent actor AuditorBox {
         Iter.toArray(trialBalances.entries());
     };
 
+    // Validate if a trial balance is balanced (debits == credits)
     public query func validateTrialBalance(id : Nat) : async Types.ApiResult<TrialBalance.ValidationResult> {
         switch (trialBalances.get(id)) {
             case null { #err("Trial balance not found") };

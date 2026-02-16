@@ -26,7 +26,8 @@ export default defineConfig({
   ],
   envDir: '../',
   define: {
-    'import.meta.env.VITE_CANISTER_ID_auditorbox_backend': JSON.stringify(backendId),
+    'process.env.CANISTER_ID_AUDITORBOX_BACKEND': JSON.stringify(backendId),
+    'process.env.DFX_NETWORK': JSON.stringify(process.env.DFX_NETWORK || 'ic'),
     'process.env.NODE_ENV': JSON.stringify('production'),
     'global': 'globalThis',
   },

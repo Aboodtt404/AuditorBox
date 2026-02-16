@@ -1,4 +1,17 @@
 export const idlFactory = ({ IDL }) => {
+  const FormStatus = IDL.Variant({
+    'Prepared' : IDL.Null,
+    'Reviewed' : IDL.Null,
+    'InProgress' : IDL.Null,
+    'SignedOff' : IDL.Null,
+    'NotStarted' : IDL.Null,
+  });
+  const SaveFormDataRequest = IDL.Record({
+    'status' : FormStatus,
+    'values' : IDL.Text,
+    'formId' : IDL.Text,
+  });
+  const ApiResult_10 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
   const UserRole = IDL.Variant({
     'Staff' : IDL.Null,
     'ClientUser' : IDL.Null,
@@ -21,7 +34,7 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'profileCompleted' : IDL.Bool,
   });
-  const ApiResult_6 = IDL.Variant({ 'ok' : User, 'err' : IDL.Text });
+  const ApiResult_9 = IDL.Variant({ 'ok' : User, 'err' : IDL.Text });
   const AjeLineItem = IDL.Record({
     'description' : IDL.Text,
     'credit' : IDL.Float64,
@@ -56,17 +69,29 @@ export const idlFactory = ({ IDL }) => {
     'reviewedBy' : IDL.Opt(IDL.Principal),
     'blockchainHash' : IDL.Text,
   });
-  const ApiResult_1 = IDL.Variant({ 'ok' : Adjustment, 'err' : IDL.Text });
+  const ApiResult_6 = IDL.Variant({ 'ok' : Adjustment, 'err' : IDL.Text });
   const EngagementLink = IDL.Variant({
     'Entity' : IDL.Nat,
     'Client' : IDL.Nat,
     'Organization' : IDL.Nat,
   });
   const CreateEngagementRequest = IDL.Record({
+    'materialityOverall' : IDL.Float64,
+    'industrySector' : IDL.Text,
     'endDate' : IDL.Int,
+    'yearEnd' : IDL.Text,
+    'clientName' : IDL.Text,
     'link' : EngagementLink,
     'name' : IDL.Text,
     'description' : IDL.Text,
+    'isGroupAudit' : IDL.Bool,
+    'materialityPerformance' : IDL.Float64,
+    'materialityTrivial' : IDL.Float64,
+    'reportingFramework' : IDL.Text,
+    'currency' : IDL.Text,
+    'riskProfile' : IDL.Text,
+    'entityType' : IDL.Text,
+    'isFirstYear' : IDL.Bool,
     'startDate' : IDL.Int,
   });
   const EngagementStatus = IDL.Variant({
@@ -78,13 +103,25 @@ export const idlFactory = ({ IDL }) => {
   });
   const Engagement = IDL.Record({
     'id' : IDL.Nat,
+    'materialityOverall' : IDL.Float64,
     'status' : EngagementStatus,
+    'industrySector' : IDL.Text,
     'endDate' : IDL.Int,
+    'yearEnd' : IDL.Text,
+    'clientName' : IDL.Text,
     'link' : EngagementLink,
     'name' : IDL.Text,
     'createdAt' : IDL.Int,
     'createdBy' : IDL.Principal,
     'description' : IDL.Text,
+    'isGroupAudit' : IDL.Bool,
+    'materialityPerformance' : IDL.Float64,
+    'materialityTrivial' : IDL.Float64,
+    'reportingFramework' : IDL.Text,
+    'currency' : IDL.Text,
+    'riskProfile' : IDL.Text,
+    'entityType' : IDL.Text,
+    'isFirstYear' : IDL.Bool,
     'startDate' : IDL.Int,
   });
   const ApiResult_5 = IDL.Variant({ 'ok' : Engagement, 'err' : IDL.Text });
@@ -111,7 +148,7 @@ export const idlFactory = ({ IDL }) => {
     'generatedBy' : IDL.Principal,
     'taxonomy' : XBRLTaxonomy,
   });
-  const ApiResult_4 = IDL.Variant({
+  const ApiResult_8 = IDL.Variant({
     'ok' : FinancialStatement,
     'err' : IDL.Text,
   });
@@ -123,7 +160,7 @@ export const idlFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'entityIds' : IDL.Vec(IDL.Nat),
   });
-  const ApiResult_3 = IDL.Variant({ 'ok' : Organization, 'err' : IDL.Text });
+  const ApiResult_7 = IDL.Variant({ 'ok' : Organization, 'err' : IDL.Text });
   const CreateTrialBalanceRequest = IDL.Record({
     'engagementId' : IDL.Nat,
     'description' : IDL.Text,
@@ -158,7 +195,7 @@ export const idlFactory = ({ IDL }) => {
     'accounts' : IDL.Vec(TrialBalanceAccount),
     'currency' : IDL.Text,
   });
-  const ApiResult_2 = IDL.Variant({ 'ok' : TrialBalance, 'err' : IDL.Text });
+  const ApiResult_3 = IDL.Variant({ 'ok' : TrialBalance, 'err' : IDL.Text });
   const AuditTrailEntry = IDL.Record({
     'id' : IDL.Nat,
     'principal' : IDL.Principal,
@@ -170,20 +207,68 @@ export const idlFactory = ({ IDL }) => {
     'details' : IDL.Text,
     'previousHash' : IDL.Text,
   });
-  const ApiResult = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
+  const FormData = IDL.Record({
+    'status' : FormStatus,
+    'engagementId' : IDL.Nat,
+    'values' : IDL.Text,
+    'lastUpdated' : IDL.Int,
+    'reviewedBy' : IDL.Opt(IDL.Principal),
+    'preparedBy' : IDL.Opt(IDL.Principal),
+    'updatedBy' : IDL.Principal,
+    'formId' : IDL.Text,
+  });
+  const UserPreferences = IDL.Record({
+    'lastEngagementId' : IDL.Opt(IDL.Nat),
+    'dismissedTooltips' : IDL.Vec(IDL.Text),
+    'seenPhaseIntros' : IDL.Vec(IDL.Text),
+  });
+  const ApiResult_4 = IDL.Variant({ 'ok' : FormData, 'err' : IDL.Text });
+  const UpdateEngagementRequest = IDL.Record({
+    'materialityOverall' : IDL.Opt(IDL.Float64),
+    'status' : IDL.Opt(EngagementStatus),
+    'industrySector' : IDL.Opt(IDL.Text),
+    'endDate' : IDL.Opt(IDL.Int),
+    'yearEnd' : IDL.Opt(IDL.Text),
+    'clientName' : IDL.Opt(IDL.Text),
+    'name' : IDL.Opt(IDL.Text),
+    'description' : IDL.Opt(IDL.Text),
+    'isGroupAudit' : IDL.Opt(IDL.Bool),
+    'materialityPerformance' : IDL.Opt(IDL.Float64),
+    'materialityTrivial' : IDL.Opt(IDL.Float64),
+    'reportingFramework' : IDL.Opt(IDL.Text),
+    'currency' : IDL.Opt(IDL.Text),
+    'riskProfile' : IDL.Opt(IDL.Text),
+    'entityType' : IDL.Opt(IDL.Text),
+    'isFirstYear' : IDL.Opt(IDL.Bool),
+  });
+  const ApiResult_2 = IDL.Variant({ 'ok' : UserPreferences, 'err' : IDL.Text });
+  const ApiResult_1 = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
+  const ValidationResult = IDL.Record({
+    'totalDebits' : IDL.Float64,
+    'difference' : IDL.Float64,
+    'isBalanced' : IDL.Bool,
+    'totalCredits' : IDL.Float64,
+    'accountCount' : IDL.Nat,
+  });
+  const ApiResult = IDL.Variant({ 'ok' : ValidationResult, 'err' : IDL.Text });
   return IDL.Service({
-    'completeProfile' : IDL.Func([CompleteProfileRequest], [ApiResult_6], []),
-    'createAdjustment' : IDL.Func([CreateAjeRequest], [ApiResult_1], []),
+    'batchSaveFormData' : IDL.Func(
+        [IDL.Nat, IDL.Vec(SaveFormDataRequest)],
+        [ApiResult_10],
+        [],
+      ),
+    'completeProfile' : IDL.Func([CompleteProfileRequest], [ApiResult_9], []),
+    'createAdjustment' : IDL.Func([CreateAjeRequest], [ApiResult_6], []),
     'createEngagement' : IDL.Func([CreateEngagementRequest], [ApiResult_5], []),
     'createFinancialStatement' : IDL.Func(
         [IDL.Nat, IDL.Nat, XBRLTaxonomy, IDL.Text],
-        [ApiResult_4],
+        [ApiResult_8],
         [],
       ),
-    'createOrganization' : IDL.Func([IDL.Text, IDL.Text], [ApiResult_3], []),
+    'createOrganization' : IDL.Func([IDL.Text, IDL.Text], [ApiResult_7], []),
     'createTrialBalance' : IDL.Func(
         [CreateTrialBalanceRequest],
-        [ApiResult_2],
+        [ApiResult_3],
         [],
       ),
     'getAdjustment' : IDL.Func([IDL.Nat], [IDL.Opt(Adjustment)], ['query']),
@@ -195,8 +280,14 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(FinancialStatement)],
         ['query'],
       ),
+    'getFormData' : IDL.Func(
+        [IDL.Nat, IDL.Text],
+        [IDL.Opt(FormData)],
+        ['query'],
+      ),
     'getOrganization' : IDL.Func([IDL.Nat], [IDL.Opt(Organization)], ['query']),
     'getTrialBalance' : IDL.Func([IDL.Nat], [IDL.Opt(TrialBalance)], ['query']),
+    'getUserPreferences' : IDL.Func([], [UserPreferences], []),
     'listAdjustments' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Nat, Adjustment))],
@@ -212,6 +303,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(IDL.Tuple(IDL.Nat, FinancialStatement))],
         ['query'],
       ),
+    'listFormData' : IDL.Func([IDL.Nat], [IDL.Vec(FormData)], ['query']),
     'listOrganizations' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Nat, Organization))],
@@ -227,12 +319,34 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(IDL.Tuple(IDL.Principal, User))],
         ['query'],
       ),
-    'updateAdjustmentStatus' : IDL.Func(
-        [IDL.Nat, AjeStatus],
-        [ApiResult_1],
+    'saveFormData' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text, FormStatus],
+        [ApiResult_4],
         [],
       ),
-    'updateUserRole' : IDL.Func([IDL.Principal, UserRole], [ApiResult], []),
+    'updateAdjustmentStatus' : IDL.Func(
+        [IDL.Nat, AjeStatus],
+        [ApiResult_6],
+        [],
+      ),
+    'updateEngagement' : IDL.Func(
+        [IDL.Nat, UpdateEngagementRequest],
+        [ApiResult_5],
+        [],
+      ),
+    'updateFormStatus' : IDL.Func(
+        [IDL.Nat, IDL.Text, FormStatus],
+        [ApiResult_4],
+        [],
+      ),
+    'updateTrialBalanceAccounts' : IDL.Func(
+        [IDL.Nat, IDL.Vec(TrialBalanceAccount)],
+        [ApiResult_3],
+        [],
+      ),
+    'updateUserPreferences' : IDL.Func([UserPreferences], [ApiResult_2], []),
+    'updateUserRole' : IDL.Func([IDL.Principal, UserRole], [ApiResult_1], []),
+    'validateTrialBalance' : IDL.Func([IDL.Nat], [ApiResult], ['query']),
     'verifyAuditTrailIntegrity' : IDL.Func([], [IDL.Bool], ['query']),
   });
 };

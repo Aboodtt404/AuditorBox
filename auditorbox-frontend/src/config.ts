@@ -4,12 +4,10 @@ const IS_LOCAL =
     : false;
 
 export const CONFIG = {
-  CANISTER_ID: IS_LOCAL
-    ? 'uxrrr-q7777-77774-qaaaq-cai'
-    : 's7go6-iyaaa-aaaab-aekwq-cai',
+  CANISTER_ID: process.env.CANISTER_ID_AUDITORBOX_BACKEND || 'br5f7-viaaa-aaaaa-qaaba-cai', // Local default
   IC_HOST: IS_LOCAL ? 'http://127.0.0.1:4943' : 'https://icp-api.io',
   IDENTITY_PROVIDER: IS_LOCAL
-    ? 'http://uzt4z-lp777-77774-qaabq-cai.localhost:4943'
+    ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY || 'rdmx6-jaaaa-aaaaa-aaadq-cai'}.localhost:4943`
     : 'https://identity.ic0.app',
   IS_LOCAL,
 };

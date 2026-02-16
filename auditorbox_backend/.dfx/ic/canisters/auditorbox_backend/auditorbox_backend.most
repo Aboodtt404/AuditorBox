@@ -1,7 +1,7 @@
 // Version: 1.0.0
-type AccountType__211492071 =
+type AccountType__912156754 =
   {#Asset; #Equity; #Expense; #Liability; #Other; #Revenue};
-type Adjustment__193428439 =
+type Adjustment__177693863 =
   {
     approvedBy : ?Principal;
     blockchainHash : Text;
@@ -10,12 +10,12 @@ type Adjustment__193428439 =
     description : Text;
     engagementId : Nat;
     id : Nat;
-    lineItems : [AjeLineItem__31765847];
+    lineItems : [AjeLineItem__698313219];
     reviewedBy : ?Principal;
-    status : AjeStatus__941664613;
+    status : AjeStatus__968057916;
     trialBalanceId : Nat
   };
-type AjeLineItem__31765847 =
+type AjeLineItem__698313219 =
   {
     accountName : Text;
     accountNumber : Text;
@@ -23,9 +23,9 @@ type AjeLineItem__31765847 =
     debit : Float;
     description : Text
   };
-type AjeStatus__941664613 =
+type AjeStatus__968057916 =
   {#Approved; #Draft; #Posted; #Proposed; #Rejected; #Reviewed};
-type AuditTrailEntry__143105612 =
+type AuditTrailEntry__284853771 =
   {
     action : Text;
     details : Text;
@@ -37,7 +37,7 @@ type AuditTrailEntry__143105612 =
     resourceType : Text;
     timestamp : Int
   };
-type Client__885272017 =
+type Client__810785474 =
   {
     address : Text;
     commercialRegistration : ?Text;
@@ -53,23 +53,35 @@ type Client__885272017 =
     organizationId : ?Nat;
     taxRegistrationNumber : ?Text
   };
-type EngagementLink__281862363 =
+type EngagementLink__703895968 =
   {#Client : Nat; #Entity : Nat; #Organization : Nat};
-type EngagementStatus__555298820 =
+type EngagementStatus__594789110 =
   {#Archived; #Completed; #InProgress; #Planning; #Review};
-type Engagement__168116449 =
+type Engagement__524416189 =
   {
+    clientName : Text;
     createdAt : Int;
     createdBy : Principal;
+    currency : Text;
     description : Text;
     endDate : Int;
+    entityType : Text;
     id : Nat;
-    link : EngagementLink__281862363;
+    industrySector : Text;
+    isFirstYear : Bool;
+    isGroupAudit : Bool;
+    link : EngagementLink__703895968;
+    materialityOverall : Float;
+    materialityPerformance : Float;
+    materialityTrivial : Float;
     name : Text;
+    reportingFramework : Text;
+    riskProfile : Text;
     startDate : Int;
-    status : EngagementStatus__555298820
+    status : EngagementStatus__594789110;
+    yearEnd : Text
   };
-type Entity__642091807 =
+type Entity__240758578 =
   {
     createdAt : Int;
     createdBy : Principal;
@@ -77,23 +89,36 @@ type Entity__642091807 =
     id : Nat;
     name : Text;
     organizationId : Nat;
-    taxonomy : ?XBRLTaxonomy__1021759538;
+    taxonomy : ?XBRLTaxonomy__337372843;
     taxonomyConfig : Text
   };
-type FSLineItem__650300271 =
+type FSLineItem__539517784 =
   {amount : Float; category : Text; code : Text; name : Text; nameAr : ?Text};
-type FinancialStatement__189722461 =
+type FinancialStatement__260147334 =
   {
     engagementId : Nat;
     generatedAt : Int;
     generatedBy : Principal;
     id : Nat;
-    lineItems : [FSLineItem__650300271];
-    taxonomy : XBRLTaxonomy__1021759538;
+    lineItems : [FSLineItem__539517784];
+    taxonomy : XBRLTaxonomy__337372843;
     title : Text;
     trialBalanceId : Nat
   };
-type Organization__1066880431 =
+type FormData__710603183 =
+  {
+    engagementId : Nat;
+    formId : Text;
+    lastUpdated : Int;
+    preparedBy : ?Principal;
+    reviewedBy : ?Principal;
+    status : FormStatus__926803790;
+    updatedBy : Principal;
+    values : Text
+  };
+type FormStatus__926803790 =
+  {#InProgress; #NotStarted; #Prepared; #Reviewed; #SignedOff};
+type Organization__128052886 =
   {
     createdAt : Int;
     createdBy : Principal;
@@ -102,20 +127,20 @@ type Organization__1066880431 =
     id : Nat;
     name : Text
   };
-type TrialBalanceAccount__592066470 =
+type TrialBalanceAccount__397411792 =
   {
     accountName : Text;
     accountNumber : Text;
-    accountType : AccountType__211492071;
+    accountType : AccountType__912156754;
     beginningBalance : Float;
     credit : Float;
     debit : Float;
     endingBalance : Float;
     fsLineItem : Text
   };
-type TrialBalance__861680094 =
+type TrialBalance__480888988 =
   {
-    accounts : [TrialBalanceAccount__592066470];
+    accounts : [TrialBalanceAccount__397411792];
     createdAt : Int;
     createdBy : Principal;
     currency : Text;
@@ -124,9 +149,15 @@ type TrialBalance__861680094 =
     id : Nat;
     periodEndDate : Text
   };
-type UserRole__380588002 =
+type UserPreferences__539400921 =
+  {
+    dismissedTooltips : [Text];
+    lastEngagementId : ?Nat;
+    seenPhaseIntros : [Text]
+  };
+type UserRole__791976337 =
   {#Admin; #ClientUser; #Manager; #Partner; #Senior; #Staff};
-type User__794067134 =
+type User__456433480 =
   {
     createdAt : Int;
     email : Text;
@@ -134,26 +165,28 @@ type User__794067134 =
     name : Text;
     principal : Principal;
     profileCompleted : Bool;
-    role : UserRole__380588002
+    role : UserRole__791976337
   };
-type XBRLTaxonomy__1021759538 = {#Custom : Text; #EAS; #GCC; #IFRS};
+type XBRLTaxonomy__337372843 = {#Custom : Text; #EAS; #GCC; #IFRS};
 actor {
   stable var _nextClientId : Nat;
   stable var _nextEntityId : Nat;
-  stable var adjustmentsStable : [(Nat, Adjustment__193428439)];
-  stable var auditTrailStable : [AuditTrailEntry__143105612];
-  stable var clientsStable : [(Nat, Client__885272017)];
-  stable var engagementsStable : [(Nat, Engagement__168116449)];
-  stable var entitiesStable : [(Nat, Entity__642091807)];
+  stable var adjustmentsStable : [(Nat, Adjustment__177693863)];
+  stable var auditTrailStable : [AuditTrailEntry__284853771];
+  stable var clientsStable : [(Nat, Client__810785474)];
+  stable var engagementsStable : [(Nat, Engagement__524416189)];
+  stable var entitiesStable : [(Nat, Entity__240758578)];
   stable var financialStatementsStable :
-    [(Nat, FinancialStatement__189722461)];
+    [(Nat, FinancialStatement__260147334)];
+  stable var formDataStable : [(Text, FormData__710603183)];
   stable var nextAdjId : Nat;
   stable var nextAuditTrailId : Nat;
   stable var nextEngagementId : Nat;
   stable var nextFSId : Nat;
   stable var nextOrgId : Nat;
   stable var nextTBId : Nat;
-  stable var orgsStable : [(Nat, Organization__1066880431)];
-  stable var trialBalancesStable : [(Nat, TrialBalance__861680094)];
-  stable var usersStable : [(Principal, User__794067134)]
+  stable var orgsStable : [(Nat, Organization__128052886)];
+  stable var trialBalancesStable : [(Nat, TrialBalance__480888988)];
+  stable var userPrefsStable : [(Principal, UserPreferences__539400921)];
+  stable var usersStable : [(Principal, User__456433480)]
 };

@@ -11,7 +11,7 @@ export const idlFactory = ({ IDL }) => {
     'values' : IDL.Text,
     'formId' : IDL.Text,
   });
-  const ApiResult_9 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
+  const ApiResult_10 = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
   const UserRole = IDL.Variant({
     'Staff' : IDL.Null,
     'ClientUser' : IDL.Null,
@@ -34,7 +34,7 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'profileCompleted' : IDL.Bool,
   });
-  const ApiResult_8 = IDL.Variant({ 'ok' : User, 'err' : IDL.Text });
+  const ApiResult_9 = IDL.Variant({ 'ok' : User, 'err' : IDL.Text });
   const AjeLineItem = IDL.Record({
     'description' : IDL.Text,
     'credit' : IDL.Float64,
@@ -69,7 +69,7 @@ export const idlFactory = ({ IDL }) => {
     'reviewedBy' : IDL.Opt(IDL.Principal),
     'blockchainHash' : IDL.Text,
   });
-  const ApiResult_5 = IDL.Variant({ 'ok' : Adjustment, 'err' : IDL.Text });
+  const ApiResult_6 = IDL.Variant({ 'ok' : Adjustment, 'err' : IDL.Text });
   const EngagementLink = IDL.Variant({
     'Entity' : IDL.Nat,
     'Client' : IDL.Nat,
@@ -124,7 +124,7 @@ export const idlFactory = ({ IDL }) => {
     'isFirstYear' : IDL.Bool,
     'startDate' : IDL.Int,
   });
-  const ApiResult_4 = IDL.Variant({ 'ok' : Engagement, 'err' : IDL.Text });
+  const ApiResult_5 = IDL.Variant({ 'ok' : Engagement, 'err' : IDL.Text });
   const XBRLTaxonomy = IDL.Variant({
     'EAS' : IDL.Null,
     'GCC' : IDL.Null,
@@ -148,7 +148,7 @@ export const idlFactory = ({ IDL }) => {
     'generatedBy' : IDL.Principal,
     'taxonomy' : XBRLTaxonomy,
   });
-  const ApiResult_7 = IDL.Variant({
+  const ApiResult_8 = IDL.Variant({
     'ok' : FinancialStatement,
     'err' : IDL.Text,
   });
@@ -160,7 +160,7 @@ export const idlFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'entityIds' : IDL.Vec(IDL.Nat),
   });
-  const ApiResult_6 = IDL.Variant({ 'ok' : Organization, 'err' : IDL.Text });
+  const ApiResult_7 = IDL.Variant({ 'ok' : Organization, 'err' : IDL.Text });
   const CreateTrialBalanceRequest = IDL.Record({
     'engagementId' : IDL.Nat,
     'description' : IDL.Text,
@@ -195,7 +195,7 @@ export const idlFactory = ({ IDL }) => {
     'accounts' : IDL.Vec(TrialBalanceAccount),
     'currency' : IDL.Text,
   });
-  const ApiResult_2 = IDL.Variant({ 'ok' : TrialBalance, 'err' : IDL.Text });
+  const ApiResult_3 = IDL.Variant({ 'ok' : TrialBalance, 'err' : IDL.Text });
   const AuditTrailEntry = IDL.Record({
     'id' : IDL.Nat,
     'principal' : IDL.Principal,
@@ -222,7 +222,7 @@ export const idlFactory = ({ IDL }) => {
     'dismissedTooltips' : IDL.Vec(IDL.Text),
     'seenPhaseIntros' : IDL.Vec(IDL.Text),
   });
-  const ApiResult_3 = IDL.Variant({ 'ok' : FormData, 'err' : IDL.Text });
+  const ApiResult_4 = IDL.Variant({ 'ok' : FormData, 'err' : IDL.Text });
   const UpdateEngagementRequest = IDL.Record({
     'materialityOverall' : IDL.Opt(IDL.Float64),
     'status' : IDL.Opt(EngagementStatus),
@@ -241,26 +241,34 @@ export const idlFactory = ({ IDL }) => {
     'entityType' : IDL.Opt(IDL.Text),
     'isFirstYear' : IDL.Opt(IDL.Bool),
   });
-  const ApiResult_1 = IDL.Variant({ 'ok' : UserPreferences, 'err' : IDL.Text });
-  const ApiResult = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
+  const ApiResult_2 = IDL.Variant({ 'ok' : UserPreferences, 'err' : IDL.Text });
+  const ApiResult_1 = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
+  const ValidationResult = IDL.Record({
+    'totalDebits' : IDL.Float64,
+    'difference' : IDL.Float64,
+    'isBalanced' : IDL.Bool,
+    'totalCredits' : IDL.Float64,
+    'accountCount' : IDL.Nat,
+  });
+  const ApiResult = IDL.Variant({ 'ok' : ValidationResult, 'err' : IDL.Text });
   return IDL.Service({
     'batchSaveFormData' : IDL.Func(
         [IDL.Nat, IDL.Vec(SaveFormDataRequest)],
-        [ApiResult_9],
+        [ApiResult_10],
         [],
       ),
-    'completeProfile' : IDL.Func([CompleteProfileRequest], [ApiResult_8], []),
-    'createAdjustment' : IDL.Func([CreateAjeRequest], [ApiResult_5], []),
-    'createEngagement' : IDL.Func([CreateEngagementRequest], [ApiResult_4], []),
+    'completeProfile' : IDL.Func([CompleteProfileRequest], [ApiResult_9], []),
+    'createAdjustment' : IDL.Func([CreateAjeRequest], [ApiResult_6], []),
+    'createEngagement' : IDL.Func([CreateEngagementRequest], [ApiResult_5], []),
     'createFinancialStatement' : IDL.Func(
         [IDL.Nat, IDL.Nat, XBRLTaxonomy, IDL.Text],
-        [ApiResult_7],
+        [ApiResult_8],
         [],
       ),
-    'createOrganization' : IDL.Func([IDL.Text, IDL.Text], [ApiResult_6], []),
+    'createOrganization' : IDL.Func([IDL.Text, IDL.Text], [ApiResult_7], []),
     'createTrialBalance' : IDL.Func(
         [CreateTrialBalanceRequest],
-        [ApiResult_2],
+        [ApiResult_3],
         [],
       ),
     'getAdjustment' : IDL.Func([IDL.Nat], [IDL.Opt(Adjustment)], ['query']),
@@ -313,31 +321,32 @@ export const idlFactory = ({ IDL }) => {
       ),
     'saveFormData' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Text, FormStatus],
-        [ApiResult_3],
+        [ApiResult_4],
         [],
       ),
     'updateAdjustmentStatus' : IDL.Func(
         [IDL.Nat, AjeStatus],
-        [ApiResult_5],
+        [ApiResult_6],
         [],
       ),
     'updateEngagement' : IDL.Func(
         [IDL.Nat, UpdateEngagementRequest],
-        [ApiResult_4],
+        [ApiResult_5],
         [],
       ),
     'updateFormStatus' : IDL.Func(
         [IDL.Nat, IDL.Text, FormStatus],
-        [ApiResult_3],
+        [ApiResult_4],
         [],
       ),
     'updateTrialBalanceAccounts' : IDL.Func(
         [IDL.Nat, IDL.Vec(TrialBalanceAccount)],
-        [ApiResult_2],
+        [ApiResult_3],
         [],
       ),
-    'updateUserPreferences' : IDL.Func([UserPreferences], [ApiResult_1], []),
-    'updateUserRole' : IDL.Func([IDL.Principal, UserRole], [ApiResult], []),
+    'updateUserPreferences' : IDL.Func([UserPreferences], [ApiResult_2], []),
+    'updateUserRole' : IDL.Func([IDL.Principal, UserRole], [ApiResult_1], []),
+    'validateTrialBalance' : IDL.Func([IDL.Nat], [ApiResult], ['query']),
     'verifyAuditTrailIntegrity' : IDL.Func([], [IDL.Bool], ['query']),
   });
 };
