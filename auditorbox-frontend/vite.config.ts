@@ -4,18 +4,46 @@ import environment from 'vite-plugin-environment';
 import * as fs from 'fs';
 import { fileURLToPath, URL } from 'url';
 
+const network = process.env.DFX_NETWORK || 'ic';
+
 let canisterIds: Record<string, any> = {};
-try {
-  canisterIds = JSON.parse(fs.readFileSync('../.dfx/ic/canister_ids.json', 'utf-8'));
-} catch {
+
+const loadCanisterIds = (path: string) => {
   try {
-    canisterIds = JSON.parse(fs.readFileSync('../.dfx/local/canister_ids.json', 'utf-8'));
+    return JSON.parse(fs.readFileSync(path, 'utf-8'));
   } catch {
-    console.warn('Cannot read canister_ids.json — run dfx deploy first');
+    return null;
   }
+};
+
+if (network === 'playground') {
+  canisterIds = loadCanisterIds('../auditorbox_backend/.dfx/playground/canister_ids.json') ||
+    loadCanisterIds('../.dfx/playground/canister_ids.json') ||
+    {};
+} else if (network === 'local') {
+  canisterIds = loadCanisterIds('../.dfx/local/canister_ids.json') || {};
+} else {
+  canisterIds = loadCanisterIds('../auditorbox_backend/canister_ids.json') ||
+    loadCanisterIds('../.dfx/ic/canister_ids.json') ||
+    {};
 }
 
-const backendId = canisterIds.auditorbox_backend?.ic ?? canisterIds.auditorbox_backend?.local ?? '';
+if (Object.keys(canisterIds).length === 0) {
+  // Fallback to try all if specific network failed
+  canisterIds = loadCanisterIds('../.dfx/ic/canister_ids.json') ||
+    loadCanisterIds('../.dfx/playground/canister_ids.json') ||
+    loadCanisterIds('../.dfx/local/canister_ids.json') ||
+    loadCanisterIds('../auditorbox_backend/.dfx/playground/canister_ids.json') ||
+    {};
+}
+
+if (Object.keys(canisterIds).length === 0) {
+  console.warn('Cannot read canister_ids.json — run dfx deploy first');
+}
+
+console.log(`DFX_NETWORK: ${network}`);
+
+const backendId = canisterIds.auditorbox_backend?.ic ?? canisterIds.auditorbox_backend?.playground ?? canisterIds.auditorbox_backend?.local ?? '';
 
 export default defineConfig({
   base: './',
@@ -50,8 +78,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'data-forms': ['./src/data/forms.ts'],
-          'data-fields': ['./src/data/fields.ts'],
           'data-graph': ['./src/data/graph.ts'],
           'data-phases': ['./src/data/phases.ts'],
           'vendor-xyflow': ['@xyflow/react'],

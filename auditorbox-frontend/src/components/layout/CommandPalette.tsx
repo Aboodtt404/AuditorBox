@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Command } from 'cmdk';
-import { FORM_INDEX } from '../../data/forms';
+import { useAuditData } from '../../hooks/useAuditData';
 
 type CommandItem = {
   id: string;
@@ -30,6 +30,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
   const [query, setQuery] = useState('');
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
   const commandRef = useRef<HTMLDivElement>(null);
+  const { forms } = useAuditData();
 
   // Handle Escape key
   useEffect(() => {
@@ -81,7 +82,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
     items.push(...navItems);
 
     // Forms
-    const formItems: CommandItem[] = Object.entries(FORM_INDEX)
+    const formItems: CommandItem[] = forms ? Object.entries(forms)
       .filter(([formId, form]) =>
         form.title.toLowerCase().includes(query.toLowerCase()) ||
         formId.toLowerCase().includes(query.toLowerCase())
@@ -94,7 +95,7 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({
         subtitle: `ID: ${formId}`,
         icon: 'description',
         action: () => onSelectForm(formId),
-      }));
+      })) : [];
     items.push(...formItems);
 
     // Actions

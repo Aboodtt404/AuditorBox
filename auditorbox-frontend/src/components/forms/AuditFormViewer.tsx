@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FORMS } from '../../data/forms';
-import { FIELDS } from '../../data/fields';
+import { useAuditData } from '../../hooks/useAuditData';
 import { FieldRenderer } from './FieldRenderer';
 import { ProcedureRow } from './ProcedureRow';
 
@@ -36,9 +35,15 @@ const AuditFormViewer: React.FC<{
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const centerPanelRef = useRef<HTMLDivElement>(null);
 
-  // Get form data
-  const form = FORMS[formId];
-  const rawFields = FIELDS[formId] || [];
+  // Get form data from context
+  const { forms, fields: allFields } = useAuditData();
+
+  if (!forms || !allFields) {
+    return <div className="flex items-center justify-center h-full text-slate-500">Loading form definition...</div>;
+  }
+
+  const form = forms[formId];
+  const rawFields = allFields[formId] || [];
 
   const fields = rawFields.map((f: any, idx: number) => ({
     ...f,

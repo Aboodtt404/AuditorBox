@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, ArrowLeft, Activity, FileText, Layers } from 'lucide-react';
 import { GRAPH_NODES, GRAPH_EDGES } from '../../data/graph';
-import { FORM_INDEX } from '../../data/forms';
+import { useAuditData } from '../../hooks/useAuditData';
 
 interface LinkagePanelProps {
   nodeId: string | null;
@@ -11,6 +11,7 @@ interface LinkagePanelProps {
 
 export const LinkagePanel = ({ nodeId, onClose, onNavigate }: LinkagePanelProps) => {
   const node = nodeId ? GRAPH_NODES.find((n) => n.id === nodeId) as any : null;
+  const { forms } = useAuditData();
 
   if (!node) return null;
 
@@ -18,7 +19,7 @@ export const LinkagePanel = ({ nodeId, onClose, onNavigate }: LinkagePanelProps)
   const incomingEdges = GRAPH_EDGES.filter((edge) => edge.target === nodeId);
 
   const getFormTitle = (formId: string) => {
-    const form = FORM_INDEX[formId];
+    const form = forms?.[formId];
     return form?.title || formId;
   };
 

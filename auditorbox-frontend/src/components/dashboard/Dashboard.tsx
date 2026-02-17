@@ -2,11 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Hash, DollarSign, GitBranch } from 'lucide-react';
 import { PHASES } from '../../data/phases';
-import { FORM_COUNT } from '../../data/forms';
-import { TOTAL_FIELDS } from '../../data/fields';
 import { GRAPH_STATS } from '../../data/graph';
 import { PhaseCard } from './PhaseCard';
 import { ActivityFeed } from './ActivityFeed';
+import { useAuditData } from '../../hooks/useAuditData';
 
 const PHASE_COLORS: Record<string, string> = {
   '1_onboarding': '#3b82f6',
@@ -29,9 +28,17 @@ export default function Dashboard({
   onNavigate,
   recentActivity,
 }: DashboardProps) {
+  const { forms, fields } = useAuditData();
+
+  const formCount = forms ? Object.keys(forms).length : 0;
+  // Count total fields across all forms
+  const fieldCount = fields
+    ? Object.values(fields).reduce((acc, curr) => acc + (Array.isArray(curr) ? curr.length : 0), 0)
+    : 0;
+
   const stats = [
-    { label: 'Forms', value: FORM_COUNT, icon: FileText },
-    { label: 'Fields', value: TOTAL_FIELDS, icon: Hash },
+    { label: 'Forms', value: formCount, icon: FileText },
+    { label: 'Fields', value: fieldCount, icon: Hash },
     { label: 'Materiality', value: `$${materiality.toLocaleString()}`, icon: DollarSign },
     { label: 'Graph Nodes', value: GRAPH_STATS.total_nodes, icon: GitBranch },
   ];
@@ -100,7 +107,7 @@ export default function Dashboard({
               </div>
               <div className="mt-6 pt-4 border-t border-gray-800">
                 <p className="text-sm text-gray-400">
-                  Completed Forms: <span className="text-green-400">{completedForms.length}</span> / {FORM_COUNT}
+                  Completed Forms: <span className="text-green-400">{completedForms.length}</span> / {formCount}
                 </p>
               </div>
             </div>

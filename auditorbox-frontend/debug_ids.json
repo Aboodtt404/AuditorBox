@@ -1,0 +1,15 @@
+{
+  "network": "ic",
+  "canisterIds": {
+    "auditorbox_backend": {
+      "playground": "zkfwe-6yaaa-aaaab-qacca-cai"
+    },
+    "auditorbox_frontend": {
+      "playground": "363tq-3yaaa-aaaab-qacma-cai"
+    },
+    "internet_identity": {
+      "playground": "53qip-2yaaa-aaaab-qac2a-cai"
+    }
+  },
+  "backendId": "zkfwe-6yaaa-aaaab-qacca-cai"
+}

@@ -9,6 +9,7 @@ import { CONFIG } from './config';
 import * as api from './api/api-functions';
 import { EngagementContext, DEFAULT_ENGAGEMENT, useBackendEngagement, type EngagementConfig } from './hooks/useEngagement';
 import { JourneyProvider, useJourney } from './hooks/useJourneyState';
+import { AuditDataProvider, useAuditData } from './hooks/useAuditData';
 import { HUB_FORMS } from './data/hubForms';
 import AppLayout from './components/layout/AppLayout';
 import Sidebar from './components/layout/Sidebar';
@@ -70,12 +71,11 @@ const AuditApp: React.FC<{ principal: string; onLogout: () => void; engagementId
   const [activeView, setActiveView] = useState<View>('phase-intro');
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
   const { config: engagement, setConfig: setEngagement } = useBackendEngagement(engagementId);
-  const [formsData, setFormsData] = useState<Record<string, any> | null>(null);
+  const { forms: formsData, isLoading: isFormsLoading } = useAuditData();
 
-  // Lazy-load forms data on first use
-  useEffect(() => {
-    import('./data/forms').then(mod => setFormsData(mod.FORMS));
-  }, []);
+  if (isFormsLoading) {
+    return <ViewSpinner />;
+  }
 
   // Cmd+K handler
   useEffect(() => {
@@ -442,7 +442,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <AuditDataProvider>
+          <App />
+        </AuditDataProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   </React.StrictMode>

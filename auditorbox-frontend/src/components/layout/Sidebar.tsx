@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { PHASES } from '../../data/phases';
-import { FORM_COUNT } from '../../data/forms';
 import { HUB_FORMS, PHASE_COLORS, PHASE_IDS } from '../../data/hubForms';
+import { useAuditData } from '../../hooks/useAuditData';
 
 interface SidebarProps {
   activeView: string;
@@ -33,9 +33,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   onPhaseSelect,
 }) => {
   const [expandedPhases, setExpandedPhases] = useState<string[]>([currentPhaseId]);
+  const { forms } = useAuditData();
 
   const currentPhase = PHASES.find(p => p.id === currentPhaseId);
-  const totalForms = FORM_COUNT;
+  const totalForms = forms ? Object.keys(forms).length : 0;
   const completedCount = completedForms.length;
 
   const togglePhase = (phaseId: string) => {
@@ -69,8 +70,8 @@ const Sidebar: React.FC<SidebarProps> = ({
               key={item.id}
               onClick={() => onNavigate(item.id)}
               className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors group ${isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                ? 'bg-primary/10 text-primary'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                 }`}
             >
               <span className={`material-icons text-xl ${isActive ? 'text-primary' : 'group-hover:text-primary'} transition-colors`}>
@@ -110,10 +111,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                     }}
                     disabled={!isUnlocked}
                     className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${isActive
-                        ? 'text-primary bg-primary/10'
-                        : isUnlocked
-                          ? 'text-slate-400 hover:bg-slate-800'
-                          : 'text-slate-600 cursor-not-allowed'
+                      ? 'text-primary bg-primary/10'
+                      : isUnlocked
+                        ? 'text-slate-400 hover:bg-slate-800'
+                        : 'text-slate-600 cursor-not-allowed'
                       }`}
                   >
                     {/* Status icon */}
@@ -149,8 +150,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                               }
                             }}
                             className={`block w-full text-left px-3 py-1.5 text-xs font-medium rounded transition-colors ${catCompleted
-                                ? 'text-emerald-400'
-                                : 'text-slate-300 hover:text-primary hover:bg-slate-800/50'
+                              ? 'text-emerald-400'
+                              : 'text-slate-300 hover:text-primary hover:bg-slate-800/50'
                               }`}
                           >
                             {cat.name}
