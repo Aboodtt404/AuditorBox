@@ -4,7 +4,8 @@
       "main": "backend/main.mo",
       "type": "motoko",
       "args": "--enhanced-orthogonal-persistence",
-      "wasm_memory_persistence": "keep"
+      "wasm_memory_persistence": "keep",
+      "initial_cycles": "100000000000"
     },
     "auditorbox_frontend": {
       "type": "assets",
@@ -13,7 +14,8 @@
       ],
       "dependencies": [
         "auditorbox_backend"
-      ]
+      ],
+      "initial_cycles": "50000000000"
     }
   },
   "output_env_file": ".env",
